@@ -1,27 +1,30 @@
-import { useState } from 'react';
+import { useState } from 'react'
 import {
   Alert,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View,
-} from 'react-native';
-import { supabase } from '@/lib/supabase';
+  View
+} from 'react-native'
+import * as Linking from 'expo-linking'
+import { supabase } from '@/lib/supabase'
 
 export default function RegisterScreen() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
 
   async function handleRegister() {
     if (!name || !email || !password) {
-      Alert.alert('Missing information', 'Please fill in all fields.');
-      return;
+      Alert.alert('Missing information', 'Please fill in all fields.')
+      return
     }
 
-    setLoading(true);
+    setLoading(true)
+
+    const redirectUrl = Linking.createURL('auth/callback')
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -30,21 +33,21 @@ export default function RegisterScreen() {
         data: {
           full_name: name,
         },
-        emailRedirectTo: 'thabaat://auth/callback',
+        emailRedirectTo: redirectUrl,
       },
-    });
+    })
 
-    setLoading(false);
+    setLoading(false)
 
     if (error) {
-      Alert.alert('Registration failed', error.message);
-      return;
+      Alert.alert('Registration failed', error.message)
+      return
     }
 
     Alert.alert(
       'Check your email',
-      'Your account was created. Please check your email to verify your account.'
-    );
+      'Your account was created. Please check your email to verify your account before logging in.'
+    )
   }
 
   return (
@@ -87,8 +90,18 @@ export default function RegisterScreen() {
           {loading ? 'Creating account...' : 'Create Account'}
         </Text>
       </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.link}
+        onPress={() => {
+          const { router } = require('expo-router')
+          router.push('/auth/login')
+        }}
+      >
+        <Text style={styles.linkText}>Already have an account? Sign in</Text>
+      </TouchableOpacity>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
@@ -98,7 +111,6 @@ const styles = StyleSheet.create({
     padding: 24,
     backgroundColor: '#000',
   },
-
   title: {
     fontSize: 28,
     fontWeight: 'bold',
@@ -106,7 +118,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#fff',
   },
-
   input: {
     backgroundColor: '#fff',
     borderWidth: 1,
@@ -117,7 +128,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#000',
   },
-
   button: {
     backgroundColor: '#fff',
     padding: 15,
@@ -125,10 +135,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 10,
   },
-
   buttonText: {
     color: '#000',
     fontSize: 16,
     fontWeight: 'bold',
   },
-});
+  link: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  linkText: {
+    color: '#aaa',
+    fontSize: 14,
+  },
+})

@@ -1,9 +1,10 @@
+import * as Linking from 'expo-linking'
 import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native'
 import { Stack, router, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
 import 'react-native-reanimated'
-
+import { supabase } from '@/lib/supabase'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { useAuth } from '@/hooks/useAuth'
 
@@ -41,4 +42,32 @@ export default function RootLayout() {
       <StatusBar style="auto" />
     </ThemeProvider>
   )
+
+
+useEffect(() => {
+  // Handle deep link when app is already open
+  const subscription = Linking.addEventListener('url', ({ url }) => {
+    if (url.includes('auth/callback')) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          router.replace('/(tabs)' as any)
+        }
+      })
+    }
+  })
+
+  // Handle deep link when app opens from closed state
+  Linking.getInitialURL().then((url) => {
+    if (url && url.includes('auth/callback')) {
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          router.replace('/(tabs)' as any)
+        }
+      })
+    }
+  })
+
+  return () => subscription.remove()
+}, [])
+
 }
