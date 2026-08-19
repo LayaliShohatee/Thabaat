@@ -27,7 +27,7 @@ export async function createRegistration(
       user_id: userId,
       event_id: eventId,
       ticket_type_id: ticketTypeId,
-      status: 'confirmed'
+      //status: 'confirmed'
     })
     .select()
     .single()

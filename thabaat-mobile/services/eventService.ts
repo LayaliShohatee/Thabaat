@@ -5,8 +5,8 @@ export async function getEvents(): Promise<Event[]> {
   const { data, error } = await supabase
     .from('events')
     .select('*')
-    .gte('date', new Date().toISOString())
-    .order('date', { ascending: true })
+    .gte('event_date', new Date().toISOString())
+    .order('event_date', { ascending: true })
 
   if (error) throw error
   return data ?? []
