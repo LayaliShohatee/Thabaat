@@ -13,7 +13,7 @@ export default function AuthCallbackScreen() {
       if (session) {
         router.replace('/(tabs)');
       } else {
-        router.replace('/auth/register');
+        router.replace('/auth/login');
       }
     };
 
