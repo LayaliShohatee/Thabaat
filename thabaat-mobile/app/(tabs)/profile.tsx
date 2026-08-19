@@ -1,133 +1,47 @@
-import { useState } from 'react';
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { supabase } from '@/lib/supabase';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { supabase } from '@/lib/supabase'
+import { router } from 'expo-router'
 
-export default function RegisterScreen() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  async function handleRegister() {
-    if (!name || !email || !password) {
-      Alert.alert('Missing information', 'Please fill in all fields.');
-      return;
-    }
-
-    setLoading(true);
-
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: name,
-        },
-      },
-    });
-
-    setLoading(false);
-
-    if (error) {
-      Alert.alert('Registration failed', error.message);
-      return;
-    }
-
-    Alert.alert(
-      'Check your email',
-      'Your account was created. Please check your email to verify your account.'
-    );
+export default function ProfileScreen() {
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.replace('/auth/register')
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create your Thabaat account</Text>
-
-      <TextInput
-        style={styles.input}
-        placeholder="Full name"
-        placeholderTextColor="#777"
-        value={name}
-        onChangeText={setName}
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor="#777"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#777"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleRegister}
-        disabled={loading}
-      >
-        <Text style={styles.buttonText}>
-          {loading ? 'Creating account...' : 'Create Account'}
-        </Text>
+      <Text style={styles.title}>Profile</Text>
+      <TouchableOpacity style={styles.button} onPress={handleLogout}>
+        <Text style={styles.buttonText}>Log Out</Text>
       </TouchableOpacity>
     </View>
-  );
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
-    padding: 24,
+    alignItems: 'center',
     backgroundColor: '#000',
+    padding: 24
   },
-
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    marginBottom: 30,
-    textAlign: 'center',
     color: '#fff',
+    marginBottom: 32
   },
-
-  input: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 15,
-    fontSize: 16,
-    color: '#000',
-  },
-
   button: {
     backgroundColor: '#fff',
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
-    marginTop: 10,
+    width: '100%'
   },
-
   buttonText: {
     color: '#000',
     fontSize: 16,
-    fontWeight: 'bold',
-  },
-});
+    fontWeight: 'bold'
+  }
+})
