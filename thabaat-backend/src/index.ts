@@ -13,9 +13,9 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', message: 'Thabaat backend is running' })
 })
 
-// Routes — Jenna adds notify route here
-// import notifyRouter from './routes/notify'
-// app.use('/notify', notifyRouter)
+
+import notifyRouter from './routes/notify'
+app.use('/notify', notifyRouter)
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
