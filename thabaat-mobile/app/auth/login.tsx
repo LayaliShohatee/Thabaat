@@ -1,44 +1,57 @@
-import { useState } from 'react'
+import { useState } from 'react';
 import {
   Alert,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View
-} from 'react-native'
-import { router } from 'expo-router'
-import { supabase } from '@/lib/supabase'
+  View,
+} from 'react-native';
+import { router } from 'expo-router';
+import { supabase } from '@/lib/supabase';
 
 export default function LoginScreen() {
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   async function handleLogin() {
     if (!email || !password) {
-      Alert.alert('Missing information', 'Please enter your email and password.')
-      return
+      Alert.alert('Missing information', 'Please enter your email and password.');
+      return;
     }
 
-    setLoading(true)
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    setLoading(false)
+    setLoading(true);
+
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    setLoading(false);
 
     if (error) {
-      Alert.alert('Login failed', error.message)
+      Alert.alert('Login failed', error.message);
+      return;
     }
-    // No router.push here — _layout.tsx handles redirect automatically
+
+    // _layout.tsx handles the redirect after authentication
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Welcome Back</Text>
+      <Text style={styles.logo}>Thabaat</Text>
+
+      <Text style={styles.title}>Welcome back</Text>
+
+      <Text style={styles.subtitle}>
+        Log in to your account
+      </Text>
 
       <TextInput
         style={styles.input}
         placeholder="Email"
-        placeholderTextColor="#777"
+        placeholderTextColor="#888"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -48,11 +61,15 @@ export default function LoginScreen() {
       <TextInput
         style={styles.input}
         placeholder="Password"
-        placeholderTextColor="#777"
+        placeholderTextColor="#888"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
+
+      <TouchableOpacity onPress={() => router.push('/auth/forgot-password')}>
+        <Text style={styles.forgot}>Forgot your password?</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.button}
@@ -60,62 +77,89 @@ export default function LoginScreen() {
         disabled={loading}
       >
         <Text style={styles.buttonText}>
-          {loading ? 'Signing in...' : 'Sign In'}
+          {loading ? 'Logging in...' : 'Log In'}
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.link}
-        onPress={() => router.push('/auth/register')}
-      >
-        <Text style={styles.linkText}>Don't have an account? Register</Text>
+      <TouchableOpacity onPress={() => router.push('/auth/register')}>
+        <Text style={styles.link}>
+          Don't have an account? Create one
+        </Text>
       </TouchableOpacity>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
-    padding: 24,
-    backgroundColor: '#000'
+    paddingHorizontal: 24,
   },
-  title: {
+
+  logo: {
     fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 30,
+    fontWeight: '700',
+    color: '#159A8C',
     textAlign: 'center',
-    color: '#fff'
+    marginBottom: 25,
   },
+
+  title: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#222222',
+    textAlign: 'center',
+  },
+
+  subtitle: {
+    fontSize: 14,
+    color: '#666666',
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 28,
+  },
+
   input: {
-    backgroundColor: '#fff',
+    height: 50,
+    backgroundColor: '#F5F8F7',
     borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 15,
-    fontSize: 16,
-    color: '#000'
+    borderColor: '#E1E8E6',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 15,
+    color: '#222222',
+    marginBottom: 14,
   },
+
+  forgot: {
+    color: '#159A8C',
+    textAlign: 'right',
+    fontSize: 14,
+    marginBottom: 18,
+  },
+
   button: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 8,
+    height: 50,
+    backgroundColor: '#159A8C',
+    borderRadius: 12,
     alignItems: 'center',
-    marginTop: 10
+    justifyContent: 'center',
+    marginBottom: 18,
   },
+
   buttonText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: 'bold'
+    fontWeight: '600',
   },
+
   link: {
-    marginTop: 20,
-    alignItems: 'center'
+    color: '#159A8C',
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: '500',
   },
-  linkText: {
-    color: '#aaa',
-    fontSize: 14
-  }
-})
+});
+
