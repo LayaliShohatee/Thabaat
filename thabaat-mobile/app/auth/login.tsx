@@ -35,7 +35,7 @@ export default function LoginScreen() {
       return;
     }
 
-    // _layout.tsx handles the redirect after authentication
+    router.replace('/(tabs)');
   }
 
   return (
@@ -160,6 +160,4 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontSize: 14,
     fontWeight: '500',
-  },
-});
-
+  }, });

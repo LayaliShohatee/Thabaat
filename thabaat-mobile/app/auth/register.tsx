@@ -1,30 +1,28 @@
-import { useState } from 'react'
+import { useState } from 'react';
 import {
   Alert,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
-  View
-} from 'react-native'
-import * as Linking from 'expo-linking'
-import { supabase } from '@/lib/supabase'
+  View,
+} from 'react-native';
+import { router } from 'expo-router';
+import { supabase } from '@/lib/supabase';
 
 export default function RegisterScreen() {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
   async function handleRegister() {
     if (!name || !email || !password) {
-      Alert.alert('Missing information', 'Please fill in all fields.')
-      return
+      Alert.alert('Missing information', 'Please fill in all fields.');
+      return;
     }
 
-    setLoading(true)
-
-    const redirectUrl = Linking.createURL('auth/callback')
+    setLoading(true);
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -33,31 +31,43 @@ export default function RegisterScreen() {
         data: {
           full_name: name,
         },
-        emailRedirectTo: redirectUrl,
+        emailRedirectTo: 'thabaat://auth/callback',
       },
-    })
+    });
 
-    setLoading(false)
+    setLoading(false);
 
     if (error) {
-      Alert.alert('Registration failed', error.message)
-      return
+      Alert.alert('Registration failed', error.message);
+      return;
     }
 
     Alert.alert(
       'Check your email',
-      'Your account was created. Please check your email to verify your account before logging in.'
-    )
+      'Your account was created. Please check your email to verify your account.',
+      [
+        {
+          text: 'OK',
+          onPress: () => router.replace('/auth/login'),
+        },
+      ]
+    );
   }
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Create your Thabaat account</Text>
+      <Text style={styles.logo}>Thabaat</Text>
+
+      <Text style={styles.title}>Create your account</Text>
+
+      <Text style={styles.subtitle}>
+        Join Thabaat and discover community events.
+      </Text>
 
       <TextInput
         style={styles.input}
         placeholder="Full name"
-        placeholderTextColor="#777"
+        placeholderTextColor="#888"
         value={name}
         onChangeText={setName}
       />
@@ -65,7 +75,7 @@ export default function RegisterScreen() {
       <TextInput
         style={styles.input}
         placeholder="Email"
-        placeholderTextColor="#777"
+        placeholderTextColor="#888"
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -75,7 +85,7 @@ export default function RegisterScreen() {
       <TextInput
         style={styles.input}
         placeholder="Password"
-        placeholderTextColor="#777"
+        placeholderTextColor="#888"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -91,61 +101,76 @@ export default function RegisterScreen() {
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.link}
-        onPress={() => {
-          const { router } = require('expo-router')
-          router.push('/auth/login')
-        }}
-      >
-        <Text style={styles.linkText}>Already have an account? Sign in</Text>
+      <TouchableOpacity onPress={() => router.push('/auth/login')}>
+        <Text style={styles.link}>Already have an account? Log in</Text>
       </TouchableOpacity>
     </View>
-  )
+  );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#FFFFFF',
     justifyContent: 'center',
-    padding: 24,
-    backgroundColor: '#000',
+    paddingHorizontal: 24,
   },
-  title: {
+
+  logo: {
     fontSize: 28,
-    fontWeight: 'bold',
-    marginBottom: 30,
+    fontWeight: '700',
+    color: '#159A8C',
     textAlign: 'center',
-    color: '#fff',
+    marginBottom: 25,
   },
-  input: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    padding: 14,
-    marginBottom: 15,
-    fontSize: 16,
-    color: '#000',
+
+  title: {
+    fontSize: 26,
+    fontWeight: '700',
+    color: '#222222',
+    textAlign: 'center',
   },
-  button: {
-    backgroundColor: '#fff',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginTop: 10,
-  },
-  buttonText: {
-    color: '#000',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  link: {
-    marginTop: 20,
-    alignItems: 'center',
-  },
-  linkText: {
-    color: '#aaa',
+
+  subtitle: {
     fontSize: 14,
+    color: '#666666',
+    textAlign: 'center',
+    marginTop: 8,
+    marginBottom: 28,
   },
-})
+
+  input: {
+    height: 50,
+    backgroundColor: '#F5F8F7',
+    borderWidth: 1,
+    borderColor: '#E1E8E6',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    fontSize: 15,
+    color: '#222222',
+    marginBottom: 14,
+  },
+
+  button: {
+    height: 50,
+    backgroundColor: '#159A8C',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+    marginBottom: 18,
+  },
+
+  buttonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+
+  link: {
+    color: '#159A8C',
+    textAlign: 'center',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+});
