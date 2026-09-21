@@ -133,7 +133,7 @@ In Supabase Auth, enable the intended email sign-in/signup behavior and allow th
 | Local web on port 8081 | `http://localhost:8081/auth/callback` | `http://localhost:8081/auth/reset-password` |
 | Native development app | `thabaat://auth/callback` | `thabaat://auth/reset-password` |
 
-Adjust web URLs when using a different port or deployed host. The app generates links for its current environment. The inspected hosted settings auto-confirmed email accounts; the requirements call for email verification. The team must choose the intended setting and configure email delivery/SMTP and redirect allowlists accordingly. Actual signup, confirmation-email, and recovery-email delivery still need staging acceptance tests.
+Adjust web URLs when using a different port or deployed host. The app generates links for its current environment. The inspected hosted settings auto-confirmed email accounts; the requirements call for email verification. The team must choose the intended setting and configure email delivery/SMTP and redirect allowlists accordingly. Staging signup and confirmation were subsequently completed by the user; password-recovery email delivery still needs acceptance testing.
 
 ### Separate staging environment prepared September 21, 2026
 
@@ -143,7 +143,9 @@ On the original developer's Mac, staging values are in ignored `thabaat-mobile/.
 
 Restart Metro with `npx expo start --dev-client --clear` after switching environments. To return to the original connection, move the staging override out of Expo's recognized environment filenames, keep it private, and restart Metro. Accounts and sessions are separate between the two Supabase projects; create a staging account rather than expecting the original account to exist there.
 
-The [default Supabase email service](https://supabase.com/docs/guides/auth/auth-smtp) sends only to organization members and currently allows two messages per hour. Use the Supabase organization's account email for the initial confirmation test; other testers require an appropriate mail-delivery setup. Avoid repeated signup/reset attempts that consume the limit. Do not disable confirmation to disguise a mail-delivery problem. Staging signup, profile, recovery, registration, and iPhone acceptance results must be recorded separately from infrastructure setup.
+The [default Supabase email service](https://supabase.com/docs/guides/auth/auth-smtp) sends only to organization members and currently allows two messages per hour. Use the Supabase organization's account email for the initial confirmation test; other testers require an appropriate mail-delivery setup. Avoid repeated signup/reset attempts that consume the limit. Do not disable confirmation to disguise a mail-delivery problem. Staging acceptance results are recorded separately from infrastructure setup below.
+
+**Live browser acceptance:** the user completed signup and email confirmation and reached home. The signed-in app displayed the staging event and account profile. The paid option showed “Paid checkout not available.” A free registration saved successfully and appeared as Confirmed in My Events. Reload preserved the session and registration, and revisiting the event showed Already Registered. No push was sent because notification configuration remains absent. Password recovery, profile-edit persistence, and the staging session on iPhone still require their own checks.
 
 ## 6. Start the backend and web app
 
@@ -325,7 +327,7 @@ The full comparison linked at the top lists each added, edited, or removed sourc
 
 The original Mac completed unsigned and signed native iPhone Debug builds, signature checks, device installation, developer-profile trust, app launch, and Metro bundle delivery. The user confirmed the login/home screen. The automated and isolated browser checks above also passed. Dependency review found 14 moderate mobile advisories and zero high/critical ones; the backend audit found none at that time. Forced remediation proposed incompatible Expo changes and was not applied.
 
-Still pending: owner review/application of the migration to the original shared project, email confirmation and recovery-delivery acceptance, full staging account/registration acceptance, paid-team notification configuration and delivery, and broader device/release testing. Membership is a preview. Payments, donations, a full admin portal, five-role authorization, QR check-in, and the media library are not implemented here. See the requirements review for coverage by requirement ID.
+Still pending: owner review/application of the migration to the original shared project, password-recovery delivery, profile-edit persistence, staging iPhone acceptance, paid-team notification configuration and delivery, and broader device/release testing. Membership is a preview. Payments, donations, a full admin portal, five-role authorization, QR check-in, and the media library are not implemented here. See the requirements review for coverage by requirement ID.
 
 Dependencies, generated iOS files, compiled apps, `.env` files, Apple certificates/profiles, and personal device identifiers stay on each developer's machine. The branch supplies source, lockfiles, configuration examples, tests, and these reproduction steps.
 
