@@ -1,5 +1,7 @@
 # Thabaat mobile — Expo SDK 57
 
+Start with the [complete team setup guide](../docs/TEAM_SETUP.md) for the full environment, Supabase, backend, iPhone signing, testing, and troubleshooting walkthrough.
+
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 ## Get started

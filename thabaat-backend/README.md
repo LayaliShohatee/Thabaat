@@ -1,5 +1,7 @@
 # Thabaat backend
 
+Start with the [complete team setup guide](../docs/TEAM_SETUP.md) to reproduce both projects and the iPhone environment from the beginning.
+
 Express API for registration push confirmations. Authentication and the event database use Supabase. The mobile app lives in `../thabaat-mobile`.
 
 ## Local setup

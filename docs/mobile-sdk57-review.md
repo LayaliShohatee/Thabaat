@@ -2,6 +2,8 @@
 
 Reviewed September 21, 2026 against main `abba4c61610096c6eb518819d553641cd3d3c29c`, the mobile/backend code, and the supplied project requirements. All four existing feature branches were already ancestors of that main commit.
 
+For the complete beginning-to-end environment and iPhone instructions, use [TEAM_SETUP.md](TEAM_SETUP.md).
+
 ## Resulting behavior
 
 - Expo SDK 57 with aligned React Native 0.86.3 / React 19.2.3 packages, development-client support, and Xcode 27 scene compatibility.
@@ -59,6 +61,6 @@ Payments, full membership management, donations, admin tools, QR check-in, media
 | REQ-43–44 | Push delivery targets and QR latency are untested; receipts/QR implementation absent. |
 | REQ-45 | Screens expose request failures and retry paths; no five-minute outage monitoring system. |
 | REQ-46 | Donation receipt compliance is not implemented or assessed. |
-| REQ-47 | Expo SDK 57 iOS/Android bundles build. The iOS-first release still needs native/device verification. |
+| REQ-47 | Expo SDK 57 iOS/Android bundles build. A signed native iPhone build compiled, installed, and launched; the user confirmed the login/home screen. Broader device and release acceptance remain. |
 | REQ-48 | Local core-flow smoke test passed; no stakeholder usability acceptance test. |
 | REQ-49 | Feature branches exist and are merged; test commands are added. No CI configuration or evidence of independent staging deployment was found in this checkout. This review branch publishes the local changes for team review; it does not merge them into main. |
