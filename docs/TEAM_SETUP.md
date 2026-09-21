@@ -116,15 +116,15 @@ To start the backend without notification credentials, leave the Supabase values
 
 ## 5. Prepare Supabase and account redirects
 
-**The proposed database migration has not been applied to the team's hosted project.** Cloning the code or starting Expo does not apply SQL. A project owner should review and test it in staging before changing a shared database.
+**The database migration has been applied to a separate hosted `thabaat-staging` project, not the team's original hosted project.** Cloning the code or starting Expo does not apply SQL. A project owner should review and test it in staging before changing a shared database.
 
 1. For a **new, empty staging Supabase project**, review and run [database/schema.sql](../thabaat-mobile/database/schema.sql), then [database/migrations/20260921_prototype_integrity.sql](../thabaat-mobile/database/migrations/20260921_prototype_integrity.sql) through that project's SQL editor.
 2. For an **existing project**, do not rerun the `CREATE TABLE` reference schema. Review existing columns, duplicate registrations, constraints, and policies before applying the migration. The migration targets the hosted `events.event_date` column.
 3. Inspect existing row-level security (RLS) policies. Permissive PostgreSQL policies combine with OR; adding stricter policies does not cancel an older permissive policy.
 4. Check profile creation for new accounts and synchronization for existing accounts. Registrations reference profiles, so a missing profile can prevent registration.
-5. Create suitable staging test data through the database owner: a future event with available capacity and a free ticket (`price = 0`, positive quantity) referencing that event. No seed script or admin event editor is included.
+5. In staging only, run [database/staging-seed.sql](../thabaat-mobile/database/staging-seed.sql). It creates one clearly labeled synthetic event 30 days in the future, a free ticket, and a paid ticket that must be rejected. Re-running preserves existing rows and registrations; it does not reset the test or move its date forward. No admin event editor is included.
 
-The migration adds missing capacity, ticket quantity, registration status, and push-token fields; synchronizes auth profiles; and validates new free registrations for ownership, event date, duplicate registration, ticket/event matching, and availability. It was tested in isolated PostgreSQL. It does not implement payment processing or a complete admin/role system.
+The migration adds missing capacity, ticket quantity, registration status, and push-token fields; synchronizes auth profiles; and validates new free registrations for ownership, event date, duplicate registration, ticket/event matching, and availability. It was tested in isolated PostgreSQL and applied successfully to the separate staging project. It does not implement payment processing or a complete admin/role system.
 
 In Supabase Auth, enable the intended email sign-in/signup behavior and allow the callback URLs for each environment:
 
@@ -134,6 +134,16 @@ In Supabase Auth, enable the intended email sign-in/signup behavior and allow th
 | Native development app | `thabaat://auth/callback` | `thabaat://auth/reset-password` |
 
 Adjust web URLs when using a different port or deployed host. The app generates links for its current environment. The inspected hosted settings auto-confirmed email accounts; the requirements call for email verification. The team must choose the intended setting and configure email delivery/SMTP and redirect allowlists accordingly. Actual signup, confirmation-email, and recovery-email delivery still need staging acceptance tests.
+
+### Separate staging environment prepared September 21, 2026
+
+The free **Thabaat Development** organization contains a new **thabaat-staging** project, separate from the original team's database. Its fresh schema, integrity migration, and synthetic seed were applied through the SQL editor. Verification found four tables with RLS enabled, seven policies, one event, and two ticket types. Anonymous API access returned zero visible events. Email signup is enabled and email confirmation remains required. The site URL and four exact callback/reset URLs above were saved. These SQL editor operations do not automatically create a CLI migration-history record.
+
+On the original developer's Mac, staging values are in ignored `thabaat-mobile/.env.local`, which overrides the corresponding values in `.env`. The original `.env` was preserved. No staging key is committed. To use staging on another computer, obtain its URL and publishable key through the owner and create your own ignored `.env.local` with the three mobile variables from section 4. Keep the notification backend URL empty until configured.
+
+Restart Metro with `npx expo start --dev-client --clear` after switching environments. To return to the original connection, move the staging override out of Expo's recognized environment filenames, keep it private, and restart Metro. Accounts and sessions are separate between the two Supabase projects; create a staging account rather than expecting the original account to exist there.
+
+The [default Supabase email service](https://supabase.com/docs/guides/auth/auth-smtp) sends only to organization members and currently allows two messages per hour. Use the Supabase organization's account email for the initial confirmation test; other testers require an appropriate mail-delivery setup. Avoid repeated signup/reset attempts that consume the limit. Do not disable confirmation to disguise a mail-delivery problem. Staging signup, profile, recovery, registration, and iPhone acceptance results must be recorded separately from infrastructure setup.
 
 ## 6. Start the backend and web app
 
@@ -290,7 +300,7 @@ Stop both fixture processes afterward. Do not save fixture values into the real 
 | Registration | Existing-registration error handling, duplicate-submit protection, corrected confirmation title, free-ticket flow, paid checkout disabled pending trusted payment verification |
 | Notification client | Device/runtime checks, permission/token handling, authenticated requests, timeout handling, and nonfatal notification failure after a saved registration |
 | Backend | Verified Supabase sessions, recipient/registration ownership, input and Expo-response validation, rate limiting, limited request size, configuration checks, and tests |
-| Database proposal | Schema reference correction, migration for profiles/ownership/capacity/inventory/free registrations, and isolated database tests; no hosted migration applied |
+| Database setup | Schema reference correction, migration for profiles/ownership/capacity/inventory/free registrations, isolated database tests, and synthetic staging seed; applied to separate staging only |
 | Team handoff | Environment examples, setup instructions, regression fixtures, and requirements coverage review |
 
 The full comparison linked at the top lists each added, edited, or removed source file. The supplied project-layout ZIP was reviewed against the checkout; its original planning attachments are not republished in this code repository.
@@ -315,7 +325,7 @@ The full comparison linked at the top lists each added, edited, or removed sourc
 
 The original Mac completed unsigned and signed native iPhone Debug builds, signature checks, device installation, developer-profile trust, app launch, and Metro bundle delivery. The user confirmed the login/home screen. The automated and isolated browser checks above also passed. Dependency review found 14 moderate mobile advisories and zero high/critical ones; the backend audit found none at that time. Forced remediation proposed incompatible Expo changes and was not applied.
 
-Still pending: owner review/application of the hosted migration, intended email verification and recovery delivery, full live account/registration acceptance, paid-team notification configuration and delivery, and broader device/release testing. Membership is a preview. Payments, donations, a full admin portal, five-role authorization, QR check-in, and the media library are not implemented here. See the requirements review for coverage by requirement ID.
+Still pending: owner review/application of the migration to the original shared project, email confirmation and recovery-delivery acceptance, full staging account/registration acceptance, paid-team notification configuration and delivery, and broader device/release testing. Membership is a preview. Payments, donations, a full admin portal, five-role authorization, QR check-in, and the media library are not implemented here. See the requirements review for coverage by requirement ID.
 
 Dependencies, generated iOS files, compiled apps, `.env` files, Apple certificates/profiles, and personal device identifiers stay on each developer's machine. The branch supplies source, lockfiles, configuration examples, tests, and these reproduction steps.
 

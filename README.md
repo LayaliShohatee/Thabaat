@@ -16,7 +16,7 @@ Publishing this branch does not merge it into main. Keep the pull request unmerg
 |---|---|
 | [thabaat-mobile](thabaat-mobile/) | Expo app screens, components, hooks, services, assets, configuration, dependency lockfile, and tests |
 | [thabaat-backend](thabaat-backend/) | Express notification service, authentication middleware, configuration, dependency lockfile, and tests |
-| [Database files](thabaat-mobile/database/) | Reference schema and proposed migration; the migration has not been applied to the hosted database |
+| [Database files](thabaat-mobile/database/) | Reference schema, integrity migration, and synthetic staging seed; applied to separate staging, with the original hosted database unchanged |
 | [Review](docs/mobile-sdk57-review.md) | What changed, verification evidence, requirement coverage, and remaining work |
 | [Complete team setup](docs/TEAM_SETUP.md) | Everything from cloning and environment configuration through database setup, iPhone signing, tests, troubleshooting, and the change summary |
 

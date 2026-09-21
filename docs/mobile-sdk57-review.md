@@ -11,7 +11,11 @@ For the complete beginning-to-end environment and iPhone instructions, use [TEAM
 - Profile editing checks failures; event views use the hosted `event_date` field, support search/retry, and refresh after navigation.
 - Free registration handles existing rows and request failures correctly. Paid checkout is unavailable until payment verification is implemented. Membership is labeled as a preview.
 - A saved registration remains successful when notifications fail. The backend verifies Supabase bearer tokens, derives the recipient from the caller, checks registration ownership, and validates Expo responses.
-- A proposed database migration adds profile synchronization, free-registration validation, capacity/inventory checks, and row ownership policies. It has **not been applied to hosted Supabase**.
+- A database migration adds profile synchronization, free-registration validation, capacity/inventory checks, and row ownership policies. It has been applied to the **separate hosted staging project only**; the original team's database is unchanged.
+
+## Staging follow-up — September 21, 2026
+
+Created a free development organization and separate `thabaat-staging` project. Applied the fresh schema, integrity migration, and new synthetic staging seed. Verified four RLS-enabled tables, seven policies, one future event, two ticket options, and zero anonymous event rows. Email signup and required email confirmation are enabled, and exact web/native callback and recovery URLs are configured. The local app uses an ignored `.env.local` staging override while preserving the original `.env`. No GitHub integration or deployment to main was enabled. Real signup/email, profile, registration, and iPhone acceptance remain separate checks; see the complete setup guide for current instructions.
 
 ## Verification
 

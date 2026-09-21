@@ -85,7 +85,7 @@ The backend has its own `.env` with `SUPABASE_URL`, `SUPABASE_SERVICE_KEY`, and 
 
 The app uses the hosted `events.event_date` column. The older `date` column in the original schema file did not match the hosted database. `database/schema.sql` is a fresh-project reference, not a script to rerun against existing tables.
 
-Review `database/migrations/20260921_prototype_integrity.sql` in staging first. It adds missing notification, capacity, inventory, and registration-status fields, synchronizes auth profiles, validates free registrations, and defines row ownership policies. Existing policies must be inspected because permissive policies combine with OR. This migration is local only and has not changed the team's hosted database.
+Review `database/migrations/20260921_prototype_integrity.sql` in staging first. It adds missing notification, capacity, inventory, and registration-status fields, synchronizes auth profiles, validates free registrations, and defines row ownership policies. Existing policies must be inspected because permissive policies combine with OR. This migration has been applied to the separate `thabaat-staging` project; the team's original hosted database is unchanged. `database/staging-seed.sql` provides a synthetic future event with free/paid ticket options for staging-only acceptance tests. See the complete guide for the ignored `.env.local` staging override.
 
 The current app supports account screens, profiles, event browsing/search, and free-ticket registration. Paid tickets are deliberately unavailable until payment verification exists. The membership page is a preview. There is no implemented admin portal, donation checkout, QR check-in, video library, or five-role authorization system in this checkout.
 

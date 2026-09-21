@@ -31,6 +31,6 @@ The response `{ "success": true, "status": "accepted" }` means Expo accepted the
 
 ## Database and device prerequisites
 
-Review `../thabaat-mobile/database/migrations/20260921_prototype_integrity.sql` in staging first. The inspected hosted prototype lacks `profiles.expo_push_token`. The migration was tested in isolated PostgreSQL, not applied to the hosted project. Existing permissive RLS policies need owner review.
+Review `../thabaat-mobile/database/migrations/20260921_prototype_integrity.sql` in staging first. The inspected original hosted prototype lacks `profiles.expo_push_token`. The migration was tested in isolated PostgreSQL and applied to a separate hosted staging project; the original database remains unchanged. Existing permissive RLS policies need owner review. Backend credentials must belong to the same project as the mobile app; its staging configuration currently leaves notifications disabled pending that setup.
 
 For actual delivery, configure an Expo project ID and APNs/FCM credentials, build the app for a physical device, and use Profile → Enable Notifications. Set the mobile `EXPO_PUBLIC_BACKEND_URL` to a reachable backend address. `localhost` on a phone points to the phone itself. If Expo push access-token security is enabled, set `EXPO_ACCESS_TOKEN` on this backend.
