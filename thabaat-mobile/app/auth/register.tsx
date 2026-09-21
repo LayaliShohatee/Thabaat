@@ -1,6 +1,6 @@
+import { authRedirectUrl } from '@/lib/auth-links'
 import { useState } from 'react';
 import {
-  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -8,50 +8,58 @@ import {
   View,
 } from 'react-native';
 import { router } from 'expo-router';
-import { supabase } from '@/lib/supabase';
+import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 export default function RegisterScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
 
   async function handleRegister() {
-    if (!name || !email || !password) {
-      Alert.alert('Missing information', 'Please fill in all fields.');
+    if (loading) return;
+    setErrorMessage('');
+    setSuccessMessage('');
+
+    if (!name.trim() || !email.trim() || !password) {
+      setErrorMessage('Please fill in all fields.');
+      return;
+    }
+
+    if (!isSupabaseConfigured) {
+      setErrorMessage('Account creation is unavailable in this preview. The account service has not been connected yet.');
       return;
     }
 
     setLoading(true);
-
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          full_name: name,
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        options: {
+          data: { full_name: name.trim() },
+          emailRedirectTo: authRedirectUrl('callback'),
         },
-        emailRedirectTo: 'thabaat://auth/callback',
-      },
-    });
+      });
 
-    setLoading(false);
+      if (error) {
+        setErrorMessage(error.message);
+        return;
+      }
 
-    if (error) {
-      Alert.alert('Registration failed', error.message);
-      return;
+      if (data.session) {
+        router.replace('/(tabs)');
+        return;
+      }
+
+      setSuccessMessage('Check your email for a verification link before logging in.');
+    } catch {
+      setErrorMessage('Unable to reach the account service. Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    Alert.alert(
-      'Check your email',
-      'Your account was created. Please check your email to verify your account.',
-      [
-        {
-          text: 'OK',
-          onPress: () => router.replace('/auth/login'),
-        },
-      ]
-    );
   }
 
   return (
@@ -63,6 +71,12 @@ export default function RegisterScreen() {
       <Text style={styles.subtitle}>
         Join Thabaat and discover community events.
       </Text>
+
+      {!isSupabaseConfigured && (
+        <Text style={styles.feedback} accessibilityRole="alert">
+          This preview is not connected to the account service. Sign-up is unavailable.
+        </Text>
+      )}
 
       <TextInput
         style={styles.input}
@@ -91,7 +105,15 @@ export default function RegisterScreen() {
         secureTextEntry
       />
 
+      {errorMessage ? (
+        <Text style={styles.error} accessibilityRole="alert">{errorMessage}</Text>
+      ) : null}
+      {successMessage ? (
+        <Text style={styles.feedback} accessibilityLiveRegion="polite">{successMessage}</Text>
+      ) : null}
+
       <TouchableOpacity
+        accessibilityRole="button"
         style={styles.button}
         onPress={handleRegister}
         disabled={loading}
@@ -149,6 +171,18 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#222222',
     marginBottom: 14,
+  },
+
+  feedback: {
+    color: '#38584F',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+
+  error: {
+    color: '#B42318',
+    marginBottom: 16,
+    textAlign: 'center',
   },
 
   button: {

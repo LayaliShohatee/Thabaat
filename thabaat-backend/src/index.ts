@@ -1,25 +1,10 @@
-import express from 'express'
-import cors from 'cors'
-import dotenv from 'dotenv'
+import 'dotenv/config'
+import { Expo } from 'expo-server-sdk'
+import { createApp } from './app'
+import { supabaseAdmin } from './lib/supabaseAdmin'
 
-dotenv.config()
-
-const app = express()
-app.use(cors())
-app.use(express.json())
-
-// Health check — confirms backend is running
-app.get('/health', (req, res) => {
-  res.json({ status: 'ok', message: 'Thabaat backend is running' })
-})
-
-
-import notifyRouter from './routes/notify'
-app.use('/notify', notifyRouter)
-
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-  console.log(`Thabaat backend running on port ${PORT}`)
-})
-
+const expo = new Expo({ accessToken: process.env.EXPO_ACCESS_TOKEN })
+const app = createApp(supabaseAdmin, messages => expo.sendPushNotificationsAsync(messages))
+const port = Number(process.env.PORT || 3000)
+app.listen(port, () => console.log(`Thabaat backend running on port ${port}`))
 export default app

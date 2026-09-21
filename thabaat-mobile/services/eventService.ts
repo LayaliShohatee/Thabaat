@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-import { Event } from '@/types'
+import { Event, EventWithTickets } from '@/types'
 
 export async function getEvents(): Promise<Event[]> {
   const { data, error } = await supabase
@@ -12,7 +12,7 @@ export async function getEvents(): Promise<Event[]> {
   return data ?? []
 }
 
-export async function getEventById(eventId: string): Promise<Event | null> {
+export async function getEventById(eventId: string): Promise<EventWithTickets | null> {
   const { data, error } = await supabase
     .from('events')
     .select(`
@@ -20,7 +20,7 @@ export async function getEventById(eventId: string): Promise<Event | null> {
       ticket_types (*)
     `)
     .eq('id', eventId)
-    .single()
+    .maybeSingle()
 
   if (error) throw error
   return data

@@ -1,7 +1,7 @@
+import { Alert } from '@/lib/alert'
 import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -18,67 +18,44 @@ export default function EditProfileScreen() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    loadProfile();
-  }, []);
+    async function loadProfile() {
+      const {
+        data: { user }, error,
+      } = await supabase.auth.getUser();
 
-  async function loadProfile() {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
+      if (error) throw error;
+      if (user) {
+        setName(user.user_metadata?.full_name ?? '');
+        setEmail(user.email ?? '');
+      }
 
-    if (user) {
-      setName(user.user_metadata?.full_name ?? '');
-      setEmail(user.email ?? '');
+      setLoading(false);
     }
 
-    setLoading(false);
-  }
+    void loadProfile().catch(() => { Alert.alert('Unable to load profile', 'Please try again.'); }).finally(() => setLoading(false));
+  }, []);
 
   async function handleSave() {
-    if (!name) {
+    if (saving) return;
+    if (!name.trim()) {
       Alert.alert('Missing information', 'Please enter your name.');
       return;
     }
-
     setSaving(true);
-
-    const { error } = await supabase.auth.updateUser({
-      data: {
-        full_name: name,
-      },
-    });
-
-    if (error) {
-      setSaving(false);
-      Alert.alert('Update failed', error.message);
-      return;
-    }
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (user) {
-      await supabase
-        .from('profiles')
-        .update({
-          full_name: name,
-        })
-        .eq('id', user.id);
-    }
-
-    setSaving(false);
-
-    Alert.alert(
-      'Profile updated',
-      'Your profile has been updated.',
-      [
-        {
-          text: 'Done',
-          onPress: () => router.back(),
-        },
-      ]
-    );
+    try {
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      if (!user) throw new Error('Please log in again.');
+      const { error: profileError } = await supabase.from('profiles').upsert({
+        id: user.id, full_name: name.trim(), email: user.email,
+      }, { onConflict: 'id' });
+      if (profileError) throw profileError;
+      const { error } = await supabase.auth.updateUser({ data: { full_name: name.trim() } });
+      if (error) throw error;
+      Alert.alert('Profile updated', 'Your profile has been updated.', [{ text: 'Done', onPress: () => router.back() }]);
+    } catch (error) {
+      Alert.alert('Update failed', error instanceof Error ? error.message : 'Please try again.');
+    } finally { setSaving(false); }
   }
 
   if (loading) {

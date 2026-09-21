@@ -1,3 +1,5 @@
+import { useFocusResource } from '@/hooks/useFocusResource'
+import { Alert } from '@/lib/alert'
 import {
   View,
   Text,
@@ -5,52 +7,38 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert
 } from 'react-native'
 import { useLocalSearchParams, router } from 'expo-router'
-import { useEffect, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { getEventById } from '@/services/eventService'
 import { createRegistration } from '@/services/registrationService'
 import { sendRegistrationConfirmation } from '@/services/notificationService'
 import { useAuth } from '@/hooks/useAuth'
-import { Event, TicketType } from '@/types'
+import { TicketType } from '@/types'
 
 export default function RegistrationScreen() {
   const { eventId } = useLocalSearchParams<{ eventId: string }>()
   const { user } = useAuth()
-  const [event, setEvent] = useState<Event | null>(null)
-  const [ticketTypes, setTicketTypes] = useState<TicketType[]>([])
-  const [selectedTicket, setSelectedTicket] = useState<TicketType | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
-
-  useEffect(() => {
-    if (!eventId) return
-
-    getEventById(eventId)
-      .then((data) => {
-        if (data) {
-          setEvent(data)
-          const tickets = (data as any).ticket_types ?? []
-          setTicketTypes(tickets)
-          if (tickets.length > 0) {
-            setSelectedTicket(tickets[0])
-          }
-        }
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false))
+  const load = useCallback(() => {
+    if (!eventId) return Promise.reject(new Error('Missing event ID.'))
+    return getEventById(eventId)
   }, [eventId])
+  const { data: event, loading, error, reload } = useFocusResource(load, null)
+  const ticketTypes: TicketType[] = event?.ticket_types ?? []
+  const selectedTicket = ticketTypes.find(ticket => ticket.id === selectedTicketId) ?? ticketTypes[0] ?? null
 
   const handleConfirmRegistration = async () => {
-    if (!user || !event || !selectedTicket) return
+    if (submitting || !user || !event || !selectedTicket) return
 
+    if (selectedTicket.price > 0) { Alert.alert('Payment unavailable', 'Paid ticket checkout is not connected yet.'); return }
     setSubmitting(true)
 
     try {
       await createRegistration(user.id, event.id, selectedTicket.id)
-      await sendRegistrationConfirmation(user.id, event.id)
-      router.replace(`/registration/confirmation?eventTitle=${encodeURIComponent(event.title)}`)
+      const notificationSent = await sendRegistrationConfirmation(event.id)
+      router.replace(`/registration/confirmation?eventTitle=${encodeURIComponent(event.title)}&notificationSent=${notificationSent}`)
     } catch (error: any) {
       Alert.alert('Registration failed', error.message)
     } finally {
@@ -65,6 +53,8 @@ export default function RegistrationScreen() {
       </View>
     )
   }
+
+  if (error) return <View style={styles.centered}><Text style={styles.errorText} accessibilityRole="alert">{error}</Text><TouchableOpacity accessibilityRole="button" style={styles.confirmButton} onPress={reload}><Text>Try Again</Text></TouchableOpacity></View>
 
   if (!event) {
     return (
@@ -93,7 +83,7 @@ export default function RegistrationScreen() {
                 styles.ticketOption,
                 selectedTicket?.id === ticket.id && styles.ticketOptionSelected
               ]}
-              onPress={() => setSelectedTicket(ticket)}
+              onPress={() => setSelectedTicketId(ticket.id)}
             >
               <Text style={styles.ticketName}>{ticket.name}</Text>
               <Text style={styles.ticketPrice}>
@@ -122,10 +112,10 @@ export default function RegistrationScreen() {
         <TouchableOpacity
           style={[styles.confirmButton, submitting && styles.confirmButtonDisabled]}
           onPress={handleConfirmRegistration}
-          disabled={submitting || !selectedTicket}
+          disabled={submitting || !selectedTicket || selectedTicket.price > 0}
         >
           <Text style={styles.confirmButtonText}>
-            {submitting ? 'Confirming...' : 'Confirm Registration'}
+            {submitting ? 'Confirming...' : selectedTicket && selectedTicket.price > 0 ? 'Paid checkout not available' : 'Confirm Registration'}
           </Text>
         </TouchableOpacity>
 

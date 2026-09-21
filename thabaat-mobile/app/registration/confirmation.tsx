@@ -2,18 +2,19 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 
 export default function ConfirmationScreen() {
-  const { eventTitle } = useLocalSearchParams<{ eventTitle: string }>()
+  const { eventTitle, notificationSent } = useLocalSearchParams<{ eventTitle: string; notificationSent?: string }>()
 
   return (
     <View style={styles.container}>
       <Text style={styles.checkmark}>✓</Text>
-      <Text style={styles.title}>You're Registered!</Text>
+      <Text style={styles.title}>You&apos;re Registered!</Text>
       <Text style={styles.subtitle}>
         {eventTitle
-          ? `You have successfully registered for ${decodeURIComponent(eventTitle)}`
+          ? `You have successfully registered for ${eventTitle}`
           : 'Your registration was successful'}
       </Text>
 
+      {notificationSent === 'false' && <Text style={styles.subtitle}>Your registration is saved. A push notification could not be sent.</Text>}
       <TouchableOpacity
         style={styles.button}
         onPress={() => router.replace('/(tabs)')}

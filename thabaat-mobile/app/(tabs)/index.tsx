@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import {
   View,
   Text,
@@ -5,12 +6,15 @@ import {
   StyleSheet,
   ActivityIndicator,
   RefreshControl,
+  TextInput,
+  TouchableOpacity,
 } from 'react-native'
 
 import { useEvents } from '@/hooks/useEvents'
 import EventCard from '@/components/events/EventCard'
 
 export default function HomeScreen() {
+  const [search, setSearch] = useState('')
   const {
     events,
     loading,
@@ -39,13 +43,14 @@ export default function HomeScreen() {
         <Text style={styles.errorText}>
           {error}
         </Text>
+        <TouchableOpacity accessibilityRole="button" onPress={refetch}><Text style={styles.title}>Try Again</Text></TouchableOpacity>
       </View>
     )
   }
 
   return (
     <FlatList
-      data={events}
+      data={events.filter(event => `${event.title} ${event.location}`.toLowerCase().includes(search.trim().toLowerCase()))}
       keyExtractor={(item) => item.id}
       renderItem={({ item }) => (
         <EventCard event={item} />
@@ -68,16 +73,17 @@ export default function HomeScreen() {
           <Text style={styles.subtitle}>
             Find events happening around you
           </Text>
+          <TextInput accessibilityLabel="Search events" placeholder="Search events or locations" placeholderTextColor="#aaa" style={{ color: '#fff', borderColor: '#555', borderWidth: 1, padding: 12, marginTop: 16, borderRadius: 8 }} value={search} onChangeText={setSearch} />
         </View>
       }
       ListEmptyComponent={
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>
-            No upcoming events
+            {search ? 'No matching events' : 'No upcoming events'}
           </Text>
 
           <Text style={styles.emptyText}>
-            Check back later for new events.
+            {search ? 'Try another title or location.' : 'Check back later for new events.'}
           </Text>
         </View>
       }

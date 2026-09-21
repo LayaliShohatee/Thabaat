@@ -1,6 +1,6 @@
+import { Alert } from '@/lib/alert'
 import { useState } from 'react';
 import {
-  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -16,26 +16,33 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
   async function handleLogin() {
-    if (!email || !password) {
-      Alert.alert('Missing information', 'Please enter your email and password.');
-      return;
+    if (loading) return;
+    try {
+      if (!email || !password) {
+        Alert.alert('Missing information', 'Please enter your email and password.');
+        return;
+      }
+
+      setLoading(true);
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      setLoading(false);
+
+      if (error) {
+        Alert.alert('Login failed', error.message);
+        return;
+      }
+
+      router.replace('/(tabs)');
+    } catch (error) {
+      Alert.alert('Unable to complete request', error instanceof Error ? error.message : 'Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(true);
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      Alert.alert('Login failed', error.message);
-      return;
-    }
-
-    router.replace('/(tabs)');
   }
 
   return (
@@ -64,6 +71,7 @@ export default function LoginScreen() {
         placeholderTextColor="#888"
         value={password}
         onChangeText={setPassword}
+        autoCapitalize="none"
         secureTextEntry
       />
 
@@ -83,7 +91,7 @@ export default function LoginScreen() {
 
       <TouchableOpacity onPress={() => router.push('/auth/register')}>
         <Text style={styles.link}>
-          Don't have an account? Create one
+          Don&apos;t have an account? Create one
         </Text>
       </TouchableOpacity>
     </View>

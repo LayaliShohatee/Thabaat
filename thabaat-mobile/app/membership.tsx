@@ -7,12 +7,12 @@ export default function MembershipScreen() {
       <Text style={styles.title}>Membership</Text>
 
       <View style={styles.currentCard}>
-        <Text style={styles.smallTitle}>CURRENT PLAN</Text>
+        <Text style={styles.smallTitle}>MEMBERSHIP PREVIEW</Text>
 
         <Text style={styles.plan}>Free</Text>
 
         <Text style={styles.description}>
-          You are currently using the free Thabaat membership.
+          Membership purchases and status tracking are not connected yet.
         </Text>
       </View>
 
@@ -27,7 +27,7 @@ export default function MembershipScreen() {
         </Text>
 
         <View style={styles.currentBadge}>
-          <Text style={styles.currentBadgeText}>Current Plan</Text>
+          <Text style={styles.currentBadgeText}>Preview</Text>
         </View>
       </View>
 
@@ -39,7 +39,7 @@ export default function MembershipScreen() {
           More membership benefits will be available here.
         </Text>
 
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity style={styles.button} disabled>
           <Text style={styles.buttonText}>Coming Soon</Text>
         </TouchableOpacity>
       </View>

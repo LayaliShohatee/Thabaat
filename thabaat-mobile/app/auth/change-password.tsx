@@ -1,6 +1,6 @@
+import { Alert } from '@/lib/alert'
 import { useState } from 'react';
 import {
-  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -16,39 +16,46 @@ export default function ChangePasswordScreen() {
   const [loading, setLoading] = useState(false);
 
   async function handleChangePassword() {
-    if (!password || !confirmPassword) {
-      Alert.alert('Missing information', 'Please fill in both fields.');
-      return;
+    if (loading) return;
+    try {
+      if (!password || !confirmPassword) {
+        Alert.alert('Missing information', 'Please fill in both fields.');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        Alert.alert('Passwords do not match', 'Please enter the same password twice.');
+        return;
+      }
+
+      setLoading(true);
+
+      const { error } = await supabase.auth.updateUser({
+        password,
+      });
+
+      setLoading(false);
+
+      if (error) {
+        Alert.alert('Password update failed', error.message);
+        return;
+      }
+
+      Alert.alert(
+        'Password updated',
+        'Your password has been changed.',
+        [
+          {
+            text: 'Done',
+            onPress: () => router.back(),
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Unable to complete request', error instanceof Error ? error.message : 'Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Passwords do not match', 'Please enter the same password twice.');
-      return;
-    }
-
-    setLoading(true);
-
-    const { error } = await supabase.auth.updateUser({
-      password,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      Alert.alert('Password update failed', error.message);
-      return;
-    }
-
-    Alert.alert(
-      'Password updated',
-      'Your password has been changed.',
-      [
-        {
-          text: 'Done',
-          onPress: () => router.back(),
-        },
-      ]
-    );
   }
 
   return (
@@ -65,6 +72,7 @@ export default function ChangePasswordScreen() {
         placeholderTextColor="#888"
         value={password}
         onChangeText={setPassword}
+        autoCapitalize="none"
         secureTextEntry
       />
 
@@ -74,6 +82,7 @@ export default function ChangePasswordScreen() {
         placeholderTextColor="#888"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
+        autoCapitalize="none"
         secureTextEntry
       />
 

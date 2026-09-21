@@ -1,3 +1,4 @@
+import { useFocusResource } from '@/hooks/useFocusResource'
 import {
   View,
   Text,
@@ -7,24 +8,15 @@ import {
   ActivityIndicator
 } from 'react-native'
 import { router } from 'expo-router'
-import { useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import { getUserRegistrations } from '@/services/registrationService'
 import { useAuth } from '@/hooks/useAuth'
 import { Registration } from '@/types'
 
 export default function MyEventsScreen() {
   const { user } = useAuth()
-  const [registrations, setRegistrations] = useState<Registration[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    if (!user) return
-
-    getUserRegistrations(user.id)
-      .then(setRegistrations)
-      .catch(console.error)
-      .finally(() => setLoading(false))
-  }, [user])
+  const load = useCallback(() => user ? getUserRegistrations(user.id) : Promise.resolve([]), [user])
+  const { data: registrations, loading, error, reload } = useFocusResource<Registration[]>(load, [])
 
   if (loading) {
     return (
@@ -33,6 +25,8 @@ export default function MyEventsScreen() {
       </View>
     )
   }
+
+  if (error) return <View style={styles.centered}><Text style={styles.emptyText} accessibilityRole="alert">{error}</Text><TouchableOpacity accessibilityRole="button" style={styles.browseButton} onPress={reload}><Text>Try Again</Text></TouchableOpacity></View>
 
   return (
     <FlatList
@@ -62,9 +56,9 @@ export default function MyEventsScreen() {
             <Text style={styles.eventTitle}>
               {item.event?.title ?? 'Event'}
             </Text>
-            {item.event?.date && (
+            {item.event?.event_date && (
               <Text style={styles.eventDate}>
-                {new Date(item.event.date).toLocaleDateString('en-US', {
+                {new Date(item.event.event_date).toLocaleDateString('en-US', {
                   weekday: 'short',
                   month: 'short',
                   day: 'numeric'
@@ -78,7 +72,7 @@ export default function MyEventsScreen() {
               styles.statusBadge,
               item.status === 'confirmed' && styles.statusConfirmed
             ]}>
-              <Text style={styles.statusText}>{item.status}</Text>
+              <Text style={styles.statusText}>{item.status ?? 'registered'}</Text>
             </View>
           </View>
         </TouchableOpacity>

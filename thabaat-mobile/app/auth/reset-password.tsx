@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import * as Linking from 'expo-linking';
+import { consumeAuthLink } from '@/lib/auth-links';
+import { Alert } from '@/lib/alert'
+import { useEffect, useState } from 'react';
 import {
-  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -14,41 +16,67 @@ export default function ResetPasswordScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const url = Linking.useURL();
+  const [ready, setReady] = useState(false);
+  const [linkError, setLinkError] = useState('');
+  useEffect(() => {
+    let active = true;
+    async function verifyLink() {
+      try {
+        const incoming = url ?? await Linking.getInitialURL();
+        if (!incoming) throw new Error('Open the password reset link from your email.');
+        await consumeAuthLink(incoming);
+        if (active) { setReady(true); setLinkError(''); }
+      } catch (err) {
+        if (active) { setReady(false); setLinkError(err instanceof Error ? err.message : 'This reset link is invalid.'); }
+      }
+    }
+    void verifyLink();
+    return () => { active = false; };
+  }, [url]);
+
 
   async function handleUpdatePassword() {
-    if (!password || !confirmPassword) {
-      Alert.alert('Missing information', 'Please fill in both fields.');
-      return;
+    if (loading || !ready) return;
+    try {
+      if (!password || !confirmPassword) {
+        Alert.alert('Missing information', 'Please fill in both fields.');
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        Alert.alert('Passwords do not match', 'Please enter the same password twice.');
+        return;
+      }
+
+      setLoading(true);
+
+      const { error } = await supabase.auth.updateUser({
+        password,
+      });
+
+      setLoading(false);
+
+      if (error) {
+        Alert.alert('Password update failed', error.message);
+        return;
+      }
+
+      Alert.alert(
+        'Password updated',
+        'Your password has been changed.',
+        [
+          {
+            text: 'OK',
+            onPress: () => router.replace('/(tabs)'),
+          },
+        ]
+      );
+    } catch (error) {
+      Alert.alert('Unable to complete request', error instanceof Error ? error.message : 'Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    if (password !== confirmPassword) {
-      Alert.alert('Passwords do not match', 'Please enter the same password twice.');
-      return;
-    }
-
-    setLoading(true);
-
-    const { error } = await supabase.auth.updateUser({
-      password,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      Alert.alert('Password update failed', error.message);
-      return;
-    }
-
-    Alert.alert(
-      'Password updated',
-      'Your password has been changed.',
-      [
-        {
-          text: 'OK',
-          onPress: () => router.replace('/(tabs)'),
-        },
-      ]
-    );
   }
 
   return (
@@ -59,12 +87,14 @@ export default function ResetPasswordScreen() {
         Enter your new password below.
       </Text>
 
+      {linkError ? <Text accessibilityRole="alert">{linkError}</Text> : null}
       <TextInput
         style={styles.input}
         placeholder="New password"
         placeholderTextColor="#888"
         value={password}
         onChangeText={setPassword}
+        autoCapitalize="none"
         secureTextEntry
       />
 
@@ -74,13 +104,14 @@ export default function ResetPasswordScreen() {
         placeholderTextColor="#888"
         value={confirmPassword}
         onChangeText={setConfirmPassword}
+        autoCapitalize="none"
         secureTextEntry
       />
 
       <TouchableOpacity
         style={styles.button}
         onPress={handleUpdatePassword}
-        disabled={loading}
+        disabled={loading || !ready}
       >
         <Text style={styles.buttonText}>
           {loading ? 'Updating...' : 'Update Password'}

@@ -1,18 +1,17 @@
-import * as Linking from 'expo-linking'
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router/react-navigation'
 import { Stack, router, useSegments } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
 import 'react-native-reanimated'
-import { supabase } from '@/lib/supabase'
 import { useColorScheme } from '@/hooks/use-color-scheme'
-import { useAuth } from '@/hooks/useAuth'
+import { AuthProvider, useAuth } from '@/hooks/useAuth'
+import { authRedirect } from '@/lib/auth-routing'
 
 export const unstable_settings = {
   anchor: '(tabs)',
 }
 
-export default function RootLayout() {
+function Navigation() {
   const colorScheme = useColorScheme()
   const { user, loading } = useAuth()
   const segments = useSegments()
@@ -20,13 +19,8 @@ export default function RootLayout() {
   useEffect(() => {
     if (loading) return
 
-    const inAuthGroup = segments[0] === 'auth'
-
-    if (!user && !inAuthGroup) {
-      router.replace('/auth/login')
-    } else if (user && inAuthGroup) {
-      router.replace('/(tabs)')
-    }
+    const destination = authRedirect(Boolean(user), segments)
+    if (destination) router.replace(destination)
   }, [user, loading, segments])
 
   return (
@@ -36,39 +30,21 @@ export default function RootLayout() {
         <Stack.Screen name="auth/login" options={{ headerShown: false }} />
         <Stack.Screen name="auth/register" options={{ headerShown: false }} />
         <Stack.Screen name="auth/callback" options={{ headerShown: false }} />
-        <Stack.Screen name="event/[id]" options={{ headerShown: false }} />
-        <Stack.Screen name="registration/[eventId]" options={{ headerShown: false }} />
+        <Stack.Screen name="auth/forgot-password" options={{ title: 'Reset password' }} />
+        <Stack.Screen name="auth/reset-password" options={{ title: 'New password' }} />
+        <Stack.Screen name="auth/change-password" options={{ title: 'Change password' }} />
+        <Stack.Screen name="profile/edit" options={{ title: 'Edit profile' }} />
+        <Stack.Screen name="membership" options={{ title: 'Membership' }} />
+        <Stack.Screen name="event/[id]" options={{ title: 'Event' }} />
+        <Stack.Screen name="registration/[eventId]" options={{ title: 'Register' }} />
         <Stack.Screen name="registration/confirmation" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
   )
 
+}
 
-useEffect(() => {
-  // Handle deep link when app is already open
-  const subscription = Linking.addEventListener('url', ({ url }) => {
-    if (url.includes('auth/callback')) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
-          router.replace('/(tabs)' as any)
-        }
-      })
-    }
-  })
-
-  // Handle deep link when app opens from closed state
-  Linking.getInitialURL().then((url) => {
-    if (url && url.includes('auth/callback')) {
-      supabase.auth.getSession().then(({ data: { session } }) => {
-        if (session) {
-          router.replace('/(tabs)' as any)
-        }
-      })
-    }
-  })
-
-  return () => subscription.remove()
-}, [])
-
+export default function RootLayout() {
+  return <AuthProvider><Navigation /></AuthProvider>
 }

@@ -27,7 +27,6 @@ export async function createRegistration(
       user_id: userId,
       event_id: eventId,
       ticket_type_id: ticketTypeId,
-      //status: 'confirmed' // need to fix this 
     })
     .select()
     .single()
@@ -40,12 +39,13 @@ export async function checkExistingRegistration(
   userId: string,
   eventId: string
 ): Promise<boolean> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from('registrations')
     .select('id')
     .eq('user_id', userId)
     .eq('event_id', eventId)
-    .single()
+    .maybeSingle()
 
+  if (error) throw error
   return !!data
 }

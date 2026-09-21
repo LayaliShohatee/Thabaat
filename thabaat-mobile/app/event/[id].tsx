@@ -1,3 +1,5 @@
+import { useFocusResource } from '@/hooks/useFocusResource'
+import { Alert } from '@/lib/alert'
 import {
   View,
   Text,
@@ -6,10 +8,9 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert
 } from 'react-native'
 import { useLocalSearchParams, router } from 'expo-router'
-import { useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import { getEventById } from '@/services/eventService'
 import { checkExistingRegistration } from '@/services/registrationService'
 import { useAuth } from '@/hooks/useAuth'
@@ -18,24 +19,11 @@ import { Event } from '@/types'
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { user } = useAuth()
-  const [event, setEvent] = useState<Event | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [alreadyRegistered, setAlreadyRegistered] = useState(false)
-
-  useEffect(() => {
-    if (!id) return
-
-    Promise.all([
-      getEventById(id),
-      user ? checkExistingRegistration(user.id, id) : Promise.resolve(false)
-    ])
-      .then(([eventData, registered]) => {
-        setEvent(eventData)
-        setAlreadyRegistered(registered)
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false))
+  const load = useCallback(async (): Promise<[Event | null, boolean]> => {
+    if (!id) throw new Error('Missing event ID.')
+    return Promise.all([getEventById(id), user ? checkExistingRegistration(user.id, id) : Promise.resolve(false)])
   }, [id, user])
+  const { data: [event, alreadyRegistered], loading, error, reload } = useFocusResource(load, [null, false])
 
   if (loading) {
     return (
@@ -45,6 +33,8 @@ export default function EventDetailScreen() {
     )
   }
 
+  if (error) return <View style={styles.centered}><Text style={styles.errorText} accessibilityRole="alert">{error}</Text><TouchableOpacity accessibilityRole="button" style={styles.registerButton} onPress={reload}><Text>Try Again</Text></TouchableOpacity></View>
+
   if (!event) {
     return (
       <View style={styles.centered}>
@@ -53,7 +43,7 @@ export default function EventDetailScreen() {
     )
   }
 
-  const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
+  const formattedDate = new Date(event.event_date).toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
