@@ -3,6 +3,7 @@ import { authRedirect, parseAuthLink } from '../lib/auth-routing'
 
 describe('auth navigation', () => {
   it('protects private pages', () => expect(authRedirect(false, ['(tabs)', 'profile'])).toBe('/auth/login'))
+  it('requires login for payment checks, even with a claimed success query', () => expect(authRedirect(false, ['payments', 'check'])).toBe('/auth/login'))
   it('protects change-password from signed-out visitors', () => expect(authRedirect(false, ['auth', 'change-password'])).toBe('/auth/login'))
   it('keeps signed-in password change accessible', () => expect(authRedirect(true, ['auth', 'change-password'])).toBeNull())
   it('allows recovery before and after session restoration', () => {

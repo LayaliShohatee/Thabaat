@@ -6,6 +6,7 @@ const user = { id: '00000000-0000-0000-0000-000000000001', aud: 'authenticated',
 const event = { id: '10000000-0000-0000-0000-000000000001', title: 'Local fixture community event', description: 'Synthetic event for local regression testing only.', event_date: new Date(Date.now() + 86400000 * 7).toISOString(), location: 'Local test venue', image_url: null, speaker_name: 'Demo speaker', capacity: 10, created_at: new Date().toISOString() }
 const tickets = [{ id: '20000000-0000-0000-0000-000000000001', event_id: event.id, name: 'Free admission', price: 0, quantity: 10 }, { id: '20000000-0000-0000-0000-000000000002', event_id: event.id, name: 'Paid ticket unavailable', price: 10, quantity: 10 }]
 const registrations = []
+let paymentAttempt = null
 const session = () => {
   const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url')
   const expires_at = Math.floor(Date.now() / 1000) + 3600
@@ -32,6 +33,21 @@ const server = http.createServer(async (req, res) => {
     return send(200, user)
   }
   if (url.pathname === '/auth/v1/logout') return send(200, {})
+  // Synthetic local-only billing state. Never connected to CharityStack.
+  if (url.pathname === '/__fixture/payment-status' && req.method === 'POST') {
+    if (!paymentAttempt || !['completed','failed','refunded','pending'].includes(data.status)) return send(400, { error: 'Create fixture checkout first' })
+    paymentAttempt.status = data.status
+    paymentAttempt.provider_payment_id = data.status === 'pending' ? null : 'LOCAL-SIMULATION-NOT-A-PAYMENT'
+    paymentAttempt.verified_at = data.status === 'pending' ? null : new Date().toISOString()
+    return send(200, { fixture: true })
+  }
+  if (url.pathname === '/rest/v1/rpc/begin_internal_payment_check') {
+    paymentAttempt ??= { id: '40000000-0000-0000-0000-000000000001', status: 'pending', provider_payment_id: null, verified_at: null, expected_amount_cents: 100 }
+    return send(200, paymentAttempt)
+  }
+  if (url.pathname === '/rest/v1/checkout_attempts') return send(200, paymentAttempt)
+  if (url.pathname === '/rest/v1/memberships') return send(200, null)
+  if (['/rest/v1/membership_plans','/rest/v1/donation_campaigns','/rest/v1/payment_records'].includes(url.pathname)) return send(200, [])
   if (url.pathname === '/rest/v1/events') {
     if (url.searchParams.has('id')) return send(200, url.searchParams.get('id') === `eq.${event.id}` ? { ...event, ticket_types: tickets } : null)
     return send(200, [event])

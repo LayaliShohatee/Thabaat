@@ -334,3 +334,23 @@ Still pending: owner review/application of the migration to the original shared 
 Dependencies, generated iOS files, compiled apps, `.env` files, Apple certificates/profiles, and personal device identifiers stay on each developer's machine. The branch supplies source, lockfiles, configuration examples, tests, and these reproduction steps.
 
 For everyday work, start the configured backend when needed, start Metro with `npx expo start --dev-client` inside mobile, and open your installed development app. Run the relevant checks before publishing changes. Keep working on a separate branch and leave the original main branch unmerged until the team explicitly decides otherwise.
+
+## 13. Internal CharityStack payment check
+
+The development app now has **Profile → Payment Check** for the separate [Thabaat App — Internal Payment Check](https://charitystack.com/attend/5451350b-cef4-4e59-8240-aa457d4f7c7e) form. This is a **live $1 USD checkout, not a sandbox**. It has one ticket available; review the provider's final total and fees before any payment. Do not use test card numbers on the live form. The team's existing CharityStack forms are unchanged.
+
+To enable the entry on your own development build, add this to your ignored mobile `.env.local`, restart Metro, and reload the app:
+
+```dotenv
+EXPO_PUBLIC_ENABLE_PAYMENT_CHECK=true
+```
+
+Leave it unset or `false` to hide the entry. Release builds block the route's checkout action even if the flag is set. The iPhone uses the existing `expo-web-browser` native module to display CharityStack inside the app; web opens a new tab. This change adds no native dependency and requires no database migration. No personal information or Supabase credentials are passed in the checkout URL.
+
+Test the screen, open checkout, then close it without paying to verify the return path. A browser close, URL parameter, or successful page load never creates a registration or confirms payment. If the team chooses to make a real payment, verify the matching form, amount, payment status, and receipt in CharityStack. This form does not grant event admission or add an item to My Events.
+
+Automatic paid registrations remain blocked pending server-only CharityStack API access, a verified webhook contract that reliably links a payment to an app order, and idempotent payment/inventory handling. Never add a CharityStack secret key to `EXPO_PUBLIC_*`. This internal checkout screen is the first integration step, not a completed paid-ticket system.
+
+### Membership and payment confirmation work
+
+See [PAYMENTS_INTEGRATION.md](PAYMENTS_INTEGRATION.md) for the new membership, donation, history and internal checkout screens, the staging migration, the exact live-verification blockers, and the acceptance test. The app-side return/status flow is implemented; automatic CharityStack confirmation and paid membership activation are not connected yet. Do not use a browser return as proof of payment.

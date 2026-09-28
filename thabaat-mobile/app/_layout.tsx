@@ -35,6 +35,9 @@ function Navigation() {
         <Stack.Screen name="auth/change-password" options={{ title: 'Change password' }} />
         <Stack.Screen name="profile/edit" options={{ title: 'Edit profile' }} />
         <Stack.Screen name="membership" options={{ title: 'Membership' }} />
+        <Stack.Screen name="donations" options={{ title: 'Support Thabaat' }} />
+        <Stack.Screen name="payments/history" options={{ title: 'Payment History' }} />
+        <Stack.Screen name="payments/check" options={{ title: 'Payment Check' }} />
         <Stack.Screen name="event/[id]" options={{ title: 'Event' }} />
         <Stack.Screen name="registration/[eventId]" options={{ title: 'Register' }} />
         <Stack.Screen name="registration/confirmation" options={{ headerShown: false }} />
