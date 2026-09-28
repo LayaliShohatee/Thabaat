@@ -37,6 +37,8 @@ function Navigation() {
         <Stack.Screen name="membership" options={{ title: 'Membership' }} />
         <Stack.Screen name="donations" options={{ title: 'Support Thabaat' }} />
         <Stack.Screen name="payments/history" options={{ title: 'Payment History' }} />
+        <Stack.Screen name="payments/event/[eventId]" options={{ title: 'Paid Event Checkout' }} />
+        <Stack.Screen name="event/access/[id]" options={{ title: 'Event Access' }} />
         <Stack.Screen name="payments/check" options={{ title: 'Payment Check' }} />
         <Stack.Screen name="event/[id]" options={{ title: 'Event' }} />
         <Stack.Screen name="registration/[eventId]" options={{ title: 'Register' }} />

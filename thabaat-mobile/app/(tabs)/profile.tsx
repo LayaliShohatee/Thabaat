@@ -3,6 +3,7 @@ import { ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { registerForPushNotifications } from '@/lib/notifications'
+import { paidTestEventId } from '@/lib/paid-event-test'
 import { isPaymentCheckEnabled } from '@/lib/payment-check'
 import { router } from 'expo-router'
 
@@ -36,7 +37,7 @@ export default function ProfileScreen() {
     <TouchableOpacity accessibilityRole="button" style={styles.button} onPress={() => router.push('/membership')}><Text>Membership</Text></TouchableOpacity>
     <TouchableOpacity accessibilityRole="button" style={styles.button} onPress={() => router.push('/donations')}><Text>Support Thabaat</Text></TouchableOpacity>
     <TouchableOpacity accessibilityRole="button" style={styles.button} onPress={() => router.push('/payments/history')}><Text>Payment History</Text></TouchableOpacity>
-    {isPaymentCheckEnabled && <TouchableOpacity accessibilityRole="button" style={styles.button} onPress={() => router.push('/payments/check')}><Text>Payment Check · $1 real payment</Text></TouchableOpacity>}
+    {isPaymentCheckEnabled && <TouchableOpacity accessibilityRole="button" style={styles.button} onPress={() => router.push(`/event/${paidTestEventId}`)}><Text>Paid Event Test · $1 real payment</Text></TouchableOpacity>}
     <TouchableOpacity accessibilityRole="button" style={styles.button} disabled={busy} onPress={enableNotifications}><Text>Enable Notifications</Text></TouchableOpacity>
     <TouchableOpacity accessibilityRole="button" style={styles.button} disabled={busy} onPress={logout}><Text>{busy ? 'Please wait...' : 'Log Out'}</Text></TouchableOpacity>
     {message ? <Text style={styles.detail} accessibilityRole="alert">{message}</Text> : null}

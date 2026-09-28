@@ -329,28 +329,26 @@ The full comparison linked at the top lists each added, edited, or removed sourc
 
 The original Mac completed unsigned and signed native iPhone Debug builds, signature checks, device installation, developer-profile trust, app launch, and Metro bundle delivery. The user confirmed the login/home screen. The automated and isolated browser checks above also passed. Dependency review found 14 moderate mobile advisories and zero high/critical ones; the backend audit found none at that time. Forced remediation proposed incompatible Expo changes and was not applied.
 
-Still pending: owner review/application of the migration to the original shared project, password-recovery delivery, profile-edit persistence, registration submission from the iPhone, paid-team notification configuration and delivery, and broader device/release testing. Membership is a preview. Payments, donations, a full admin portal, five-role authorization, QR check-in, and the media library are not implemented here. See the requirements review for coverage by requirement ID.
+Still pending: owner review/application of the migration to the original shared project, password-recovery delivery, profile-edit persistence, registration submission from the iPhone, paid-team notification configuration and delivery, and broader device/release testing. Membership status, donation catalog and payment-history screens now exist. Paid membership activation and automatic payment verification remain incomplete. A separate paid-only event supports a real checkout followed by manual operator verification. A full admin portal, five-role authorization, QR check-in and media library remain outstanding. See the requirements review for coverage by requirement ID.
 
 Dependencies, generated iOS files, compiled apps, `.env` files, Apple certificates/profiles, and personal device identifiers stay on each developer's machine. The branch supplies source, lockfiles, configuration examples, tests, and these reproduction steps.
 
 For everyday work, start the configured backend when needed, start Metro with `npx expo start --dev-client` inside mobile, and open your installed development app. Run the relevant checks before publishing changes. Keep working on a separate branch and leave the original main branch unmerged until the team explicitly decides otherwise.
 
-## 13. Internal CharityStack payment check
+## 13. Paid-event, membership and payment work
 
-The development app now has **Profile → Payment Check** for the separate [Thabaat App — Internal Payment Check](https://charitystack.com/attend/5451350b-cef4-4e59-8240-aa457d4f7c7e) form. This is a **live $1 USD checkout, not a sandbox**. It has one ticket available; review the provider's final total and fees before any payment. Do not use test card numbers on the live form. The team's existing CharityStack forms are unchanged.
+The development app now has **Profile → Paid Event Test · $1 real payment**. It opens **[STAGING] $1 Paid Access Test**, with one paid ticket and no free option. The reused CharityStack internal test form is now titled **Thabaat App — Paid Access Test** and asks for an app checkout reference. No other organization forms were changed.
 
-To enable the entry on your own development build, add this to your ignored mobile `.env.local`, restart Metro, and reload the app:
+Start with [PAID_EVENT_TEST.md](PAID_EVENT_TEST.md): it contains the exact migration order, staging seed, phone steps, operator verification procedure, private-access checks and limits. [PAYMENTS_INTEGRATION.md](PAYMENTS_INTEGRATION.md) covers membership/donation/history screens and the remaining automatic-integration requirements.
+
+Enable the development entry in your ignored mobile `.env.local`:
 
 ```dotenv
 EXPO_PUBLIC_ENABLE_PAYMENT_CHECK=true
 ```
 
-Leave it unset or `false` to hide the entry. Release builds block the route's checkout action even if the flag is set. The iPhone uses the existing `expo-web-browser` native module to display CharityStack inside the app; web opens a new tab. This change adds no native dependency and requires no database migration. No personal information or Supabase credentials are passed in the checkout URL.
+Restart Metro and reload the app. The existing Expo WebBrowser module is used; there are no new native dependencies. Release builds block the internal checkout action. These features require the new database migrations described in the test guide.
 
-Test the screen, open checkout, then close it without paying to verify the return path. A browser close, URL parameter, or successful page load never creates a registration or confirms payment. If the team chooses to make a real payment, verify the matching form, amount, payment status, and receipt in CharityStack. This form does not grant event admission or add an item to My Events.
+**A real payment alone does not immediately grant access.** For this controlled test, an operator independently checks CharityStack and records approval through the restricted database function. The app then shows a confirmed ticket and unlocks its private event page. No payment has been made or approved during implementation. Automatic verification, recurring paid membership activation and subscription management still need provider integration. The API/webhook access request was emailed to CharityStack support on September 28, 2026.
 
-Automatic paid registrations remain blocked pending server-only CharityStack API access, a verified webhook contract that reliably links a payment to an app order, and idempotent payment/inventory handling. Never add a CharityStack secret key to `EXPO_PUBLIC_*`. This internal checkout screen is the first integration step, not a completed paid-ticket system.
-
-### Membership and payment confirmation work
-
-See [PAYMENTS_INTEGRATION.md](PAYMENTS_INTEGRATION.md) for the new membership, donation, history and internal checkout screens, the staging migration, the exact live-verification blockers, and the acceptance test. The app-side return/status flow is implemented; automatic CharityStack confirmation and paid membership activation are not connected yet. Do not use a browser return as proof of payment.
+All source and setup changes remain on `codex/expo57-mobile-fixes`. Main and the original hosted database remain separate. Never commit environment secrets, provider keys, Apple credentials, personal device identifiers or dependencies.

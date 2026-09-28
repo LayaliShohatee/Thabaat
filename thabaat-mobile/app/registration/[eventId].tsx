@@ -14,6 +14,8 @@ import { getEventById } from '@/services/eventService'
 import { createRegistration } from '@/services/registrationService'
 import { sendRegistrationConfirmation } from '@/services/notificationService'
 import { useAuth } from '@/hooks/useAuth'
+import { paidTestTicketId } from '@/lib/paid-event-test'
+import { isPaymentCheckEnabled } from '@/lib/payment-check'
 import { TicketType } from '@/types'
 
 export default function RegistrationScreen() {
@@ -32,6 +34,7 @@ export default function RegistrationScreen() {
   const handleConfirmRegistration = async () => {
     if (submitting || !user || !event || !selectedTicket) return
 
+    if (selectedTicket.id === paidTestTicketId && isPaymentCheckEnabled) { router.push(`/payments/event/${event.id}`); return }
     if (selectedTicket.price > 0) { Alert.alert('Payment unavailable', 'Paid ticket checkout is not connected yet.'); return }
     setSubmitting(true)
 
@@ -112,10 +115,10 @@ export default function RegistrationScreen() {
         <TouchableOpacity
           style={[styles.confirmButton, submitting && styles.confirmButtonDisabled]}
           onPress={handleConfirmRegistration}
-          disabled={submitting || !selectedTicket || selectedTicket.price > 0}
+          disabled={submitting || !selectedTicket || (selectedTicket.price > 0 && !(isPaymentCheckEnabled && selectedTicket.id === paidTestTicketId))}
         >
           <Text style={styles.confirmButtonText}>
-            {submitting ? 'Confirming...' : selectedTicket && selectedTicket.price > 0 ? 'Paid checkout not available' : 'Confirm Registration'}
+            {submitting ? 'Confirming...' : selectedTicket?.id === paidTestTicketId && isPaymentCheckEnabled ? 'Continue to $1 paid test' : selectedTicket && selectedTicket.price > 0 ? 'Paid checkout not available' : 'Confirm Registration'}
           </Text>
         </TouchableOpacity>
 

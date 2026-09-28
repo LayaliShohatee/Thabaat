@@ -1,3 +1,5 @@
+> Latest update (September 28, 2026): membership/payment screens and a manually verified paid-only event test were added after the initial SDK/auth review. See [PAID_EVENT_TEST.md](PAID_EVENT_TEST.md) and [PAYMENTS_INTEGRATION.md](PAYMENTS_INTEGRATION.md) for current behavior, setup and limits. Automatic provider verification remains pending.
+
 # Expo SDK 57 and mobile prototype review
 
 Reviewed September 21, 2026 against main `abba4c61610096c6eb518819d553641cd3d3c29c`, the mobile/backend code, and the supplied project requirements. All four existing feature branches were already ancestors of that main commit.

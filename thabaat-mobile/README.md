@@ -2,6 +2,8 @@
 
 Start with the [complete team setup guide](../docs/TEAM_SETUP.md) for the full environment, Supabase, backend, iPhone signing, testing, and troubleshooting walkthrough.
 
+For the latest payment feature, follow [Paid-only iPhone event test](../docs/PAID_EVENT_TEST.md). It documents the complete setup and manual verification required to unlock paid access.
+
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 ## Get started

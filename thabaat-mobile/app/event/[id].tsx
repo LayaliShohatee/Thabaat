@@ -14,6 +14,7 @@ import { useCallback } from 'react'
 import { getEventById } from '@/services/eventService'
 import { checkExistingRegistration } from '@/services/registrationService'
 import { useAuth } from '@/hooks/useAuth'
+import { paidTestEventId } from '@/lib/paid-event-test'
 import { Event } from '@/types'
 
 export default function EventDetailScreen() {
@@ -80,6 +81,7 @@ export default function EventDetailScreen() {
       </View>
 
       <View style={styles.footer}>
+        {alreadyRegistered && id === paidTestEventId && <TouchableOpacity accessibilityRole="button" style={styles.registerButton} onPress={() => router.push(`/event/access/${id}`)}><Text style={styles.registerButtonText}>Open paid event access</Text></TouchableOpacity>}
         <TouchableOpacity
           style={[
             styles.registerButton,

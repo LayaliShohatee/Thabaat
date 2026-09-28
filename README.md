@@ -1,6 +1,6 @@
 # Thabaat
 
-This branch contains the **complete mobile and backend projects**, including unchanged files inherited from the original code, plus the Expo SDK 57 fixes. It is not just a review document or a patch.
+This branch contains the **complete mobile and backend projects**, including unchanged files inherited from the original code, plus the Expo SDK 57 fixes, membership/payment screens and the manually verified paid-event test. It is not just a review document or a patch.
 
 ## Two separate versions
 
@@ -18,6 +18,8 @@ Publishing this branch does not merge it into main. Keep the pull request unmerg
 | [thabaat-backend](thabaat-backend/) | Express notification service, authentication middleware, configuration, dependency lockfile, and tests |
 | [Database files](thabaat-mobile/database/) | Reference schema, integrity migration, and synthetic staging seed; applied to separate staging, with the original hosted database unchanged |
 | [Review](docs/mobile-sdk57-review.md) | What changed, verification evidence, requirement coverage, and remaining work |
+| [Paid-only iPhone event test](docs/PAID_EVENT_TEST.md) | Staging migration/seed, $1 phone checkout, manual payment verification, access gating and test evidence |
+| [Payment integration](docs/PAYMENTS_INTEGRATION.md) | Hosted checkout behavior, membership/donation status and remaining API/webhook work |
 | [Complete team setup](docs/TEAM_SETUP.md) | Everything from cloning and environment configuration through database setup, iPhone signing, tests, troubleshooting, and the change summary |
 
 ## Get the updated version

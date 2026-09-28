@@ -2,10 +2,17 @@
 import http from 'node:http'
 const host = '127.0.0.1'
 const port = 54329
+const paidFixture = process.env.FIXTURE_PAID_EVENT === 'true'
 const user = { id: '00000000-0000-0000-0000-000000000001', aud: 'authenticated', role: 'authenticated', email: 'demo@example.invalid', user_metadata: { full_name: 'Local Demo' }, app_metadata: { provider: 'email' }, created_at: new Date().toISOString() }
 const event = { id: '10000000-0000-0000-0000-000000000001', title: 'Local fixture community event', description: 'Synthetic event for local regression testing only.', event_date: new Date(Date.now() + 86400000 * 7).toISOString(), location: 'Local test venue', image_url: null, speaker_name: 'Demo speaker', capacity: 10, created_at: new Date().toISOString() }
 const tickets = [{ id: '20000000-0000-0000-0000-000000000001', event_id: event.id, name: 'Free admission', price: 0, quantity: 10 }, { id: '20000000-0000-0000-0000-000000000002', event_id: event.id, name: 'Paid ticket unavailable', price: 10, quantity: 10 }]
+if (paidFixture) {
+ event.id = '71000000-0000-4000-8000-000000000001'
+ event.title = 'Local fixture paid access test'
+ tickets.splice(0, tickets.length, { id: '72000000-0000-4000-8000-000000000001', event_id: event.id, name: 'Paid test access', price: 1, quantity: 1 })
+}
 const registrations = []
+let paidOrder = null
 let paymentAttempt = null
 const session = () => {
   const encode = value => Buffer.from(JSON.stringify(value)).toString('base64url')
@@ -41,6 +48,18 @@ const server = http.createServer(async (req, res) => {
     paymentAttempt.verified_at = data.status === 'pending' ? null : new Date().toISOString()
     return send(200, { fixture: true })
   }
+  if (paidFixture && url.pathname === '/__fixture/paid-event-status' && req.method === 'POST') {
+    if (!paidOrder || !['completed','refunded'].includes(data.status)) return send(400,{error:'Prepare fixture order first'})
+    paidOrder.status = data.status
+    if (data.status === 'completed' && !registrations.length) registrations.push({ id:'30000000-0000-0000-0000-000000000001', user_id:user.id,event_id:event.id,ticket_type_id:tickets[0].id,status:'confirmed',created_at:new Date().toISOString() })
+    return send(200,{fixture:true})
+  }
+  if (paidFixture && url.pathname === '/rest/v1/rpc/begin_paid_event_checkout') {
+    paidOrder ??= { id:'50000000-0000-0000-0000-000000000001',event_id:event.id,ticket_type_id:tickets[0].id,form_id:'5451350b-cef4-4e59-8240-aa457d4f7c7e',amount_cents:100,currency:'USD',status:'pending' }
+    return send(200,paidOrder)
+  }
+  if (url.pathname === '/rest/v1/paid_event_orders') return send(200,paidOrder)
+  if (url.pathname === '/rest/v1/event_access_details') return send(200,paidOrder?.status === 'completed' ? {access_text:'LOCAL SIMULATION: paid event access unlocked.'} : null)
   if (url.pathname === '/rest/v1/rpc/begin_internal_payment_check') {
     paymentAttempt ??= { id: '40000000-0000-0000-0000-000000000001', status: 'pending', provider_payment_id: null, verified_at: null, expected_amount_cents: 100 }
     return send(200, paymentAttempt)
