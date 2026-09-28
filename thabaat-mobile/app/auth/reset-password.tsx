@@ -3,6 +3,10 @@ import { consumeAuthLink } from '@/lib/auth-links';
 import { Alert } from '@/lib/alert'
 import { useEffect, useState } from 'react';
 import {
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -16,24 +20,27 @@ export default function ResetPasswordScreen() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const url = Linking.useURL();
-  const [ready, setReady] = useState(false);
-  const [linkError, setLinkError] = useState('');
+  const url = Linking.useLinkingURL();
+  const [attempt, setAttempt] = useState(0);
+  const [verification, setVerification] = useState<{ url: string | null; attempt: number; error: string } | null>(null);
+  const current = verification?.url === url && verification?.attempt === attempt;
+  const linkError = current ? verification.error : '';
+  const ready = Boolean(current && !linkError);
   useEffect(() => {
     let active = true;
     async function verifyLink() {
       try {
-        const incoming = url ?? await Linking.getInitialURL();
+        const incoming = url;
         if (!incoming) throw new Error('Open the password reset link from your email.');
         await consumeAuthLink(incoming);
-        if (active) { setReady(true); setLinkError(''); }
+        if (active) setVerification({ url, attempt, error: '' });
       } catch (err) {
-        if (active) { setReady(false); setLinkError(err instanceof Error ? err.message : 'This reset link is invalid.'); }
+        if (active) setVerification({ url, attempt, error: err instanceof Error ? err.message : 'This reset link is invalid.' });
       }
     }
     void verifyLink();
     return () => { active = false; };
-  }, [url]);
+  }, [url, attempt]);
 
 
   async function handleUpdatePassword() {
@@ -80,16 +87,27 @@ export default function ResetPasswordScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView style={styles.page} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <ScrollView contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag">
       <Text style={styles.title}>Create a New Password</Text>
 
       <Text style={styles.subtitle}>
         Enter your new password below.
       </Text>
 
-      {linkError ? <Text accessibilityRole="alert">{linkError}</Text> : null}
+      {!ready && !linkError ? <View style={styles.status}>
+        <ActivityIndicator color="#159A8C" />
+        <Text style={styles.statusText} accessibilityLiveRegion="polite">Verifying your reset link...</Text>
+      </View> : null}
+      {linkError ? <View style={styles.status}>
+        <Text style={styles.error} accessibilityRole="alert">{linkError}</Text>
+        <TouchableOpacity accessibilityRole="button" onPress={() => setAttempt(value => value + 1)}>
+          <Text style={styles.retry}>Try verifying again</Text>
+        </TouchableOpacity>
+      </View> : null}
       <TextInput
         style={styles.input}
+        accessibilityLabel="New password"
         placeholder="New password"
         placeholderTextColor="#888"
         value={password}
@@ -100,6 +118,7 @@ export default function ResetPasswordScreen() {
 
       <TextInput
         style={styles.input}
+        accessibilityLabel="Confirm new password"
         placeholder="Confirm new password"
         placeholderTextColor="#888"
         value={confirmPassword}
@@ -109,21 +128,26 @@ export default function ResetPasswordScreen() {
       />
 
       <TouchableOpacity
-        style={styles.button}
+        accessibilityRole="button"
+        accessibilityState={{ disabled: loading || !ready, busy: loading }}
+        style={[styles.button, (loading || !ready) && styles.disabledButton]}
         onPress={handleUpdatePassword}
         disabled={loading || !ready}
       >
         <Text style={styles.buttonText}>
-          {loading ? 'Updating...' : 'Update Password'}
+          {loading ? 'Updating...' : !ready && !linkError ? 'Verifying link...' : 'Update Password'}
         </Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  page: { flex: 1, backgroundColor: '#FFFFFF' },
   container: {
-    flex: 1,
+    flexGrow: 1,
+    paddingVertical: 24,
     backgroundColor: '#FFFFFF',
     justifyContent: 'center',
     paddingHorizontal: 24,
@@ -165,6 +189,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
 
+  disabledButton: { opacity: 0.45 },
+  status: { marginBottom: 18, alignItems: 'center', gap: 10 },
+  statusText: { color: '#666666', textAlign: 'center' },
+  error: { color: '#B42318', textAlign: 'center' },
+  retry: { color: '#159A8C', fontWeight: '600', padding: 10 },
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,

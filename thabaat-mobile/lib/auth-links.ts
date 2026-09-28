@@ -12,7 +12,7 @@ let pending: Promise<boolean> | null = null
 export function consumeAuthLink(url: string): Promise<boolean> {
   if (url === lastUrl && pending) return pending
   lastUrl = url
-  pending = (async () => {
+  const request = (async () => {
     const link = parseAuthLink(url)
     if (link.error) throw new Error(link.error)
     if (link.code) {
@@ -27,5 +27,11 @@ export function consumeAuthLink(url: string): Promise<boolean> {
     if (!data.session) throw new Error('This link is missing or expired. Request a new email link.')
     return link.recovery
   })()
-  return pending
+  pending = request
+  // A failed exchange must be retryable (for example after restoring Wi-Fi).
+  // Do not let an older failure discard a newer link's request.
+  void request.catch(() => {
+    if (pending === request) { lastUrl = null; pending = null }
+  })
+  return request
 }

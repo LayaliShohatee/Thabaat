@@ -5,13 +5,13 @@ import { router } from 'expo-router';
 import { consumeAuthLink } from '@/lib/auth-links';
 
 export default function AuthCallbackScreen() {
-  const url = Linking.useURL();
+  const url = Linking.useLinkingURL();
   const [error, setError] = useState('');
   useEffect(() => {
     let active = true;
     async function finish() {
       try {
-        const incoming = url ?? await Linking.getInitialURL();
+        const incoming = url;
         if (!incoming) throw new Error('This link is missing. Please sign in or request a new link.');
         const recovery = await consumeAuthLink(incoming);
         if (active) router.replace(recovery ? '/auth/reset-password' : '/(tabs)');
