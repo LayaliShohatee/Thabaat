@@ -4,6 +4,16 @@ export type StaffRole = 'volunteer' | 'organizer' | 'admin'
 export type Permissions = { user_id: string; staff_role: StaffRole | null; can_manage_events: boolean; can_manage_roles: boolean; paid_member: boolean }
 export type RoleAccount = { user_id: string; full_name: string; email: string; staff_role: StaffRole | null }
 export type ManagedEvent = Event & { created_by?: string | null; archived?: boolean }
+export type EventAttendees = {
+ attendees: { registration_id:string; full_name:string; ticket_name:string; status:'confirmed'|'pending'|'cancelled'; registered_at:string }[]
+ counts: { total:number; confirmed:number; pending:number; cancelled:number }
+ capacity:number; reserved:number
+}
+export async function getEventAttendees(eventId:string,offset=0):Promise<EventAttendees> {
+ const {data,error}=await supabase.rpc('get_event_attendees',{p_event_id:eventId,p_offset:offset})
+ if(error) throw failure(error)
+ return data
+}
 function failure(error: { code?: string; message: string }) {
  if (['PGRST202','42P01','42703'].includes(error.code || '')) return new Error('Events and permissions setup is not yet installed on this database. Ask the team to apply the events/permissions migration.')
  return new Error(error.message)
