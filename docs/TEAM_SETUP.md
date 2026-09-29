@@ -352,3 +352,6 @@ Restart Metro and reload the app. The existing Expo WebBrowser module is used; t
 **A real payment alone does not immediately grant access.** For this controlled test, an operator independently checks CharityStack and records approval through the restricted database function. The app then shows a confirmed ticket and unlocks its private event page. No payment has been made or approved during implementation. Automatic verification, recurring paid membership activation and subscription management still need provider integration. The API/webhook access request was emailed to CharityStack support on September 28, 2026.
 
 All source and setup changes remain on `codex/expo57-mobile-fixes`. Main and the original hosted database remain separate. Never commit environment secrets, provider keys, Apple credentials, personal device identifiers or dependencies.
+# September 29 payment backend addition
+
+See [CharityStack backend setup](CHARITYSTACK_BACKEND.md) for the new optional server-created checkout links, signed webhook inbox and app-return screen. Apply its transport migration only after the prior paid-event migration. This integration remains disabled pending private API credentials and provider test setup; the existing manual test is unchanged.

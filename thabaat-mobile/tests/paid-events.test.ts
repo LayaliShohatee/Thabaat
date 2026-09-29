@@ -19,13 +19,17 @@ beforeAll(async()=>{
  CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;
  GRANT USAGE ON SCHEMA auth,public TO authenticated; GRANT EXECUTE ON FUNCTION auth.uid() TO authenticated;`)
  for(const file of ['schema.sql','migrations/20260921_prototype_integrity.sql','migrations/20260928_membership_billing.sql','migrations/20260928_paid_event_test.sql','migrations/20260928_paid_event_test.sql','paid_event_test_seed.sql','paid_event_test_seed.sql']) await db.exec(await readFile(new URL('../database/'+file,import.meta.url),'utf8'))
+ for (let i=0;i<2;i++) await db.exec(await readFile(new URL('../database/migrations/20260929_charitystack_transport.sql',import.meta.url),'utf8'))
  await db.query("INSERT INTO auth.users VALUES($1,'one@example.invalid','{}'),($2,'two@example.invalid','{}')",[u1,u2])
  await db.exec('GRANT SELECT,INSERT,UPDATE,DELETE ON registrations TO authenticated; GRANT SELECT ON events,ticket_types TO authenticated')
 },30000)
-beforeEach(async()=>{await asOperator();await db.exec("TRUNCATE registrations,paid_event_orders,payment_records,checkout_attempts; UPDATE events SET capacity=1,event_date=now()+interval '1 day'; UPDATE ticket_types SET price=1,quantity=1; UPDATE paid_event_checkout_configs SET enabled=true;");await asUser()})
+beforeEach(async()=>{await asOperator();await db.exec("TRUNCATE charitystack_checkout_links,charitystack_webhook_inbox,registrations,paid_event_orders,payment_records,checkout_attempts; UPDATE events SET capacity=1,event_date=now()+interval '1 day'; UPDATE ticket_types SET price=1,quantity=1; UPDATE paid_event_checkout_configs SET enabled=true;");await asUser()})
 afterAll(async()=>{await db?.close()})
 it('creates a paid-only event with no free ticket',async()=>expect((await db.query('SELECT price FROM ticket_types WHERE event_id=$1',[event])).rows).toEqual([{price:'1.00'}]))
 it('keeps private content locked before payment',async()=>expect((await db.query('SELECT * FROM event_access_details')).rows).toHaveLength(0))
+it('keeps provider transport and donor payloads inaccessible to app accounts', async()=>{
+ for (const table of ['charitystack_checkout_links','charitystack_webhook_inbox']) await expect(db.query('SELECT * FROM '+table)).rejects.toThrow(/permission denied/)
+})
 it('reuses a pending checkout without registering the user',async()=>{const id=await begin();expect(await begin()).toBe(id);expect((await db.query('SELECT * FROM registrations')).rows).toHaveLength(0)})
 it('blocks fake paid registration',async()=>{await begin();await expect(db.query('INSERT INTO registrations(user_id,event_id,ticket_type_id) VALUES($1,$2,$3)',[u1,event,ticket])).rejects.toThrow('requires verified payment')})
 it('prevents a client approving or modifying payment',async()=>{const id=await begin();await expect(confirm(id)).rejects.toThrow(/permission denied/);await expect(db.query("UPDATE paid_event_orders SET status='completed',provider_payment_id='fake',verified_at=now() WHERE id=$1",[id])).rejects.toThrow(/permission denied/)})

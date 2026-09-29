@@ -15,3 +15,12 @@ export function validateCheckoutUrl(value: string): string {
  if (url.protocol !== 'https:' || !['charitystack.com', 'www.charitystack.com'].includes(url.hostname) || url.port || url.username || url.password || url.search || url.hash || !/^\/(donate|attend)\/[a-zA-Z0-9-]+\/?$/.test(url.pathname)) throw new Error('This checkout link is not configured correctly. Please contact Thabaat.')
  return url.toString()
 }
+// Server-created hosted links permit only the documented elementid parameter.
+export function validatePrefilledCheckoutUrl(value: string, formId: string): string {
+ const url = new URL(value)
+ const linkId = url.searchParams.get('elementid')
+ if (!linkId || !/^[a-zA-Z0-9-]+$/.test(linkId) || [...url.searchParams.keys()].length !== 1 || url.pathname !== `/attend/${formId}`) throw new Error('Invalid prefilled checkout link.')
+ const base = new URL(url.toString()); base.search = ''
+ validateCheckoutUrl(base.toString())
+ return url.toString()
+}

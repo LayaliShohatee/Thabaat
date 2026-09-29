@@ -4,6 +4,8 @@ Start with the [complete team setup guide](../docs/TEAM_SETUP.md) to reproduce b
 
 Express API for registration push confirmations. Authentication and the event database use Supabase. The mobile app lives in `../thabaat-mobile`.
 
+The optional CharityStack checkout and signed-webhook transport is documented in [CHARITYSTACK_BACKEND.md](../docs/CHARITYSTACK_BACKEND.md). It is disabled by default; it does not automatically grant paid access. The guide covers credentials, test/live separation, database migration, deployment and unresolved provider contracts.
+
 ## Local setup
 
 ```bash

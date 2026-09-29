@@ -2,6 +2,12 @@
 
 Work stays on `codex/expo57-mobile-fixes`. Do not merge into `main` to test this.
 
+## September 29 update: provider API preparation
+
+CharityStack support confirmed that Omar may already have the live API key, separate `cs_test_` credentials can be provisioned, checkout email remains editable, and an automatic app return is a proposed feature rather than an available contract. No reply was sent to this follow-up. See [backend payment setup](CHARITYSTACK_BACKEND.md) for the new implementation and activation checklist.
+
+Server-created event links, durable signed webhook capture, and the `thabaat://paid` return screen are now implemented and locally tested. This is **not automatic payment fulfillment**: webhook events are held for review, and return parameters never approve access. Provider credentials, hosted deployment, and a reliable payer/order association are still required. The new transport migration has **not** been applied to hosted staging, and API checkout remains disabled.
+
 ## Current implementation
 
 The current internal flow is the [paid-only event test](PAID_EVENT_TEST.md). Profile links to Membership, Support Thabaat, Payment History and (development only, opt-in) **Paid Event Test · $1 real payment**. The old `/payments/check` route redirects to the new event checkout. The legacy generic checkout records are retained for audit/history and are not a substitute for paid-event orders.
