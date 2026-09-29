@@ -1,5 +1,7 @@
 # Thabaat: complete team setup and handoff
 
+For the September 29 membership practice flow and UC2 coverage, see [Membership flows](MEMBERSHIP_FLOWS.md). It can be tested without provider credentials or a charge.
+
 Updated September 21, 2026. This guide collects the work from the original Expo connection/account-creation investigation through the successful signed iPhone installation. Follow it to reproduce the development environment on your own computer. It also identifies configuration that is still pending so a working login screen is not mistaken for a fully deployed product.
 
 ## 1. Choose the updated code and keep the original separate

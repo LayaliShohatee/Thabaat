@@ -4,6 +4,7 @@ import { router } from 'expo-router'
 import { useFocusResource } from '@/hooks/useFocusResource'
 import { emptyBilling, membershipIsActive, money, periodLabel } from '@/lib/billing'
 import { getBilling, openHostedCheckout } from '@/services/billingService'
+import { membershipSummary } from '@/lib/membership-state'
 
 function BillingButton({ label, onPress, disabled = false }: { label: string; onPress: () => void; disabled?: boolean }) {
  return <TouchableOpacity accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[styles.button, disabled && styles.disabled]}><Text style={styles.buttonText}>{label}</Text></TouchableOpacity>
@@ -23,15 +24,18 @@ export function BillingScreen({ section }: { section: 'membership' | 'donations'
  }
  const membership = data.membership
  const active = membershipIsActive(membership)
+ const summary = membershipSummary(membership)
  const currentPlan = data.plans.find(p => p.id === membership?.plan_id)
  return <ScrollView style={styles.page} contentContainerStyle={styles.content}>
   <Text style={styles.title}>{section === 'membership' ? 'Your membership' : section === 'donations' ? 'Support Thabaat' : 'Payment history'}</Text>
   <Text style={styles.copy}>{section === 'membership' ? 'Your plan, benefits, and membership dates in one place.' : section === 'donations' ? 'Support programs and community resources through CharityStack.' : 'Verified payments linked to your Thabaat account. Receipts are sent by CharityStack.'}</Text>
+  {section==='membership' && __DEV__ && <BillingButton label="Practice membership flows · no charges" onPress={() => router.push('/membership-preview')} />}
   {loading && <ActivityIndicator accessibilityLabel="Loading billing records" color="#159A8C" />}
   {!!error && <View style={styles.card}><Text accessibilityRole="alert" style={styles.copy}>{error}</Text></View>}
   {!loading && !error && section === 'membership' && <>
    <View style={styles.feature}><Text style={styles.eyebrow}>CURRENT MEMBERSHIP</Text><Text style={styles.heading}>{active ? currentPlan?.name ?? 'Member' : 'Free'}</Text>
-    {membership ? <><Text style={styles.copy}>Recorded status: {membership.status.replace('_', ' ')}{membership.source === 'complimentary' ? ' · Complimentary' : ''}</Text><Text style={styles.copy}>{active ? membership.cancel_at_period_end ? 'Access ends' : 'Current period ends' : 'Recorded end date'}: {new Date(membership.expires_at).toLocaleDateString()}</Text>{membership.cancel_at_period_end && <Text style={styles.copy}>Renewal is cancelled. Access continues until the current period ends.</Text>}</> : <Text style={styles.copy}>No paid membership is linked to your account. You can browse public events and register for free events.</Text>}
+    <Text style={styles.copy}>{summary.label} · {summary.reminder}</Text>
+    {membership ? <><Text style={styles.copy}>Recorded status: {membership.status.replace('_', ' ')}{membership.source === 'complimentary' ? ' · Complimentary' : ''}</Text><Text style={styles.copy}>{active ? membership.cancel_at_period_end ? 'Access ends' : 'Current period ends' : 'Recorded end date'}: {new Date(membership.expires_at).toLocaleDateString()}</Text>{active && membership.cancel_at_period_end && <Text style={styles.copy}>Renewal is cancelled. Access continues until the current period ends.</Text>}</> : <Text style={styles.copy}>No paid membership is linked to your account. You can browse public events and register for free events.</Text>}
     {active && currentPlan?.benefits.map(benefit => <Text key={benefit} style={styles.copy}>• {benefit}</Text>)}
    </View>
    <Text style={styles.heading}>Membership plans</Text>
