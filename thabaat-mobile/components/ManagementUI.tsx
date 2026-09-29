@@ -1,0 +1,5 @@
+import { StyleSheet, Text, TouchableOpacity } from 'react-native'
+export function ManagementButton({label,onPress,disabled=false}:{label:string;onPress:()=>void;disabled?:boolean}) {
+ return <TouchableOpacity accessibilityRole="button" disabled={disabled} accessibilityState={{disabled}} onPress={onPress} style={[managementStyles.button,disabled&&{opacity:0.5}]}><Text style={{color:'#fff',fontWeight:'600'}}>{label}</Text></TouchableOpacity>
+}
+export const managementStyles=StyleSheet.create({page:{flex:1,backgroundColor:'#F5F8F7'},content:{padding:24,paddingTop:60,paddingBottom:48,gap:16,maxWidth:760,width:'100%',alignSelf:'center'},title:{fontSize:28,fontWeight:'700',color:'#172B28'},heading:{fontSize:19,fontWeight:'600',color:'#172B28'},text:{fontSize:15,lineHeight:23,color:'#425550'},card:{padding:18,backgroundColor:'#fff',borderRadius:14,gap:12},input:{backgroundColor:'#fff',borderWidth:1,borderColor:'#9EB6AD',padding:14,borderRadius:8,fontSize:16,color:'#172B28'},button:{backgroundColor:'#146B59',padding:15,borderRadius:9,alignItems:'center'},alert:{padding:16,backgroundColor:'#FFF2CD',color:'#62470C',lineHeight:22}})

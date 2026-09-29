@@ -9,7 +9,7 @@ export async function getEvents(): Promise<Event[]> {
     .order('event_date', { ascending: true })
 
   if (error) throw error
-  return data ?? []
+  return (data ?? []).filter(event => !event.archived)
 }
 
 export async function getEventById(eventId: string): Promise<EventWithTickets | null> {
