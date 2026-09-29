@@ -2,12 +2,15 @@ import { useState } from 'react'
 import { ScrollView, Text, TouchableOpacity, View, StyleSheet } from 'react-native'
 import { router } from 'expo-router'
 import { initialMembershipDemo, membershipSummary, reduceMembershipDemo, type DemoAction, type DemoPeriod } from '@/lib/membership-state'
+import { practiceEvents, registerPracticeEvent, type PracticeRegistration } from '@/lib/membership-events'
 
 export default function MembershipPreview() {
  const [state, setState] = useState(initialMembershipDemo)
  const [selected, setSelected] = useState<DemoPeriod>('monthly')
  const [cancelling, setCancelling] = useState(false)
  const [notice, setNotice] = useState('')
+ const [registrations, setRegistrations] = useState<PracticeRegistration[]>([])
+ const [eventNotice, setEventNotice] = useState('')
  if (!__DEV__) return <View style={styles.page}><Text>Membership practice is available in development builds only.</Text></View>
  const summary = membershipSummary(state.membership, state.now)
  const apply = (action: DemoAction) => { setState(current => reduceMembershipDemo(current, action)); setNotice('') }
@@ -22,6 +25,23 @@ export default function MembershipPreview() {
    {state.membership && <Text style={styles.copy}>Period ends: {new Date(state.membership.expires_at).toLocaleDateString()}</Text>}
    <Text style={styles.copy}>Practice date: {new Date(state.now).toLocaleDateString()}</Text>
   </View>
+  <Text style={styles.heading}>Practice event registration</Text>
+  <Text style={styles.copy}>Try a members-only event while Free, then simulate verified membership below and try again. These are example events with no real attendance or payment.</Text>
+  {!!eventNotice && <Text accessibilityRole="alert" style={styles.badge}>{eventNotice}</Text>}
+  {practiceEvents.map(event => {
+   const registered = registrations.some(item => item.eventId===event.id)
+   const eligible = !event.membersOnly || summary.active
+   return <View key={event.id} style={styles.card}>
+    <Text style={styles.heading}>{event.name}</Text>
+    <Text style={styles.copy}>{event.membersOnly ? 'Members only · Included with active membership (practice)' : 'Public · No membership required (practice)'}</Text>
+    <Text style={styles.copy}>{registered ? eligible ? 'Registered · Practice access available' : 'Registration retained · Access locked until membership is active' : eligible ? 'Eligible to register' : 'Membership required · Try registering to see the block'}</Text>
+    {button(`Register for ${event.name}`, () => {
+     const result=registerPracticeEvent(event.id,state.membership,registrations,state.now)
+     setRegistrations(result.registrations); setEventNotice(result.message)
+    })}
+    {registered && button(`Cancel ${event.name} registration`, () => { setRegistrations(items => items.filter(item => item.eventId!==event.id)); setEventNotice(`${event.name}: practice registration cancelled.`) })}
+   </View>
+  })}
   {!state.pending ? <View style={styles.card}>
    <Text style={styles.heading}>{summary.active ? 'Renew or change billing (practice)' : 'Choose paid membership (practice)'}</Text>
    <Text style={styles.copy}>Prices and benefits require team approval. The one-time example lasts 30 days; these are sample terms only.</Text>
@@ -44,7 +64,7 @@ export default function MembershipPreview() {
   <View style={styles.card}><Text style={styles.heading}>Sample member content and event</Text><Text style={styles.copy}>{summary.active ? 'Unlocked in this practice screen. Real content/event access must be enforced by the server.' : 'Locked · Requires an active, verified membership.'}</Text></View>
   {!!notice && <Text accessibilityRole="alert" style={styles.copy}>{notice}</Text>}
   {button('Simulate admin complimentary access · 30 days', () => { apply({type:'complimentary'}); setCancelling(false) })}
-  {button('Reset practice', () => { setState(initialMembershipDemo()); setSelected('monthly'); setCancelling(false); setNotice('') })}
+  {button('Reset practice', () => { setState(initialMembershipDemo()); setSelected('monthly'); setCancelling(false); setNotice(''); setRegistrations([]); setEventNotice('') })}
   {button('Back to real membership', () => router.replace('/membership'))}
  </ScrollView>
 }
