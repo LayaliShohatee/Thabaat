@@ -1,0 +1,12 @@
+import { supabase } from '@/lib/supabase'
+export type MediaPlaylist={id:string;name:string;user_id:string}
+export type PlaylistItem={media_id:string;position:number}
+function failure(error:{message:string;code?:string}|null){if(error)throw new Error(['42P01','PGRST205','PGRST202'].includes(error.code??'')?'Playlists are not available on this environment yet.':error.message)}
+export async function getMediaPlaylists():Promise<MediaPlaylist[]> {const {data,error}=await supabase.from('media_playlists').select('id,name,user_id').order('created_at');failure(error);return data??[]}
+export async function createMediaPlaylist(name:string) {const trimmed=name.trim();if(!trimmed||trimmed.length>80)throw new Error('Playlist name must be between 1 and 80 characters.');const {error}=await supabase.from('media_playlists').insert({name:trimmed});failure(error)}
+export async function deleteMediaPlaylist(id:string) {const {error}=await supabase.from('media_playlists').delete().eq('id',id).select('id').single();failure(error)}
+export async function getMediaPlaylistItems(id:string):Promise<PlaylistItem[]> {const {data,error}=await supabase.from('media_playlist_items').select('media_id,position').eq('playlist_id',id).order('position').order('media_id');failure(error);return data??[]}
+export async function addMediaToPlaylist(playlistId:string,mediaId:string) {const items=await getMediaPlaylistItems(playlistId);if(items.some(item=>item.media_id===mediaId))return;const position=Math.max(-1,...items.map(item=>item.position))+1;if(position>9999)throw new Error('This playlist is full.');const {error}=await supabase.from('media_playlist_items').upsert({playlist_id:playlistId,media_id:mediaId,position},{onConflict:'playlist_id,media_id',ignoreDuplicates:true});failure(error)}
+export async function removeMediaFromPlaylist(playlistId:string,mediaId:string) {const {error}=await supabase.from('media_playlist_items').delete().eq('playlist_id',playlistId).eq('media_id',mediaId).select('media_id').single();failure(error)}
+export async function renameMediaPlaylist(id:string,name:string) {const value=name.trim();if(!value||value.length>80)throw new Error('Playlist name must be between 1 and 80 characters.');const {error}=await supabase.from('media_playlists').update({name:value}).eq('id',id).select('id').single();failure(error)}
+export async function moveMediaPlaylistItem(playlistId:string,mediaId:string,direction:-1|1) {const {error}=await supabase.rpc('move_media_playlist_item',{p_playlist_id:playlistId,p_media_id:mediaId,p_direction:direction});failure(error)}

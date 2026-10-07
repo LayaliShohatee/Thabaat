@@ -59,8 +59,10 @@ export default function MembershipPreview() {
    {cancelling && <><Text style={styles.copy}>Stop future renewals? Current member access continues until the end date, then returns to Free. This practice action does not cancel CharityStack billing.</Text>{button('Confirm practice cancellation', () => { apply({type:'cancel_renewal'}); setCancelling(false) })}{button('Keep practice membership', () => setCancelling(false))}</>}
    {state.membership?.cancel_at_period_end && button('Keep renewing (practice)', () => apply({type:'restore_renewal'}))}
    {button('Preview reminder · 3 days before expiry', () => apply({type:'near_expiry'}))}
+   {state.period !== 'one_time' && state.membership?.source === 'charitystack' && button('Simulate overdue renewal', () => { apply({type:'past_due'}); setCancelling(false) })}
    {button('Advance to expiry', () => { apply({type:'expire'}); setCancelling(false) })}
   </View>}
+  {state.membership?.status === 'past_due' && <View style={styles.card}><Text style={styles.heading}>Payment overdue (practice)</Text><Text style={styles.copy}>Access is paused. This simulates a server-verified billing status; no subscription is changed. Recovery restores only the remaining recorded period.</Text>{button('Simulate verified billing recovery', () => apply({type:'restore_payment'}))}{button('Advance overdue membership to expiry', () => apply({type:'expire'}))}</View>}
   <View style={styles.card}><Text style={styles.heading}>Sample member content and event</Text><Text style={styles.copy}>{summary.active ? 'Unlocked in this practice screen. Real content/event access must be enforced by the server.' : 'Locked · Requires an active, verified membership.'}</Text></View>
   {!!notice && <Text accessibilityRole="alert" style={styles.copy}>{notice}</Text>}
   {button('Simulate admin complimentary access · 30 days', () => { apply({type:'complimentary'}); setCancelling(false) })}

@@ -59,3 +59,25 @@ it('overdue or unverified real memberships never show active access', () => {
  expect(membershipSummary({...m,status:'past_due'},now)).toMatchObject({label:'Payment overdue',active:false})
  expect(membershipSummary({...m,verified_at:''},now)).toMatchObject({label:'Needs review',active:false})
 })
+it('overdue subscription practice pauses access and recovery does not extend dates', () => {
+ const active = paid()
+ const overdue = step(active,{type:'past_due'})
+ expect(membershipSummary(overdue.membership,overdue.now)).toMatchObject({active:false,label:'Payment overdue'})
+ const recovered = step(overdue,{type:'restore_payment'})
+ expect(recovered.membership).toEqual(active.membership)
+ expect(step(recovered,{type:'restore_payment'})).toEqual(recovered)
+})
+it('overdue recovery cannot revive expired access or alter one-time and complimentary plans', () => {
+ const overdue = step(paid(),{type:'past_due'})
+ const expired = step(overdue,{type:'expire'})
+ expect(step(expired,{type:'restore_payment'})).toEqual(expired)
+ const once = step(step(initial(),{type:'checkout',period:'one_time'}),{type:'confirm'})
+ expect(step(once,{type:'past_due'})).toEqual(once)
+ const comp = step(initial(),{type:'complimentary'})
+ expect(step(comp,{type:'past_due'})).toEqual(comp)
+})
+
+it('future verification timestamps never activate real membership', () => {
+ const m=paid().membership!
+ expect(membershipSummary({...m,verified_at:new Date(now+86400000).toISOString()},now).active).toBe(false)
+})

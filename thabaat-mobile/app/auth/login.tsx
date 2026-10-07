@@ -7,10 +7,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import {eventReturnPath} from '@/lib/event-sharing';
 import { supabase } from '@/lib/supabase';
 
 export default function LoginScreen() {
+  const {eventId}=useLocalSearchParams<{eventId?:string}>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -37,7 +39,7 @@ export default function LoginScreen() {
         return;
       }
 
-      router.replace('/(tabs)');
+      router.replace(eventReturnPath(eventId) ?? '/(tabs)');
     } catch (error) {
       Alert.alert('Unable to complete request', error instanceof Error ? error.message : 'Please try again.');
     } finally {
@@ -50,6 +52,7 @@ export default function LoginScreen() {
       <Text style={styles.logo}>Thabaat</Text>
 
       <Text style={styles.title}>Welcome back</Text>
+      {eventReturnPath(eventId)?<Text style={{color:'#bbb',marginBottom:12}}>Sign in to open the shared event.</Text>:null}
 
       <Text style={styles.subtitle}>
         Log in to your account
@@ -89,7 +92,7 @@ export default function LoginScreen() {
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push('/auth/register')}>
+      <TouchableOpacity onPress={() => router.push(eventReturnPath(eventId)?{pathname:'/auth/register',params:{eventId}}:'/auth/register')}>
         <Text style={styles.link}>
           Don&apos;t have an account? Create one
         </Text>

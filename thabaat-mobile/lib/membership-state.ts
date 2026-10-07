@@ -15,7 +15,7 @@ export function membershipSummary(membership: Membership | null, now = Date.now(
 
 export type DemoPeriod = 'one_time' | 'monthly' | 'annually'
 export type MembershipDemo = { now: number; membership: Membership | null; period: DemoPeriod; pendingPeriod: DemoPeriod; pending: boolean }
-export type DemoAction = { type: 'checkout'; period: DemoPeriod } | { type: 'confirm' | 'fail' | 'cancel_renewal' | 'restore_renewal' | 'expire' | 'near_expiry' | 'complimentary' }
+export type DemoAction = { type: 'checkout'; period: DemoPeriod } | { type: 'confirm' | 'fail' | 'cancel_renewal' | 'restore_renewal' | 'expire' | 'near_expiry' | 'complimentary' | 'past_due' | 'restore_payment' }
 export const initialMembershipDemo = (now = Date.now()): MembershipDemo => ({ now, membership: null, period: 'monthly', pendingPeriod: 'monthly', pending: false })
 // Preview-only durations. Commercial durations must come from approved plans/provider records.
 export function demoPeriodEnd(start: number, period: DemoPeriod) {
@@ -39,6 +39,8 @@ export function reduceMembershipDemo(state: MembershipDemo, action: DemoAction):
    const start = m && membershipIsActive(m, state.now) ? Date.parse(m.expires_at) : state.now
    return { ...state, pending: false, period: state.pendingPeriod, membership: { id: 'demo-only', plan_id: 'demo-paid', status: 'active', starts_at: m && membershipIsActive(m, state.now) ? m.starts_at : new Date(state.now).toISOString(), expires_at: new Date(demoPeriodEnd(start, state.pendingPeriod)).toISOString(), cancel_at_period_end: false, source: 'charitystack', verified_at: new Date(state.now).toISOString() } }
   }
+  case 'past_due': return m && membershipIsActive(m, state.now) && m.source === 'charitystack' && state.period !== 'one_time' ? { ...state, pending: false, membership: { ...m, status: 'past_due' } } : state
+  case 'restore_payment': return m?.status === 'past_due' && Date.parse(m.expires_at) > state.now ? { ...state, membership: { ...m, status: 'active' } } : state
   case 'cancel_renewal': return m && membershipIsActive(m, state.now) && m.source === 'charitystack' && state.period !== 'one_time' ? { ...state, membership: { ...m, cancel_at_period_end: true } } : state
   case 'restore_renewal': return m && membershipIsActive(m, state.now) ? { ...state, membership: { ...m, cancel_at_period_end: false } } : state
   case 'expire': return m ? { ...state, pending: false, now: Date.parse(m.expires_at) } : state

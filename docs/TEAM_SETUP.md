@@ -1,361 +1,164 @@
-# Thabaat: complete team setup and handoff
+# Thabaat team setup: Windows, iPhone and Mac
 
-For the real Events and Permissions tabs, database migration, first-administrator setup and remaining scope, see [Events and Permissions](EVENTS_PERMISSIONS.md).
+Updated October 7, 2026. These instructions describe the current handoff source on `codex/thabaat-team-handoff-20261007`. Before the branch is published, use the local Windows transfer ZIP; cloning the existing public `codex/expo57-mobile-fixes` checkpoint does not recover unpublished work. The repository is public, so keep all private configuration and evidence out of commits.
 
-For the September 29 membership practice flow and UC2 coverage, see [Membership flows](MEMBERSHIP_FLOWS.md). It can be tested without provider credentials or a charge.
+## 1. Downloads and platform limits
 
-Updated September 21, 2026. This guide collects the work from the original Expo connection/account-creation investigation through the successful signed iPhone installation. Follow it to reproduce the development environment on your own computer. It also identifies configuration that is still pending so a working login screen is not mistaken for a fully deployed product.
+- [Git](https://git-scm.com/downloads/), [Node.js 24 LTS with npm](https://nodejs.org/en/download) and an editor such as [VS Code](https://code.visualstudio.com/download).
+- Mobile requires Node >=22.13.0. The verified development environment used Node 24.21.0 and npm 11.19.0. Current packages: Expo ~57.0.24, React Native 0.86.3 and React 19.2.3. Use both checked-in package-lock.json files; do not force dependency upgrades to reproduce the app. [Expo SDK 57 reference](https://docs.expo.dev/versions/v57.0.0/).
+- Windows supports source editing, tests, web preview and the Node backend. Android development additionally needs [Android Studio](https://developer.android.com/studio). Python is not the backend runtime; install native build prerequisites only when an actual dependency requires them.
+- Local iPhone compilation needs a Mac with full Xcode and CocoaPods. SDK 57 lists iOS 16.4+ and Xcode 26.4+ minimums; the verified setup used Xcode 27.0. Check [Apple's current Xcode compatibility](https://developer.apple.com/xcode/system-requirements) for your Mac/device.
+- The installed standalone Release opens without Metro. Backend-backed features still need internet. A Debug/development client instead loads JavaScript from Metro. Windows can serve Metro to a previously installed compatible iPhone client; it cannot compile an iOS binary locally. [Expo development builds](https://docs.expo.dev/develop/development-builds/introduction/).
 
-## 1. Choose the updated code and keep the original separate
+## 2. Get the code without overwriting another checkout
 
-- **Original:** [main](https://github.com/LayaliShohatee/Thabaat/tree/main), reviewed at `abba4c61610096c6eb518819d553641cd3d3c29c`.
-- **Updated:** [codex/expo57-mobile-fixes](https://github.com/LayaliShohatee/Thabaat/tree/codex/expo57-mobile-fixes).
-- **Every code change:** [branch comparison](https://github.com/LayaliShohatee/Thabaat/compare/main...codex/expo57-mobile-fixes).
-- **Detailed requirements review:** [mobile-sdk57-review.md](mobile-sdk57-review.md).
-
-The updated branch contains the complete repository, including unchanged files. Keep the pull request unmerged to preserve the two separate versions. Reading either branch or downloading it does not merge anything. The four pre-existing feature branches were already included in the reviewed main baseline.
-
-For a new checkout, run:
+After publication:
 
 ```bash
-git clone --branch codex/expo57-mobile-fixes https://github.com/LayaliShohatee/Thabaat.git Thabaat-updated
-cd Thabaat-updated
+git clone --branch codex/thabaat-team-handoff-20261007 https://github.com/LayaliShohatee/Thabaat.git Thabaat-handoff
+cd Thabaat-handoff
 git branch --show-current
+git log -1 --oneline
 ```
 
-The final command should print `codex/expo57-mobile-fixes`. These instructions use this folder as the **repository root**. If you already have a checkout with unfinished work, use this separate folder instead of overwriting it. Private repository access, if required, uses each teammate's own GitHub account.
+Until publication, extract the supplied ZIP into a new folder and open its `Thabaat` directory. The ZIP has no Git history; Git synchronization commands apply to a clone, not that extracted snapshot. Commit or back up unfinished edits before switching or pulling branches. Compare commit IDs on both computers. Never use reset --hard, clean -fd or force push to discard a teammate's work.
 
-For a separate local copy of the original, run the following from the parent folder, outside `Thabaat-updated`:
+There is no root npm application. Run mobile commands inside `thabaat-mobile`, backend commands inside `thabaat-backend`.
 
-```bash
-git clone --branch main https://github.com/LayaliShohatee/Thabaat.git Thabaat-original
-```
+## 3. Mobile environment and installation
 
-## 2. Install the development tools
+In `thabaat-mobile`, on Windows PowerShell:
 
-| Tool | Needed for |
-|---|---|
-| Git | Cloning and reviewing the branches |
-| Node.js **22.13 or newer**, with npm | Mobile and backend commands; Node 22 is a suitable baseline |
-| Full Xcode with iOS platform support, on macOS | Building and signing a native iPhone app; Command Line Tools alone are insufficient |
-| CocoaPods | Installing iOS native dependencies; the tested Mac used 1.17 |
-| Apple Account and a paired iPhone | Personal-device installation; the tested setup used Xcode 27 and iOS 27 |
-| Access to the team's Supabase configuration | Real authentication and event data |
-
-Web development and automated tests do not require Xcode. Local iPhone compilation requires a Mac. A cloud iPhone build is a separate option described below.
-
-Check your installation:
-
-```bash
-git --version
-node --version
-npm --version
-```
-
-For an iPhone build, open Xcode once, complete its license/first-run setup, and install iOS platform support. Then check:
-
-```bash
-xcodebuild -version
-pod --version
-```
-
-If CocoaPods is missing and you use Homebrew, install it with `brew install cocoapods`. If Xcode commands resolve to standalone Command Line Tools, select the full Xcode installation in Xcode's Locations settings.
-
-The checked-in mobile dependencies use Expo `~57.0.24`, React Native `0.86.3`, React `19.2.3`, and an Expo development client. **Use the lockfiles with `npm ci`**; do not independently upgrade React Native or force dependency-audit fixes to reproduce this setup.
-
-## 3. Install both projects
-
-From the repository root:
-
-```bash
-cd thabaat-mobile
+```powershell
+Copy-Item .env.example .env.local
 npm ci
-cd ../thabaat-backend
-npm ci
-cd ..
 ```
 
-There is no root npm application. Run mobile commands inside `thabaat-mobile` and backend commands inside `thabaat-backend`.
-
-## 4. Create your local environment files
-
-These files are intentionally ignored by Git. Each teammate creates their own; cloning the branch cannot copy the original developer's local credentials.
-
-### Mobile: `thabaat-mobile/.env`
-
-From `thabaat-mobile`, on a fresh checkout:
+On Mac Terminal:
 
 ```bash
-cp .env.example .env
+cp .env.example .env.local
+npm ci
 ```
 
-Edit the file to contain your team's values:
+Edit the private local file. Every angle-bracket value below is a placeholder; replace it without the brackets:
 
 ```dotenv
-EXPO_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
-EXPO_PUBLIC_BACKEND_URL=
+EXPO_PUBLIC_SUPABASE_URL=https://<APPROVED_PROJECT_REF>.supabase.co
+EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<APPROVED_PUBLISHABLE_KEY>
+EXPO_PUBLIC_BACKEND_URL=http://<COMPUTER_LAN_IP>:3000
+EXPO_PUBLIC_ENABLE_PAYMENT_CHECK=false
+EXPO_PUBLIC_SERVER_CHECKOUT=false
+EXPO_PUBLIC_EVENT_WEB_ORIGIN=
 ```
 
-Obtain the URL and publishable key for the **same Supabase project** from the project owner or project settings. Enter plain values, without Markdown links, backslashes before underscores, or screenshot line breaks. The original investigation initially had no Supabase environment file; those values were subsequently configured locally.
+Obtain the approved URL/key privately from the project owner. Keep URL and key from the same environment. Do not point new development migrations at the original shared database. Supabase public configuration is required before starting the real app; fake placeholders are not working credentials. Unit tests mock their dependencies.
 
-Leave `EXPO_PUBLIC_BACKEND_URL` empty until you have a configured, reachable notification backend. Authentication and event queries use Supabase directly. When the backend is ready, set this to its address, for example `http://192.168.1.100:3000`, replacing the example IP with the computer actually running it. On a physical phone, `localhost` means the phone, not your Mac.
+EXPO_PUBLIC values are exposed in the client bundle. Never put SUPABASE_SERVICE_KEY, provider secrets or signing material there. [Supabase key guidance](https://supabase.com/docs/guides/getting-started/api-keys). Restart Metro after public env changes; rebuild a standalone Release to change its embedded configuration. Do not commit `.env`, `.env.local` or screenshots of their contents.
 
-All `EXPO_PUBLIC_` values are exposed to the client app. **Never put a service-role key, Apple credential, or backend secret here.** Stop and restart Expo with `--clear` after changing these values; exported or installed bundles may also need to be rebuilt to pick up configuration.
+## 4. Checks, browser preview and Windows-to-phone development
 
-### Backend: `thabaat-backend/.env`
-
-For notifications, copy its own `.env.example` to `.env` and fill in:
-
-```dotenv
-PORT=3000
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_SERVICE_KEY=your-service-role-key
-EXPO_ACCESS_TOKEN=
-```
-
-The project must match the mobile app. The service-role key is server-only and is different from the publishable key. Set `EXPO_ACCESS_TOKEN` only if the Expo project uses push access-token security. Obtain these through the team owner; they were not supplied during the original setup.
-
-To start the backend without notification credentials, leave the Supabase values empty instead of leaving fake placeholder keys. It can serve its health endpoint, but authenticated notification requests will be unavailable. Do not overwrite an existing populated `.env` with the example.
-
-## 5. Prepare Supabase and account redirects
-
-**The database migration has been applied to a separate hosted `thabaat-staging` project, not the team's original hosted project.** Cloning the code or starting Expo does not apply SQL. A project owner should review and test it in staging before changing a shared database.
-
-1. For a **new, empty staging Supabase project**, review and run [database/schema.sql](../thabaat-mobile/database/schema.sql), then [database/migrations/20260921_prototype_integrity.sql](../thabaat-mobile/database/migrations/20260921_prototype_integrity.sql) through that project's SQL editor.
-2. For an **existing project**, do not rerun the `CREATE TABLE` reference schema. Review existing columns, duplicate registrations, constraints, and policies before applying the migration. The migration targets the hosted `events.event_date` column.
-3. Inspect existing row-level security (RLS) policies. Permissive PostgreSQL policies combine with OR; adding stricter policies does not cancel an older permissive policy.
-4. Check profile creation for new accounts and synchronization for existing accounts. Registrations reference profiles, so a missing profile can prevent registration.
-5. In staging only, run [database/staging-seed.sql](../thabaat-mobile/database/staging-seed.sql). It creates one clearly labeled synthetic event 30 days in the future, a free ticket, and a paid ticket that must be rejected. Re-running preserves existing rows and registrations; it does not reset the test or move its date forward. No admin event editor is included.
-
-The migration adds missing capacity, ticket quantity, registration status, and push-token fields; synchronizes auth profiles; and validates new free registrations for ownership, event date, duplicate registration, ticket/event matching, and availability. It was tested in isolated PostgreSQL and applied successfully to the separate staging project. It does not implement payment processing or a complete admin/role system.
-
-In Supabase Auth, enable the intended email sign-in/signup behavior and allow the callback URLs for each environment:
-
-| Environment | Callback | Password reset |
-|---|---|---|
-| Local web on port 8081 | `http://localhost:8081/auth/callback` | `http://localhost:8081/auth/reset-password` |
-| Native development app | `thabaat://auth/callback` | `thabaat://auth/reset-password` |
-
-Adjust web URLs when using a different port or deployed host. The app generates links for its current environment. The inspected hosted settings auto-confirmed email accounts; the requirements call for email verification. The team must choose the intended setting and configure email delivery/SMTP and redirect allowlists accordingly. Staging signup and confirmation were subsequently completed by the user; password-recovery email delivery still needs acceptance testing.
-
-### Separate staging environment prepared September 21, 2026
-
-The free **Thabaat Development** organization contains a new **thabaat-staging** project, separate from the original team's database. Its fresh schema, integrity migration, and synthetic seed were applied through the SQL editor. Verification found four tables with RLS enabled, seven policies, one event, and two ticket types. Anonymous API access returned zero visible events. Email signup is enabled and email confirmation remains required. The site URL and four exact callback/reset URLs above were saved. These SQL editor operations do not automatically create a CLI migration-history record.
-
-On the original developer's Mac, staging values are in ignored `thabaat-mobile/.env.local`, which overrides the corresponding values in `.env`. The original `.env` was preserved. No staging key is committed. To use staging on another computer, obtain its URL and publishable key through the owner and create your own ignored `.env.local` with the three mobile variables from section 4. Keep the notification backend URL empty until configured.
-
-Restart Metro with `npx expo start --dev-client --clear` after switching environments. To return to the original connection, move the staging override out of Expo's recognized environment filenames, keep it private, and restart Metro. Accounts and sessions are separate between the two Supabase projects; create a staging account rather than expecting the original account to exist there.
-
-The [default Supabase email service](https://supabase.com/docs/guides/auth/auth-smtp) sends only to organization members and currently allows two messages per hour. Use the Supabase organization's account email for the initial confirmation test; other testers require an appropriate mail-delivery setup. Avoid repeated signup/reset attempts that consume the limit. Do not disable confirmation to disguise a mail-delivery problem. Staging acceptance results are recorded separately from infrastructure setup below.
-
-**Live browser acceptance:** the user completed signup and email confirmation and reached home. The signed-in app displayed the staging event and account profile. The paid option showed “Paid checkout not available.” A free registration saved successfully and appeared as Confirmed in My Events. Reload preserved the session and registration, and revisiting the event showed Already Registered. No push was sent because notification configuration remains absent. Password recovery and profile-edit persistence still require their own checks.
-
-**iPhone follow-up — September 28, 2026:** the user opened the previously installed development app without a cable, reported being logged in, and confirmed that My Events displayed “[STAGING] Thabaat registration test” as Confirmed. Metro was running with the staging environment. This verifies the user-reported native login and reading of the registration previously created in the browser; it does not establish a new registration submission from the phone, password recovery, or push delivery. The app was not rebuilt or re-signed during this check.
-
-## 6. Start the backend and web app
-
-In a terminal inside `thabaat-backend`:
+Inside `thabaat-mobile`:
 
 ```bash
+npm run typecheck
+npm run lint
+npm test
+npm run web
+```
+
+Use the URL printed by Expo for the browser preview. Native QR camera, Calendar, video and signing need device verification; web success does not establish native acceptance.
+
+With a compatible development client already installed on the phone:
+
+```bash
+npx expo start --dev-client --lan
+```
+
+Use the printed development link/QR in that client. Windows and the phone must share a reachable network. Permit the dev server on a trusted private network if Windows Firewall prompts; do not disable the firewall broadly. A phone's localhost refers to the phone, so the optional backend URL must use the computer's current LAN IP. Campus/guest networks may block peer access. Expo's optional `--tunnel` may require additional setup and does not expose a local backend automatically. [Expo CLI](https://docs.expo.dev/more/expo-cli/).
+
+The standalone Release cannot be updated merely by starting Windows Metro. JavaScript edits can reload in a compatible development client; native modules, app config or SDK changes require another native build. Use the project client rather than assuming Expo Go contains every required native component. [Local native development](https://docs.expo.dev/guides/local-app-development/).
+
+For optional Android development with the required SDK/device setup, run `npm run android` or `npx expo run:android --device`. Android device acceptance is separate from the iPhone checks.
+
+## 5. Optional backend
+
+In a separate terminal, from `thabaat-backend`, copy `.env.example` to `.env` (Windows: `Copy-Item .env.example .env`; Mac: `cp .env.example .env`). Obtain server-only credentials privately, or leave unavailable values empty for a health-only server. Mobile and backend must use the same approved database environment.
+
+```bash
+npm ci
+npm test
 npm run dev
 ```
 
-In another terminal:
+The default port is 3000. Check `http://localhost:3000/health`; an OK response does not prove provider, notification or Wallet configuration. Basic event and ticket RPCs use Supabase directly. Payment flags stay disabled, Wallet fields remain empty, and FCM/scheduler adapters are not a deployed live delivery service.
+
+For a compiled backend on Mac:
 
 ```bash
-curl http://localhost:3000/health
+npm run build
+npm start
 ```
 
-The response should report `status: "ok"`. `notificationsConfigured: false` means notification credentials are missing. A true value indicates configuration is present, not that credentials or device delivery have been verified.
+The current build script uses Unix `mkdir -p` and `cp`. On Windows PowerShell, use this equivalent from the latest `thabaat-backend` directory:
 
-In a separate terminal inside `thabaat-mobile`:
-
-```bash
-npx expo start --web --port 8081 --clear
+```powershell
+npx tsc
+New-Item -ItemType Directory -Force dist\wallet\assets
+Copy-Item src\wallet\assets\* dist\wallet\assets\
+npm start
 ```
 
-Open `http://localhost:8081`. Check that login and create-account forms show feedback and that errors are visible. Use an authorized staging account for real-data tests. An empty event feed can mean no future events are visible to that account, incorrect project settings, or RLS restrictions; it does not by itself establish an app failure.
+## 6. Mac iPhone build and signing
 
-Keep the server terminals running. Stop them with Ctrl+C when finished. To run the compiled backend instead, stop its development server first, then run `npm run build` followed by `npm start` inside `thabaat-backend`.
+Install full Xcode and its required platform support, finish first-run setup, and install [CocoaPods](https://cocoapods.org/) if unavailable. Connect and unlock the phone; trust the computer and enable [Developer Mode](https://developer.apple.com/documentation/xcode/enabling-developer-mode-on-a-device) when required.
 
-## 7. Reproduce the iPhone installation
-
-### Why the development app is needed
-
-As of this review, Expo's [SDK mismatch documentation](https://docs.expo.dev/troubleshooting/expo-go-version-mismatch/) states that the iPhone App Store version of Expo Go stops at SDK 54. This repository uses SDK 57. Installing the latest store app therefore does not fix this specific mismatch. The successful route was building and installing **Thabaat's own development app**. iPhone Mirroring displays/controls the phone; it does not replace native compilation, pairing, or signing.
-
-### Pair and prepare the device
-
-1. Connect and unlock the iPhone with a cable, and accept the device trust prompts. The completed installation used a cable.
-2. Enable **Settings → Privacy & Security → Developer Mode** on the iPhone and complete the restart/confirmation prompts.
-3. Sign in with your own Apple Account in **Xcode → Settings → Apple Accounts**.
-4. Confirm Xcode can see the phone. With Xcode 27 and iOS 27 or later, first-time wireless pairing is also available through **Device Hub → Add Device (+) → Pair Nearby Device** on the same network. See [Apple's pairing instructions](https://developer.apple.com/documentation/xcode/pairing-your-devices-with-your-mac).
-
-### Generate the native project
-
-The checked-in `app.json` enables Xcode 27 scene support through `expo-build-properties`. Its iOS bundle identifier is a development identifier. If it is unavailable to your signing team, set `expo.ios.bundleIdentifier` to your own unique development identifier before generating the app. Use the team's registered identifier for distribution.
-
-From `thabaat-mobile`:
+In a fresh/separate mobile build checkout with dependencies and env configured:
 
 ```bash
 npx expo prebuild --platform ios
+npx pod-install ios
+open ios/Thabaat.xcworkspace
 ```
 
-This generates the ignored `ios` project and installs native dependencies. If dependency installation did not complete, resolve that error before building; with CocoaPods available, `pod install` can be run inside the generated `ios` directory. Do not put independent application logic only inside this generated folder: regeneration can overwrite native changes.
+The current app is named Thabaat; inspect the generated workspace name if using an older checkpoint. Open the .xcworkspace so Pods are included. Preserve any working native directory and signing adjustments. Do not run `prebuild --clean` over it without backup; it can replace generated native changes.
 
-### Free Apple Personal Team: the tested route
+In Xcode choose the physical phone, existing approved Apple account/team and automatic signing. The existing demo bundle is `com.hussaad.thabaat.dev`; use the owner-approved identity rather than inventing new signing credentials. Select Debug for a development client and Run, or `npm run ios -- --device`. For a standalone build, set the scheme's Run configuration to Release and build/install successfully before replacing a working app.
 
-Free Personal Team provisioning cannot include this app's remote-push entitlement. After prebuild, remove it **only from the generated local file**, if the key is present:
+The free Personal Team demo target was built without the APNs entitlement. A fresh prebuild with expo-notifications may add a capability that the free profile cannot support. Review a demo-only native capability adjustment with the owner, or use an approved eligible team for push; do not enable unsupported services or alter live security settings to silence a build error.
 
-```bash
-plutil -remove aps-environment ios/thabaatmobile/thabaatmobile.entitlements
-```
+The recorded October 5 Personal Team profile expires October 12 at 01:19:18 UTC (October 11, 9:19:18 PM Detroit). This is a dated profile observation, not a permanent guarantee. Recheck after signing refresh. [Apple Personal Team reprovisioning](https://developer.apple.com/help/account/basics/about-your-developer-account).
 
-An absent-key error means there is nothing to remove. Regenerating iOS restores Expo's notification entitlement, so repeat this local step when necessary for free signing. Keep the source notification plugin for builds that use supported paid-team provisioning. This Personal Team build is not a remote-push delivery test.
+Renew with the approved existing Xcode account/team, rebuild and replace the same bundle rather than deleting the app. Replacement normally preserves the container; back up configuration and verify sign-in/bookings afterward. Cloud iOS builds are an optional separate approved workflow: `eas.json` has development profiles, but app.json has no linked EAS project and signing/account/device setup remains necessary. [EAS setup](https://docs.expo.dev/build/setup/).
 
-Open the CocoaPods workspace, not the `.xcodeproj`:
+## 7. Database and feature availability
 
-```bash
-open ios/thabaatmobile.xcworkspace
-```
+Cloning, npm ci and a Git push do not apply SQL or deploy a backend. The separate development project has ten approved October 5 migrations; six additional migrations are local source only. See [current status](CURRENT_STATUS.md) for the exact list. Do not replay a schema, seed, migration or anonymous-grant proposal against an unverified project. Hosted schema/security changes require review and approval for the specific target.
 
-In Xcode, select the **thabaatmobile target → Signing & Capabilities**. Enable automatic signing, choose your Personal Team, and choose your iPhone as the run destination. Review any prompts allowing Xcode to create an Apple Development certificate, register the phone, and create its provisioning profile. Each teammate performs this with their own authorized account; certificates and profiles are not shared in this repository.
+Full tabs/Profile options are retained; a feature can still report missing setup. Live CharityStack payments, Wallet signing, production FCM/APNs and backend scheduling/hosting are incomplete. Missing notifications must not undo a saved registration.
 
-### Start Metro, build, trust, and open
+## 8. Registration, check-in and roster
 
-Stop an existing Expo server on port 8081 before starting this one. From `thabaat-mobile`:
+Home → Discover Events shows upcoming nonarchived events by date. My Events contains the caller's bookings. Events retains event management under database permissions.
 
-```bash
-npx expo start --dev-client --clear
-```
+An authorized camera scan validates automatically. For manual entry, use Validate and check in. Success shows Checked in; a repeat shows Already checked in without another attendance record. Select Scan next ticket to reset the scanner. Invalid, unauthorized and outside-window attempts must remain errors.
 
-Leave it running. In Xcode choose **Product → Run** to build and install. If iOS blocks the first launch, open **Settings → General → VPN & Device Management**, select your developer profile, and trust/verify it if you accept it. Complete any requested restart.
+My Events shows Checked in with time separately from Confirmed booking status. It and the ticket refresh every five seconds while focused/active and on foreground return. Attendance comes from the server; unavailable reads remain unknown. Checked-in bookings cannot be freely cancelled. Open ticket or Refresh ticket reads the current saved state.
 
-Open the installed **thabaat-mobile** app and select the Mac's development server or use the development-client QR link shown by Expo. Keep the Mac awake and Metro running. Put both devices on a network where they can reach each other, and allow the app's local-network permission for discovery. USB installation alone does not guarantee network access to Metro.
+Event managers use Events → Check in the event → View attendee check-ins (event manager). The roster shows attendee names, recorded check-in time/Not checked in and booking status, without contacts or ticket credentials. It refreshes while open; attendance CSV export remains available. A nonmanager is denied by the existing report RPC.
 
-You should reach the login or home screen. That screen was confirmed on the original physical iPhone after signed installation, developer trust, and native bundle delivery.
+The demo dates are now historical: Volunteer Check-in's window ended October 6 at 12:18 AM Detroit; Community Welcome Evening's window ends October 7 at 6 PM Detroit. The server accepts from four hours before event start through 24 hours after start. Check the actual event/time before a demonstration; do not bypass that window or fabricate attendance.
 
-Personal Team provisioning is temporary. Check your profile's expiration and rebuild/re-sign as needed. The original tested profile has an expiration date of September 28, 2026; a teammate's profile has its own expiration. Changes to native dependencies, bundle identifier, or native plugins also require a new native build. Ordinary JavaScript edits generally reload through Metro.
+## 9. Troubleshooting and safe collaboration
 
-### Optional paid-team / cloud route
+- Old features: compare branch/commit IDs; reinstalling dependencies cannot recover unpublished code.
+- Metro fails: check client/native compatibility, current IP, firewall and peer network access. Release does not need Metro.
+- No data/login: check the approved project URL/key pairing and internet. Roles and visibility are enforced server-side; do not grant new roles merely to get a successful demo.
+- Saved booking/no push: backend or provider configuration may be unavailable; registration remains saved.
+- Attendance unchanged: return to My Events/ticket or refresh; verify the correct event/registration and the authorized scan result.
+- Roster denied: use an authorized event manager; do not expose a public attendee endpoint.
+- Signing fails or app stops opening: check profile expiration, Xcode/device compatibility and capability settings. Preserve the working binary/config; do not erase the app or revoke credentials by default.
+- Work across computers: commit reviewed work, fetch before editing and use `git pull --ff-only` on a clean branch. Resolve divergence without force push. Keep package changes with their lockfiles; reinstall node_modules/Pods separately on each OS.
+- Never commit keys, env files, generated builds, personal screenshots or private QR credentials. Avoid last-minute SDK upgrades, bulk migrations and repeated Calendar saves that create duplicates.
 
-A paid team's supported provisioning can retain the push entitlement. A cloud build additionally needs the team's Expo account/project, appropriate Apple Developer membership, a registered device and bundle identifier, and the mobile environment values configured in EAS's `development` environment. Your ignored local `.env` is not a substitute for cloud configuration.
-
-After the team configures those prerequisites, the included `development` profile in `eas.json` supports:
-
-```bash
-npx eas-cli@latest build --platform ios --profile development
-```
-
-No EAS cloud build, TestFlight submission, App Store release, or paid-team push test was performed during this work. See [Expo development builds](https://docs.expo.dev/develop/development-builds/introduction/) and [SDK 57 / Xcode 27 compatibility](https://expo.dev/changelog/sdk-57).
-
-## 8. Configure notifications only when ready
-
-Real remote push requires all of the following: a physical-device build with appropriate push provisioning, the team's Expo project ID, APNs credentials for iOS (FCM for Android), `profiles.expo_push_token` and the appropriate policies, backend service credentials, and a backend URL reachable from the phone. The project ID and paid-team credentials still need team configuration.
-
-Use **Profile → Enable Notifications** after setup to request permission and save the token. The app sends its Supabase session bearer token and event ID to the backend; the backend checks the caller's registration and derives the recipient. A saved registration remains successful if the notification request fails. A response marked `accepted` means Expo accepted a push ticket, not confirmed delivery. Receipt processing, scheduled reminders, notification preferences, and admin broadcasts are not implemented.
-
-## 9. Run checks and the isolated demonstration
-
-From `thabaat-mobile`:
-
-```bash
-npm test
-npm run typecheck
-npm run lint
-npx expo-doctor
-npx expo install --check
-npx expo export --platform all
-```
-
-From `thabaat-backend`:
-
-```bash
-npm test
-npm run build
-```
-
-The reviewed code passed **28 mobile tests and 13 backend tests**, mobile TypeScript/lint, the backend build, Expo dependency checks, all 21 Expo Doctor checks, and iOS/Android/web JavaScript exports. Tests use mocks and isolated PGlite PostgreSQL rather than modifying hosted data. JavaScript exports do not substitute for native installation or Android device testing.
-
-For a browser demonstration without Supabase credentials, use these two terminals **inside `thabaat-mobile`**. The second command uses macOS/Linux shell syntax.
-
-Terminal A:
-
-```bash
-node tests/fixtures/supabase-server.mjs
-```
-
-Terminal B:
-
-```bash
-EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:54329 EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=local-e2e-key EXPO_PUBLIC_BACKEND_URL= npx expo start --web --port 8082
-```
-
-Open `http://localhost:8082`. Use `demo@example.invalid` with `local-demo-password`; these are synthetic fixture values. Check login → event details → paid-ticket rejection → free registration → confirmation → My Events → Already Registered. Reload to check session persistence, then log out and check empty-form validation. This flow passed during the review.
-
-Stop both fixture processes afterward. Do not save fixture values into the real `.env`. This fixture is for a local browser; its loopback address cannot be used from the iPhone. Real signup/email delivery, live database policies, and actual push delivery require separate staging tests.
-
-## 10. What changed from the original code
-
-| Area | Work included in this branch |
-|---|---|
-| Expo and native setup | SDK 54 → 57, aligned React/React Native dependencies and lockfile, development client, EAS profiles, Node requirement, Xcode 27 scene support |
-| Authentication | Shared persisted auth state, native session storage/refresh, routing race protection, callback and password-recovery handling, accessible change-password routes |
-| Account forms | Visible web/native feedback, trimmed email input, error handling, and loading-state recovery so create-account actions no longer fail silently |
-| Profiles | Name/email display, checked profile updates, metadata synchronization handling, account links, notification action, and logout feedback |
-| Events | Hosted `event_date` field alignment, optional-column handling, title/location search, focus refresh, loading/error/retry behavior |
-| Registration | Existing-registration error handling, duplicate-submit protection, corrected confirmation title, free-ticket flow, paid checkout disabled pending trusted payment verification |
-| Notification client | Device/runtime checks, permission/token handling, authenticated requests, timeout handling, and nonfatal notification failure after a saved registration |
-| Backend | Verified Supabase sessions, recipient/registration ownership, input and Expo-response validation, rate limiting, limited request size, configuration checks, and tests |
-| Database setup | Schema reference correction, migration for profiles/ownership/capacity/inventory/free registrations, isolated database tests, and synthetic staging seed; applied to separate staging only |
-| Team handoff | Environment examples, setup instructions, regression fixtures, and requirements coverage review |
-
-The full comparison linked at the top lists each added, edited, or removed source file. The supplied project-layout ZIP was reviewed against the checkout; its original planning attachments are not republished in this code repository.
-
-## 11. Troubleshooting
-
-| Symptom | Check or next step |
-|---|---|
-| Expo says SDK 54 instead of 57 | Confirm the checked-out branch, run `npm ci` in mobile, and open a rebuilt SDK 57 development app rather than the incompatible App Store Expo Go |
-| Create account fails | Check the mobile `.env` names/values and project match, restart Expo, read the displayed error, and inspect Supabase signup/email settings and profile schema in staging |
-| Confirmation/reset link fails | Allow the exact redirect for this environment, verify the app scheme, and request a fresh link; a successful login screen does not test mail delivery |
-| Signing rejects push capability | For a free Personal Team, remove the generated `aps-environment` key after prebuild; for a paid team, check its provisioning/capabilities |
-| Phone reports untrusted developer | Trust the profile under VPN & Device Management and complete any requested confirmation/restart |
-| Installed app stops opening later | Check provisioning expiration and rebuild/re-sign; also ensure the development server is running |
-| Phone cannot reach Expo/backend | Check the Mac's current LAN IP, local-network permission, network isolation/firewall, and running servers. A phone cannot use the Mac's `localhost` |
-| Campus Wi-Fi blocks Metro discovery | Try a network/hotspot allowing device-to-device access or `npx expo start --dev-client --tunnel`. An Expo tunnel does not automatically expose your notification backend or fix an SDK mismatch |
-| No events or registration fails | Check future event dates, ticket/event IDs, available quantity, signed-in profile, and reviewed migration/RLS setup |
-| Registration saved but no push | Check notification prerequisites above; lack of push does not undo the saved registration |
-| Port already in use | Stop the earlier process with Ctrl+C or choose another port and update relevant backend/redirect URLs |
-
-## 12. Verified outcome and remaining work
-
-The original Mac completed unsigned and signed native iPhone Debug builds, signature checks, device installation, developer-profile trust, app launch, and Metro bundle delivery. The user confirmed the login/home screen. The automated and isolated browser checks above also passed. Dependency review found 14 moderate mobile advisories and zero high/critical ones; the backend audit found none at that time. Forced remediation proposed incompatible Expo changes and was not applied.
-
-Still pending: owner review/application of the migration to the original shared project, password-recovery delivery, profile-edit persistence, registration submission from the iPhone, paid-team notification configuration and delivery, and broader device/release testing. Membership status, donation catalog and payment-history screens now exist. Paid membership activation and automatic payment verification remain incomplete. A separate paid-only event supports a real checkout followed by manual operator verification. A full admin portal, five-role authorization, QR check-in and media library remain outstanding. See the requirements review for coverage by requirement ID.
-
-Dependencies, generated iOS files, compiled apps, `.env` files, Apple certificates/profiles, and personal device identifiers stay on each developer's machine. The branch supplies source, lockfiles, configuration examples, tests, and these reproduction steps.
-
-For everyday work, start the configured backend when needed, start Metro with `npx expo start --dev-client` inside mobile, and open your installed development app. Run the relevant checks before publishing changes. Keep working on a separate branch and leave the original main branch unmerged until the team explicitly decides otherwise.
-
-## 13. Paid-event, membership and payment work
-
-The development app now has **Profile → Paid Event Test · $1 real payment**. It opens **[STAGING] $1 Paid Access Test**, with one paid ticket and no free option. The reused CharityStack internal test form is now titled **Thabaat App — Paid Access Test** and asks for an app checkout reference. No other organization forms were changed.
-
-Start with [PAID_EVENT_TEST.md](PAID_EVENT_TEST.md): it contains the exact migration order, staging seed, phone steps, operator verification procedure, private-access checks and limits. [PAYMENTS_INTEGRATION.md](PAYMENTS_INTEGRATION.md) covers membership/donation/history screens and the remaining automatic-integration requirements.
-
-Enable the development entry in your ignored mobile `.env.local`:
-
-```dotenv
-EXPO_PUBLIC_ENABLE_PAYMENT_CHECK=true
-```
-
-Restart Metro and reload the app. The existing Expo WebBrowser module is used; there are no new native dependencies. Release builds block the internal checkout action. These features require the new database migrations described in the test guide.
-
-**A real payment alone does not immediately grant access.** For this controlled test, an operator independently checks CharityStack and records approval through the restricted database function. The app then shows a confirmed ticket and unlocks its private event page. No payment has been made or approved during implementation. Automatic verification, recurring paid membership activation and subscription management still need provider integration. The API/webhook access request was emailed to CharityStack support on September 28, 2026.
-
-All source and setup changes remain on `codex/expo57-mobile-fixes`. Main and the original hosted database remain separate. Never commit environment secrets, provider keys, Apple credentials, personal device identifiers or dependencies.
-# September 29 payment backend addition
-
-See [CharityStack backend setup](CHARITYSTACK_BACKEND.md) for the new optional server-created checkout links, signed webhook inbox and app-return screen. Apply its transport migration only after the prior paid-event migration. This integration remains disabled pending private API credentials and provider test setup; the existing manual test is unchanged.
+Verification dates and remaining device acceptance are recorded in [CURRENT_STATUS.md](CURRENT_STATUS.md). Earlier payment/platform documents remain historical reference, not instructions to enable live checkout or production services.

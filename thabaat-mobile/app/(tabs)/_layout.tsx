@@ -5,6 +5,7 @@ import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
 import { Colors } from '@/constants/theme';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { isDemoMode } from '@/lib/demo-mode';
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -20,7 +21,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: isDemoMode ? 'Events' : 'Home',
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="house.fill" color={color} />
           ),
@@ -37,8 +38,8 @@ export default function TabLayout() {
         }}
       />
 
-      <Tabs.Screen name="events" options={{ title: 'Events', tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar" color={color} /> }} />
-      <Tabs.Screen name="permissions" options={{ title: 'Permissions', tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} /> }} />
+      <Tabs.Screen name="events" options={{ title: 'Events', href: isDemoMode ? null : undefined, tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar" color={color} /> }} />
+      <Tabs.Screen name="permissions" options={{ title: 'Permissions', href: isDemoMode ? null : undefined, tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} /> }} />
 
       <Tabs.Screen
         name="profile"

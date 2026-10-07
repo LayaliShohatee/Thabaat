@@ -38,3 +38,7 @@ The membership screen now distinguishes Free, Active, Complimentary, Ending soon
 Do not mark all UC2 tasks complete based on the practice flow. API credentials, automatic fulfillment, real cancellation and release-wide member gates remain pending. Keep work on `codex/expo57-mobile-fixes`, separate from main. No additional database migration is needed for this update.
 
 Validation: `npm run typecheck`, `npm run lint`, and `npm test` in `thabaat-mobile`. Regression cases cover pending/failed checkout, repeat confirmation, end-of-period cancellation, expiry, renewal boundaries, leap years, complimentary access, reminders and invalid verification. Physical iPhone interaction still needs user verification.
+
+## October 4 local extension
+
+Subscription practice now supports **Simulate overdue renewal** and **Simulate verified billing recovery**. Overdue status pauses access. Recovery restores only the existing unexpired period, and repeated recovery never extends it. One-time and complimentary examples do not expose overdue-renewal actions. These controls remain development-only, in memory, and never change real billing or memberships. Browser QA verified both states and the unchanged end date; regression tests cover expired recovery denial.

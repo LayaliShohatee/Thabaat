@@ -15,7 +15,12 @@ import { getEventById } from '@/services/eventService'
 import { checkExistingRegistration } from '@/services/registrationService'
 import { useAuth } from '@/hooks/useAuth'
 import { paidTestEventId } from '@/lib/paid-event-test'
+import { EventStructuredDetails } from '@/components/EventStructuredDetails'
+import type { EventDetails } from '@/lib/event-details'
 import { Event } from '@/types'
+import CalendarActions from '@/components/events/CalendarActions'
+import EventShareActions from '@/components/events/EventShareActions'
+import { isDemoMode } from '@/lib/demo-mode'
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -73,14 +78,15 @@ export default function EventDetailScreen() {
         <Text style={styles.title}>{event.title}</Text>
         <Text style={styles.date}>{formattedDate}</Text>
         <Text style={styles.location}>{event.location}</Text>
-        {event.speaker_name && (
-          <Text style={styles.speaker}>Speaker: {event.speaker_name}</Text>
-        )}
+        <EventStructuredDetails event={event as Event & EventDetails}/>
+        {!isDemoMode && <TouchableOpacity accessibilityRole="button" style={styles.registerButton} onPress={()=>router.push(`/waitlist/${id}`)}><Text style={styles.registerButtonText}>Waitlist options</Text></TouchableOpacity>}
         <Text style={styles.sectionTitle}>About this event</Text>
         <Text style={styles.description}>{event.description}</Text>
       </View>
 
       <View style={styles.footer}>
+        <CalendarActions event={event} />
+        {!isDemoMode && <EventShareActions eventId={event.id}/>}
         {alreadyRegistered && id === paidTestEventId && <TouchableOpacity accessibilityRole="button" style={styles.registerButton} onPress={() => router.push(`/event/access/${id}`)}><Text style={styles.registerButtonText}>Open paid event access</Text></TouchableOpacity>}
         <TouchableOpacity
           style={[

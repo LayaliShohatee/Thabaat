@@ -92,16 +92,17 @@ const styles = StyleSheet.create({
 
   imagePlaceholder: {
     width: '100%',
-    height: 180,
-    backgroundColor: '#222',
+    height: 100,
+    backgroundColor: '#153A30',
     justifyContent: 'center',
     alignItems: 'center',
   },
 
   placeholderText: {
-    color: '#666',
+    color: '#E0FFF1',
     fontSize: 20,
     fontWeight: 'bold',
+    letterSpacing: 3,
   },
 
   content: {

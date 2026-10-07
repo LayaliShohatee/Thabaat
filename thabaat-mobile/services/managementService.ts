@@ -1,9 +1,10 @@
 import { supabase } from '@/lib/supabase'
+import type { EventDetails } from '@/lib/event-details'
 import type { Event } from '@/types'
 export type StaffRole = 'volunteer' | 'organizer' | 'admin'
 export type Permissions = { user_id: string; staff_role: StaffRole | null; can_manage_events: boolean; can_manage_roles: boolean; paid_member: boolean }
 export type RoleAccount = { user_id: string; full_name: string; email: string; staff_role: StaffRole | null }
-export type ManagedEvent = Event & { created_by?: string | null; archived?: boolean }
+export type ManagedEvent = Event & EventDetails & { created_by?: string | null; archived?: boolean }
 export type EventAttendees = {
  attendees: { registration_id:string; full_name:string; ticket_name:string; status:'confirmed'|'pending'|'cancelled'; registered_at:string }[]
  counts: { total:number; confirmed:number; pending:number; cancelled:number }
@@ -28,8 +29,8 @@ export async function getManagementEvents(): Promise<ManagedEvent[]> {
  if(error) throw failure(error)
  return (data || []).filter(event => !event.archived)
 }
-export async function saveEvent(input: { id: string | null; title: string; description: string; date: string; location: string; capacity: number }) {
- const {data,error}=await supabase.rpc('save_managed_event',{p_id:input.id,p_title:input.title,p_description:input.description,p_date:input.date,p_location:input.location,p_capacity:input.capacity})
+export async function saveEvent(input: { id: string | null; title: string; description: string; date: string; location: string; capacity: number; details: EventDetails }) {
+ const {data,error}=await supabase.rpc('save_event_details',{p_id:input.id,p_title:input.title,p_description:input.description,p_date:input.date,p_location:input.location,p_capacity:input.capacity,p_details:input.details})
  if(error) throw failure(error)
  return data as string
 }

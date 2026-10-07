@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "thabaat-mobile",
+    "name": "Thabaat",
     "slug": "thabaat-mobile",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -49,6 +49,30 @@
           "ios": {
             "enableSceneSupport": true
           }
+        }
+      ],
+      [
+        "expo-calendar",
+        {
+          "writeOnlyAccess": true,
+          "writeOnlyCalendarPermission": "Allow Thabaat to add events you choose to your calendar."
+        }
+      ],
+      [
+        "expo-video",
+        {
+          "supportsBackgroundPlayback": false,
+          "supportsPictureInPicture": false
+        }
+      ],
+      "expo-sharing",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Thabaat to scan attendee ticket QR codes.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
         }
       ]
     ],

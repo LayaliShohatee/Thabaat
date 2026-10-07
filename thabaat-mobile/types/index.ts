@@ -32,6 +32,7 @@ export interface Registration {
   event_id: string
   ticket_type_id: string
   status?: 'confirmed' | 'cancelled' | 'pending'
+  checked_in_at?: string | null
   created_at: string
   event?: Event
   ticket_type?: TicketType

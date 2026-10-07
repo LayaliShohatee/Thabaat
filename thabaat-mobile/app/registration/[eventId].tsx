@@ -17,6 +17,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { paidTestTicketId } from '@/lib/paid-event-test'
 import { isPaymentCheckEnabled } from '@/lib/payment-check'
 import { TicketType } from '@/types'
+import { isDemoMode } from '@/lib/demo-mode'
 
 export default function RegistrationScreen() {
   const { eventId } = useLocalSearchParams<{ eventId: string }>()
@@ -39,9 +40,9 @@ export default function RegistrationScreen() {
     setSubmitting(true)
 
     try {
-      await createRegistration(user.id, event.id, selectedTicket.id)
-      const notificationSent = await sendRegistrationConfirmation(event.id)
-      router.replace(`/registration/confirmation?eventTitle=${encodeURIComponent(event.title)}&notificationSent=${notificationSent}`)
+      const registration = await createRegistration(user.id, event.id, selectedTicket.id)
+      const notificationSent = isDemoMode ? false : await sendRegistrationConfirmation(event.id)
+      router.replace(`/registration/confirmation?eventTitle=${encodeURIComponent(event.title)}&notificationSent=${notificationSent}&freeRegistration=true&registrationId=${encodeURIComponent(registration.id)}&eventId=${encodeURIComponent(event.id)}`)
     } catch (error: any) {
       Alert.alert('Registration failed', error.message)
     } finally {

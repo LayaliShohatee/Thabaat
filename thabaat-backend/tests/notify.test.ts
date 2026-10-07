@@ -7,8 +7,13 @@ import type { SendPush } from '../src/routes/notify'
 const userId = '00000000-0000-0000-0000-000000000001'
 const eventId = '00000000-0000-0000-0000-000000000002'
 function fakeClient(overrides: Record<string, unknown> = {}) {
-  const rows: Record<string, any> = { registrations: { id: 'registration' }, profiles: { expo_push_token: 'ExponentPushToken[fixture]' }, events: { title: 'Fixture event' }, ...overrides }
+  const rows: Record<string, any> = { registrations: { id: 'registration', status:'confirmed' }, notification_preferences: {push_enabled:true,confirmations:true}, profiles: { expo_push_token: 'ExponentPushToken[fixture]' }, events: { title: 'Fixture event' }, ...overrides }
+  let deliveryStatus = 'pending'
   return {
+    rpc: async (name: string,args: any) => {
+      if(name==='claim_registration_confirmation'){const status=deliveryStatus;if(status==='pending'||status==='failed'){deliveryStatus='dispatching';return{data:{status:'claimed',id:'fixture-job'},error:null}}return{data:{status},error:null}}
+      deliveryStatus=args.p_status;return{data:null,error:null}
+    },
     auth: { getUser: async (token: string) => token === 'valid' ? { data: { user: { id: userId } }, error: null } : { data: { user: null }, error: { message: 'invalid' } } },
     from(table: string) {
       const query = {
@@ -58,4 +63,25 @@ test('verified own registration sends once and reports acceptance only', async (
     return [{ status: 'ok', id: 'ticket' }]
   })
   assert.equal(calls, 1); assert.equal(result.status, 200); assert.deepEqual(result.data, { success: true, status: 'accepted' })
+})
+
+test('opt-out and missing consent suppress confirmation without calling sender', async () => {
+ for (const preferences of [null,{push_enabled:false,confirmations:true},{push_enabled:true,confirmations:false}]) {
+  const result=await request(fakeClient({notification_preferences:preferences}),{eventId},'valid',async()=>{throw new Error('Must not send')})
+  assert.equal(result.status,200); assert.equal(result.data.status,'suppressed')
+ }
+})
+test('cancelled registrations cannot request confirmation',async()=>assert.equal((await request(fakeClient({registrations:{id:'registration',status:'cancelled'}}))).status,403))
+
+test('repeated endpoint requests share immutable claim and do not resend',async()=>{
+ const client=fakeClient();let sends=0;const sender:SendPush=async()=>{sends++;return[{status:'ok',id:'fixture-ticket'}]}
+ assert.equal((await request(client,{eventId},'valid',sender)).data.status,'accepted')
+ assert.equal((await request(client,{eventId},'valid',sender)).data.status,'accepted')
+ assert.equal(sends,1)
+})
+test('interrupted provider response is uncertain and repeated endpoint does not resend',async()=>{
+ const client=fakeClient();let sends=0;const sender:SendPush=async()=>{sends++;throw new Error('timeout')}
+ assert.equal((await request(client,{eventId},'valid',sender)).status,502)
+ assert.equal((await request(client,{eventId},'valid',sender)).data.status,'uncertain')
+ assert.equal(sends,1)
 })

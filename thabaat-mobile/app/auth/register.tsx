@@ -7,10 +7,12 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import {eventReturnPath} from '@/lib/event-sharing';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 
 export default function RegisterScreen() {
+  const {eventId}=useLocalSearchParams<{eventId?:string}>();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -50,11 +52,11 @@ export default function RegisterScreen() {
       }
 
       if (data.session) {
-        router.replace('/(tabs)');
+        router.replace(eventReturnPath(eventId)??'/(tabs)');
         return;
       }
 
-      setSuccessMessage('Check your email for a verification link before logging in.');
+      setSuccessMessage(eventReturnPath(eventId)?'Check your email to verify your account, then return to this shared link to sign in.':'Check your email for a verification link before logging in.');
     } catch {
       setErrorMessage('Unable to reach the account service. Please try again.');
     } finally {
@@ -123,7 +125,7 @@ export default function RegisterScreen() {
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push('/auth/login')}>
+      <TouchableOpacity onPress={() => router.push(eventReturnPath(eventId)?{pathname:'/auth/login',params:{eventId}}:'/auth/login')}>
         <Text style={styles.link}>Already have an account? Log in</Text>
       </TouchableOpacity>
     </View>

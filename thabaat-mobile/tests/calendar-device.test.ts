@@ -1,0 +1,12 @@
+import {beforeEach,expect,it,vi} from 'vitest'
+const mocks=vi.hoisted(()=>({platform:{OS:'ios'},request:vi.fn(),defaultCalendar:vi.fn(),enumerate:vi.fn(),editor:vi.fn()}))
+vi.mock('react-native',()=>({Platform:mocks.platform}))
+vi.mock('expo-calendar',()=>({requestCalendarPermissions:mocks.request,getDefaultCalendarSync:mocks.defaultCalendar,getCalendars:mocks.enumerate,EntityTypes:{EVENT:'event'}}))
+import {openDeviceCalendar} from '../services/eventCalendarService'
+const event={id:'fixture',title:'Synthetic event',event_date:'2030-01-01T12:00:00Z',location:'Synthetic venue',description:'Synthetic only'}
+beforeEach(()=>{vi.clearAllMocks();mocks.platform.OS='ios';mocks.request.mockResolvedValue({granted:true});mocks.defaultCalendar.mockReturnValue({addEventWithForm:mocks.editor});mocks.enumerate.mockResolvedValue([]);mocks.editor.mockResolvedValue({action:'saved'})})
+it('iOS uses its write-only virtual default without reading calendar flags',async()=>{expect(await openDeviceCalendar(event)).toBe('Event saved to your calendar.');expect(mocks.request).toHaveBeenCalledWith(true);expect(mocks.enumerate).not.toHaveBeenCalled();expect(mocks.editor).toHaveBeenCalledWith(expect.objectContaining({title:'Synthetic event',startNewActivityTask:false}))})
+it('cancel then reopen creates a fresh editor and reports the second save',async()=>{mocks.editor.mockResolvedValueOnce({action:'canceled'});expect(await openDeviceCalendar(event)).toContain('No event was added');expect(await openDeviceCalendar(event)).toContain('Event saved');expect(mocks.editor).toHaveBeenCalledTimes(2)})
+it('denied permission does not open an editor',async()=>{mocks.request.mockResolvedValue({granted:false});await expect(openDeviceCalendar(event)).rejects.toThrow('permission');expect(mocks.defaultCalendar).not.toHaveBeenCalled();expect(mocks.editor).not.toHaveBeenCalled()})
+it('native editor errors remain actionable and allow retry',async()=>{mocks.editor.mockRejectedValueOnce(new Error('Calendar editor unavailable'));await expect(openDeviceCalendar(event)).rejects.toThrow('editor unavailable');expect(await openDeviceCalendar(event)).toContain('Event saved')})
+it('Android selects a writable calendar and never calls the iOS default API',async()=>{mocks.platform.OS='android';mocks.enumerate.mockResolvedValue([{allowsModifications:false},{allowsModifications:true,addEventWithForm:mocks.editor}]);expect(await openDeviceCalendar(event)).toContain('Event saved');expect(mocks.defaultCalendar).not.toHaveBeenCalled();expect(mocks.request).toHaveBeenCalledWith(false)})

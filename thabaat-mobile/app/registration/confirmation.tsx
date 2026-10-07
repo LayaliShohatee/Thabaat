@@ -1,11 +1,13 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
+import RegisteredEventActions from '@/components/events/RegisteredEventActions'
+import { isDemoMode } from '@/lib/demo-mode'
 
 export default function ConfirmationScreen() {
-  const { eventTitle, notificationSent } = useLocalSearchParams<{ eventTitle: string; notificationSent?: string }>()
+  const { eventTitle, notificationSent, freeRegistration, registrationId, eventId } = useLocalSearchParams<{ eventTitle: string; notificationSent?: string; freeRegistration?: string; registrationId?: string; eventId?: string }>()
 
   return (
-    <View style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.checkmark}>✓</Text>
       <Text style={styles.title}>You&apos;re Registered!</Text>
       <Text style={styles.subtitle}>
@@ -14,7 +16,14 @@ export default function ConfirmationScreen() {
           : 'Your registration was successful'}
       </Text>
 
-      {notificationSent === 'false' && <Text style={styles.subtitle}>Your registration is saved. A push notification could not be sent.</Text>}
+      {!isDemoMode && notificationSent === 'false' && <Text style={styles.subtitle}>Your registration is saved. Push confirmation may be disabled or awaiting delivery.</Text>}
+      {registrationId && eventId && <RegisteredEventActions registrationId={registrationId} eventId={eventId} />}
+      {!isDemoMode && freeRegistration === 'true' && <>
+        <Text style={styles.subtitle}>Your ticket is free. You can choose to support Thabaat separately.</Text>
+        <TouchableOpacity accessibilityRole="button" style={styles.secondaryButton} onPress={() => router.push('/donations')}>
+          <Text style={styles.secondaryButtonText}>Optional support</Text>
+        </TouchableOpacity>
+      </>}
       <TouchableOpacity
         style={styles.button}
         onPress={() => router.replace('/(tabs)')}
@@ -28,13 +37,13 @@ export default function ConfirmationScreen() {
       >
         <Text style={styles.secondaryButtonText}>View My Events</Text>
       </TouchableOpacity>
-    </View>
+    </ScrollView>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#000',

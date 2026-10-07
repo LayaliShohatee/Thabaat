@@ -8,15 +8,28 @@ import {
   ActivityIndicator
 } from 'react-native'
 import { router } from 'expo-router'
-import { useCallback } from 'react'
-import { getUserRegistrations } from '@/services/registrationService'
+import { useCallback, useRef, useState } from 'react'
+import { cancelFreeRegistration, getUserRegistrations } from '@/services/registrationService'
 import { useAuth } from '@/hooks/useAuth'
 import { Registration } from '@/types'
 
 export default function MyEventsScreen() {
   const { user } = useAuth()
+  const [now] = useState(Date.now)
+  const [busy, setBusy] = useState<string | null>(null)
+  const actionInFlight = useRef(false)
+  const [cancelId, setCancelId] = useState<string | null>(null)
+  const [notice, setNotice] = useState('')
   const load = useCallback(() => user ? getUserRegistrations(user.id) : Promise.resolve([]), [user])
-  const { data: registrations, loading, error, reload } = useFocusResource<Registration[]>(load, [])
+  const { data: registrations, loading, error, reload } = useFocusResource<Registration[]>(load, [], 5000)
+
+  const cancel = async (item: Registration) => {
+    if (actionInFlight.current) return
+    actionInFlight.current = true; setBusy(item.id); setNotice('')
+    try { await cancelFreeRegistration(item.id); setCancelId(null); setNotice('Registration cancelled. Your ticket remains in history.'); await reload() }
+    catch (err) { setNotice(err instanceof Error ? err.message : typeof err === 'object' && err && 'message' in err ? String(err.message) : 'Cancellation failed. Please retry.') }
+    finally { actionInFlight.current = false; setBusy(null) }
+  }
 
   if (loading) {
     return (
@@ -34,7 +47,7 @@ export default function MyEventsScreen() {
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.list}
       ListHeaderComponent={
-        <Text style={styles.header}>My Events</Text>
+        <View><Text style={styles.header}>My Events</Text>{Boolean(notice) && <Text accessibilityRole="alert" style={styles.emptyText}>{notice}</Text>}</View>
       }
       ListEmptyComponent={
         <View style={styles.empty}>
@@ -48,9 +61,8 @@ export default function MyEventsScreen() {
         </View>
       }
       renderItem={({ item }) => (
-        <TouchableOpacity
-          style={styles.card}
-          onPress={() => router.push(`/event/${item.event_id}`)}
+        <View style={styles.card}><TouchableOpacity
+          onPress={() => router.push(item.status === 'confirmed' ? `/ticket/${item.id}` : `/event/${item.event_id}`)}
         >
           <View style={styles.cardContent}>
             <Text style={styles.eventTitle}>
@@ -61,7 +73,9 @@ export default function MyEventsScreen() {
                 {new Date(item.event.event_date).toLocaleDateString('en-US', {
                   weekday: 'short',
                   month: 'short',
-                  day: 'numeric'
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit'
                 })}
               </Text>
             )}
@@ -74,14 +88,27 @@ export default function MyEventsScreen() {
             ]}>
               <Text style={styles.statusText}>{item.status ?? 'registered'}</Text>
             </View>
+            {item.status === 'confirmed' && item.checked_in_at !== undefined && <Text accessibilityLiveRegion="polite" style={styles.actionText}>{item.checked_in_at ? `Checked in · ${new Date(item.checked_in_at).toLocaleString()}` : 'Not checked in'}</Text>}
           </View>
         </TouchableOpacity>
+          {item.status === 'confirmed' && <TouchableOpacity accessibilityRole="button" style={[styles.actionButton,styles.primaryAction]} onPress={() => router.push(`/ticket/${item.id}`)}><Text style={styles.actionText}>Open ticket</Text></TouchableOpacity>}
+          {item.status === 'confirmed' && !item.checked_in_at && Number(item.ticket_type?.price) === 0 && item.event && new Date(item.event.event_date).getTime() > now && <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => setCancelId(item.id)}><Text style={styles.actionText}>{busy === item.id ? 'Cancelling…' : 'Cancel free registration'}</Text></TouchableOpacity>}
+          {cancelId === item.id && item.status === 'confirmed' && <View style={styles.cardContent}>
+            <Text style={styles.actionText}>Cancel this free registration? Your place will be released. Re-registering depends on remaining availability.</Text>
+            <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => setCancelId(null)}><Text style={styles.actionText}>Keep registration</Text></TouchableOpacity>
+            <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => void cancel(item)}><Text style={styles.actionText}>{busy === item.id ? 'Cancelling…' : 'Confirm cancellation'}</Text></TouchableOpacity>
+          </View>}
+          {item.status === 'cancelled' && item.event && new Date(item.event.event_date).getTime() > now && <TouchableOpacity accessibilityRole="button" style={styles.actionButton} onPress={() => router.push(`/registration/${item.event_id}`)}><Text style={styles.actionText}>Register again</Text></TouchableOpacity>}
+        </View>
       )}
     />
   )
 }
 
 const styles = StyleSheet.create({
+  actionButton: { padding: 16, borderTopWidth: 1, borderColor: '#333' },
+  primaryAction: { backgroundColor:'#146B59',borderTopWidth:0 },
+  actionText: { color: '#fff', fontWeight: '600' },
   list: {
     backgroundColor: '#000',
     flexGrow: 1,
@@ -98,7 +125,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#fff',
     padding: 20,
-    paddingTop: 40
+    paddingTop: 72
   },
   empty: {
     flex: 1,
@@ -143,7 +170,7 @@ const styles = StyleSheet.create({
   },
   ticketType: {
     fontSize: 13,
-    color: '#666',
+    color: '#bbb',
     marginBottom: 8
   },
   statusBadge: {

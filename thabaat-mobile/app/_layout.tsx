@@ -1,11 +1,13 @@
 import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router/react-navigation'
-import { Stack, router, useSegments } from 'expo-router'
+import { Stack, router, useSegments, usePathname, useGlobalSearchParams } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
 import 'react-native-reanimated'
 import { useColorScheme } from '@/hooks/use-color-scheme'
 import { AuthProvider, useAuth } from '@/hooks/useAuth'
 import { authRedirect } from '@/lib/auth-routing'
+import {eventIdFromPath} from '@/lib/event-sharing'
+import { isDemoMode } from '@/lib/demo-mode'
 
 export const unstable_settings = {
   anchor: '(tabs)',
@@ -15,17 +17,23 @@ function Navigation() {
   const colorScheme = useColorScheme()
   const { user, loading } = useAuth()
   const segments = useSegments()
+  const pathname=usePathname()
+  const params=useGlobalSearchParams<{eventId?:string}>()
 
   useEffect(() => {
     if (loading) return
 
-    const destination = authRedirect(Boolean(user), segments)
-    if (destination) router.replace(destination)
-  }, [user, loading, segments])
+    const destination = authRedirect(Boolean(user), segments, params.eventId)
+    if (destination) {
+      const returnEventId=eventIdFromPath(pathname)
+      if(destination==='/auth/login'&&returnEventId)router.replace({pathname:'/auth/login',params:{eventId:returnEventId}})
+      else router.replace(destination)
+    }
+  }, [user, loading, segments, pathname, params.eventId])
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
+      <Stack screenOptions={{headerBackButtonDisplayMode:isDemoMode?'minimal':'default'}}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="auth/login" options={{ headerShown: false }} />
         <Stack.Screen name="auth/register" options={{ headerShown: false }} />

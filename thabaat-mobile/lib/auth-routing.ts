@@ -1,8 +1,9 @@
-export function authRedirect(signedIn: boolean, segments: readonly string[]) {
+import {eventReturnPath} from './event-sharing'
+export function authRedirect(signedIn: boolean, segments: readonly string[], returnEventId?: unknown) {
   const authPage = segments[0] === 'auth' ? segments[1] : undefined
   const publicAuth = ['login', 'register', 'forgot-password', 'callback', 'reset-password']
   if (!signedIn && !publicAuth.includes(authPage ?? '')) return '/auth/login' as const
-  if (signedIn && ['login', 'register', 'forgot-password'].includes(authPage ?? '')) return '/(tabs)' as const
+  if (signedIn && ['login', 'register', 'forgot-password'].includes(authPage ?? '')) return eventReturnPath(returnEventId) ?? '/(tabs)' as const
   return null
 }
 

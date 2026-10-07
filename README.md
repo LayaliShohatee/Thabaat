@@ -1,34 +1,45 @@
 # Thabaat
 
-This branch contains the **complete mobile and backend projects**, including unchanged files inherited from the original code, plus the Expo SDK 57 fixes, membership/payment screens and the manually verified paid-event test. It is not just a review document or a patch.
+Latest team handoff prepared October 7, 2026 on `codex/thabaat-team-handoff-20261007`. This repository includes the Expo mobile app, Express backend, lockfiles, tests and database source. Publishing a branch does not merge it into `main` or deploy its services.
 
-## Two separate versions
+Start with [the current team setup guide](docs/TEAM_SETUP.md) for Windows, iPhone and Mac instructions. [Current implementation status](docs/CURRENT_STATUS.md) distinguishes implemented code, deployed development schema, historical device checks and remaining work.
 
-- [Original code: main](https://github.com/LayaliShohatee/Thabaat/tree/main)
-- [Updated code: codex/expo57-mobile-fixes](https://github.com/LayaliShohatee/Thabaat/tree/codex/expo57-mobile-fixes)
-- [Compare every change](https://github.com/LayaliShohatee/Thabaat/compare/main...codex/expo57-mobile-fixes)
+## Get the handoff
 
-Publishing this branch does not merge it into main. Keep the pull request unmerged while reviewing the two versions separately.
-
-## Project files
-
-| Folder | Contents |
-|---|---|
-| [thabaat-mobile](thabaat-mobile/) | Expo app screens, components, hooks, services, assets, configuration, dependency lockfile, and tests |
-| [thabaat-backend](thabaat-backend/) | Express notification service, authentication middleware, configuration, dependency lockfile, and tests |
-| [Database files](thabaat-mobile/database/) | Reference schema, integrity migration, and synthetic staging seed; applied to separate staging, with the original hosted database unchanged |
-| [Review](docs/mobile-sdk57-review.md) | What changed, verification evidence, requirement coverage, and remaining work |
-| [Paid-only iPhone event test](docs/PAID_EVENT_TEST.md) | Staging migration/seed, $1 phone checkout, manual payment verification, access gating and test evidence |
-| [Payment integration](docs/PAYMENTS_INTEGRATION.md) | Hosted checkout behavior, membership/donation status and remaining API/webhook work |
-| [Complete team setup](docs/TEAM_SETUP.md) | Everything from cloning and environment configuration through database setup, iPhone signing, tests, troubleshooting, and the change summary |
-
-## Get the updated version
+The following command works once this handoff branch is published. Until then, the public `codex/expo57-mobile-fixes` branch remains an older checkpoint; use the provided local transfer package for unpublished work.
 
 ```bash
-git clone --branch codex/expo57-mobile-fixes https://github.com/LayaliShohatee/Thabaat.git
-cd Thabaat
+git clone --branch codex/thabaat-team-handoff-20261007 https://github.com/LayaliShohatee/Thabaat.git Thabaat-handoff
+cd Thabaat-handoff
 ```
 
-Start with the [complete team setup guide](docs/TEAM_SETUP.md). It covers both projects and the physical iPhone setup from beginning to end. Dependencies are reproduced with `npm ci` using the included lockfiles.
+## Install and run
 
-Environment values, Apple certificates/profiles, device identifiers, generated native projects, compiled apps, caches, and installed dependencies stay local. Example environment files and reproducible setup instructions are included instead. The supplied planning ZIP was reviewed for requirements; its original attachments are not republished here.
+Use Node.js 24 LTS with npm; the mobile package requires Node >=22.13.0. The current source uses Expo SDK 57, React Native 0.86.3 and React 19.2.3. Install each project's own lockfile dependencies with `npm ci`.
+
+From `thabaat-mobile`, copy `.env.example` to `.env.local`, then fill the approved project URL and publishable key privately. On Windows use `Copy-Item .env.example .env.local`; on Mac use `cp .env.example .env.local`.
+
+```bash
+cd thabaat-mobile
+npm ci
+npm run typecheck
+npm run lint
+npm test
+npm run web
+```
+
+For a compatible installed development client, use `npx expo start --dev-client --lan`. The standalone iPhone Release app contains its own JavaScript and does not require Metro, but backend data still requires internet. Windows can serve JavaScript to an existing compatible iPhone development client; native iOS compilation requires Mac/Xcode or a separately authorized cloud build. Expo Go is not a substitute for verifying this project's native modules.
+
+The optional backend runs from `thabaat-backend`: configure its private `.env`, then `npm ci`, `npm test` and `npm run dev`. See the setup guide for its Windows compiled-build equivalent; `npm run build` currently uses Unix copy commands.
+
+## Current member and staff flow
+
+- Home discovers upcoming events; My Events shows the caller's bookings.
+- Successful check-in is saved on the server. My Events and tickets display attendance separately from booking status and refresh while active.
+- Events → Check in an event → View attendee check-ins (event manager) shows an authorized roster with names and check-in times.
+- Repeat scans return Already checked in and preserve the original time. Invalid, unauthorized and outside-window scans remain rejected.
+- Full Events, Permissions and Profile navigation is retained. Optional features may report missing setup where their migrations or services remain undeployed.
+
+The hosted development schema and live services are not automatically installed by cloning this repository. Six additional local migrations remain unapplied. Payments, Wallet signing, production FCM/APNs delivery, scheduler/hosting integration and complete production acceptance remain unfinished; see [status](docs/CURRENT_STATUS.md).
+
+Environment values, generated native projects, installed dependencies, compiled apps, signing material, private QR files and personal screenshots stay local. Do not run bulk migrations, publish private data, force-push teammate work or treat passing tests as production readiness.
