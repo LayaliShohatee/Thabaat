@@ -1,7 +1,19 @@
-import { Request, Response, NextFunction } from 'express'
+import type { Request, Response, NextFunction } from 'express'
+import type { SupabaseClient } from '@supabase/supabase-js'
 
-// Placeholder — verify Supabase JWT on protected routes
-// Jenna implements this when securing the notify endpoint
-export function verifyAuth(req: Request, res: Response, next: NextFunction) {
-  next() // Remove this line when implementing real auth
+export function verifyAuth(client: SupabaseClient | null) {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const bearer = /^Bearer\s+(\S+)$/i.exec(req.headers.authorization || '')
+    if (!bearer) return res.status(401).json({ error: 'Authentication required' })
+    if (!client) return res.status(503).json({ error: 'Server authentication is not configured' })
+    try {
+      const { data, error } = await client.auth.getUser(bearer[1])
+      if (error || !data.user) return res.status(401).json({ error: 'Invalid or expired session' })
+      res.locals.userId = data.user.id
+      res.locals.userEmail = data.user.email
+      next()
+    } catch {
+      return res.status(503).json({ error: 'Unable to verify session' })
+    }
+  }
 }

@@ -1,3 +1,6 @@
+import { useFocusResource } from '@/hooks/useFocusResource'
+import { brand } from '@/constants/brand'
+import { Alert } from '@/lib/alert'
 import {
   View,
   Text,
@@ -6,44 +9,38 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert
 } from 'react-native'
 import { useLocalSearchParams, router } from 'expo-router'
-import { useEffect, useState } from 'react'
+import { useCallback } from 'react'
 import { getEventById } from '@/services/eventService'
 import { checkExistingRegistration } from '@/services/registrationService'
 import { useAuth } from '@/hooks/useAuth'
+import { paidTestEventId } from '@/lib/paid-event-test'
+import { EventStructuredDetails } from '@/components/EventStructuredDetails'
+import type { EventDetails } from '@/lib/event-details'
 import { Event } from '@/types'
+import CalendarActions from '@/components/events/CalendarActions'
+import EventShareActions from '@/components/events/EventShareActions'
+import { isDemoMode } from '@/lib/demo-mode'
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
   const { user } = useAuth()
-  const [event, setEvent] = useState<Event | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [alreadyRegistered, setAlreadyRegistered] = useState(false)
-
-  useEffect(() => {
-    if (!id) return
-
-    Promise.all([
-      getEventById(id),
-      user ? checkExistingRegistration(user.id, id) : Promise.resolve(false)
-    ])
-      .then(([eventData, registered]) => {
-        setEvent(eventData)
-        setAlreadyRegistered(registered)
-      })
-      .catch(console.error)
-      .finally(() => setLoading(false))
+  const load = useCallback(async (): Promise<[Event | null, boolean]> => {
+    if (!id) throw new Error('Missing event ID.')
+    return Promise.all([getEventById(id), user ? checkExistingRegistration(user.id, id) : Promise.resolve(false)])
   }, [id, user])
+  const { data: [event, alreadyRegistered], loading, error, reload } = useFocusResource(load, [null, false])
 
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#fff" />
+        <ActivityIndicator size="large" color={brand.green} />
       </View>
     )
   }
+
+  if (error) return <View style={styles.centered}><Text style={styles.errorText} accessibilityRole="alert">{error}</Text><TouchableOpacity accessibilityRole="button" style={styles.registerButton} onPress={reload}><Text>Try Again</Text></TouchableOpacity></View>
 
   if (!event) {
     return (
@@ -53,7 +50,7 @@ export default function EventDetailScreen() {
     )
   }
 
-  const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
+  const formattedDate = new Date(event.event_date).toLocaleDateString('en-US', {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
@@ -82,14 +79,16 @@ export default function EventDetailScreen() {
         <Text style={styles.title}>{event.title}</Text>
         <Text style={styles.date}>{formattedDate}</Text>
         <Text style={styles.location}>{event.location}</Text>
-        {event.speaker_name && (
-          <Text style={styles.speaker}>Speaker: {event.speaker_name}</Text>
-        )}
+        <EventStructuredDetails event={event as Event & EventDetails}/>
+        {!isDemoMode && <TouchableOpacity accessibilityRole="button" style={styles.registerButton} onPress={()=>router.push(`/waitlist/${id}`)}><Text style={styles.registerButtonText}>Waitlist options</Text></TouchableOpacity>}
         <Text style={styles.sectionTitle}>About this event</Text>
         <Text style={styles.description}>{event.description}</Text>
       </View>
 
       <View style={styles.footer}>
+        <CalendarActions event={event} />
+        {!isDemoMode && <EventShareActions eventId={event.id}/>}
+        {alreadyRegistered && id === paidTestEventId && <TouchableOpacity accessibilityRole="button" style={styles.registerButton} onPress={() => router.push(`/event/access/${id}`)}><Text style={styles.registerButtonText}>Open paid event access</Text></TouchableOpacity>}
         <TouchableOpacity
           style={[
             styles.registerButton,
@@ -110,13 +109,13 @@ export default function EventDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000'
+    backgroundColor: brand.page
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000'
+    backgroundColor: brand.page
   },
   image: {
     width: '100%',
@@ -128,34 +127,34 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: brand.ink,
     marginBottom: 8
   },
   date: {
     fontSize: 15,
-    color: '#aaa',
+    color: brand.inkMuted,
     marginBottom: 4
   },
   location: {
     fontSize: 15,
-    color: '#aaa',
+    color: brand.inkMuted,
     marginBottom: 4
   },
   speaker: {
     fontSize: 15,
-    color: '#aaa',
+    color: brand.inkMuted,
     marginBottom: 16
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: brand.ink,
     marginTop: 16,
     marginBottom: 8
   },
   description: {
     fontSize: 15,
-    color: '#ccc',
+    color: brand.inkMuted,
     lineHeight: 22
   },
   footer: {
@@ -163,21 +162,21 @@ const styles = StyleSheet.create({
     paddingBottom: 40
   },
   registerButton: {
-    backgroundColor: '#fff',
+    backgroundColor: brand.green,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center'
   },
   registeredButton: {
-    backgroundColor: '#333'
+    backgroundColor: brand.greenSoft
   },
   registerButtonText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold'
   },
   errorText: {
-    color: '#fff',
+    color: brand.ink,
     fontSize: 16
   }
 })

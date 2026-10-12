@@ -1,0 +1,6 @@
+import { expect,it } from 'vitest'
+import { centsFromInput,issuanceRequestId,membershipAuditCsv,membershipStateCsv } from '../lib/membership-admin'
+import type { MembershipAdminReport } from '../services/membershipAdminService'
+it('parses approved prices without fractional-cent rounding and rejects invalid values',()=>{expect(centsFromInput('12.34')).toBe(1234);for(const value of ['0','-2','0.001','x','1e3'])expect(()=>centsFromInput(value)).toThrow()})
+it('uses request IDs without presenting them as entitlement credentials',()=>expect(issuanceRequestId()).toMatch(/^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/))
+it('exports state and capped administrative history with safe CSV cells and no invented revenue',()=>{const report={memberships:[{user_id:'u',full_name:'=cmd',plan_name:'Community',status:'active',source:'complimentary',starts_at:'a',expires_at:'b',active:true,cancel_at_period_end:false}],history:[{id:'x',target_user_id:'u',actor_name:'Admin',action:'complimentary_issued',reason:'Approved, reason',recorded_at:'x'}]} as MembershipAdminReport;expect(membershipStateCsv(report)).toContain("\"'=cmd\"");expect(membershipStateCsv(report)).toContain('"complimentary"');expect(membershipAuditCsv(report)).toContain('"Approved, reason"');expect(membershipStateCsv(report)).not.toContain('Revenue')})

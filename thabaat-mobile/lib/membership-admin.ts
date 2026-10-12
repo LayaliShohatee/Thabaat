@@ -1,0 +1,7 @@
+import { csvCell } from './staff-reporting'
+import type { MembershipAdminReport } from '../services/membershipAdminService'
+export function membershipStateCsv(report:MembershipAdminReport){return [['Account ID','Name','Plan','Recorded status','Effective access','Source','Starts at','Expires at','Renewal cancelled'],...report.memberships.map(m=>[m.user_id,m.full_name,m.plan_name,m.status,m.active?'Active':'Locked',m.source,m.starts_at,m.expires_at,m.cancel_at_period_end?'Yes':'No'])].map(row=>row.map(csvCell).join(',')).join('\r\n')}
+export function membershipAuditCsv(report:MembershipAdminReport){return [['Audit ID','Account ID','Administrator','Action','Reason','Recorded at'],...report.history.map(h=>[h.id,h.target_user_id,h.actor_name,h.action,h.reason,h.recorded_at])].map(row=>row.map(csvCell).join(',')).join('\r\n')}
+export function centsFromInput(value:string){if(!/^\d+(\.\d{1,2})?$/.test(value.trim()))throw new Error('Enter an approved price with up to two decimal places.');const cents=Math.round(Number(value)*100);if(!Number.isSafeInteger(cents)||cents<=0||cents>2147483647)throw new Error('Enter a valid positive price.');return cents}
+// Request identifiers only, not credentials or entitlement tokens.
+export function issuanceRequestId(){return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const n=Math.floor(Math.random()*16);return(c==='x'?n:(n&3)|8).toString(16)})}

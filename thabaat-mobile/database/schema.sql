@@ -1,6 +1,7 @@
 -- Thabaat Community Platform Schema
 -- Last updated: 2026-08-18
--- Apply this in Supabase SQL Editor
+-- Fresh-project reference only; do not run CREATE TABLE statements against an existing project.
+-- After creating tables, apply migrations/20260921_prototype_integrity.sql in staging.
 
 -- Profiles table (extends Supabase auth.users)
 CREATE TABLE profiles (
@@ -16,7 +17,7 @@ CREATE TABLE events (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   title TEXT NOT NULL,
   description TEXT,
-  date TIMESTAMPTZ NOT NULL,
+  event_date TIMESTAMPTZ NOT NULL,
   location TEXT NOT NULL,
   image_url TEXT,
   speaker_name TEXT,

@@ -1,0 +1,26 @@
+import { afterEach, expect, it, vi } from 'vitest'
+const getSession = vi.hoisted(() => vi.fn())
+vi.mock('@/lib/supabase', () => ({ supabase: { auth: { getSession } } }))
+afterEach(() => { vi.unstubAllEnvs(); vi.unstubAllGlobals(); vi.resetModules(); vi.clearAllMocks() })
+it('skips unconfigured notification backend without a request', async () => {
+  vi.stubEnv('EXPO_PUBLIC_BACKEND_URL', '')
+  const fetcher = vi.fn(); vi.stubGlobal('fetch', fetcher)
+  const { sendRegistrationConfirmation } = await import('../services/notificationService')
+  expect(await sendRegistrationConfirmation('event')).toBe(false)
+  expect(fetcher).not.toHaveBeenCalled()
+})
+it('sends the session bearer token and derives user identity on the server', async () => {
+  vi.stubEnv('EXPO_PUBLIC_BACKEND_URL', 'http://localhost:3000/')
+  getSession.mockResolvedValue({ data: { session: { access_token: 'test-session' } }, error: null })
+  const fetcher = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ success: true }) }); vi.stubGlobal('fetch', fetcher)
+  const { sendRegistrationConfirmation } = await import('../services/notificationService')
+  expect(await sendRegistrationConfirmation('event')).toBe(true)
+  expect(fetcher).toHaveBeenCalledWith('http://localhost:3000/notify', expect.objectContaining({ headers: { 'Content-Type': 'application/json', Authorization: 'Bearer test-session' }, body: JSON.stringify({ eventId: 'event' }) }))
+})
+it('does not fail a saved registration on a notification outage', async () => {
+  vi.stubEnv('EXPO_PUBLIC_BACKEND_URL', 'http://localhost:3000')
+  getSession.mockResolvedValue({ data: { session: { access_token: 'test-session' } }, error: null })
+  vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new Error('offline')))
+  const { sendRegistrationConfirmation } = await import('../services/notificationService')
+  expect(await sendRegistrationConfirmation('event')).toBe(false)
+})

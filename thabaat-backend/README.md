@@ -1,36 +1,38 @@
-# Thabaat Backend
+# Thabaat backend
 
-Node.js + Express backend for the Thabaat Community Platform.
+Start with the [complete team setup guide](../docs/TEAM_SETUP.md) to reproduce both projects and the iPhone environment from the beginning.
 
-## Setup
+Express API for registration push confirmations. Authentication and the event database use Supabase. The mobile app lives in `../thabaat-mobile`.
 
-1. Install dependencies:
-   npm install
+The optional CharityStack checkout and signed-webhook transport is documented in [CHARITYSTACK_BACKEND.md](../docs/CHARITYSTACK_BACKEND.md). It is disabled by default; it does not automatically grant paid access. The guide covers credentials, test/live separation, database migration, deployment and unresolved provider contracts.
 
-2. Create your .env file (copy the format from .env in this folder):
-   PORT=3000
-   SUPABASE_URL=your-supabase-url
-   SUPABASE_SERVICE_KEY=your-service-role-key
+## Local setup
 
-3. Run in development mode:
-   npm run dev
+```bash
+npm ci
+cp .env.example .env
+# Fill in the backend-only Supabase URL and service-role key.
+npm run dev
+```
 
-4. Test the backend is running:
-   GET http://localhost:3000/health
+The publishable key used by the mobile app is not a service-role key. Keep the service-role key on the backend only. `.env` is ignored by Git.
 
-## Available Scripts
+Without credentials the server still starts and `/health` returns `notificationsConfigured: false`. Authenticated notification requests return 503 until configured; a healthy process alone does not prove push delivery.
 
-- npm run dev    — runs with nodemon (auto-restarts on file changes)
-- npm run build  — compiles TypeScript to dist/
-- npm start      — runs compiled output from dist/
+## Checks
 
-## Structure
+```bash
+npm test
+npm run build
+npm start
+```
 
-src/
-  index.ts          — Express app entry point
-  routes/
-    notify.ts       — POST /notify — push notification dispatch (Jenna)
-  middleware/
-    auth.ts         — JWT verification middleware
-  lib/
-    supabaseAdmin.ts — Supabase client with service role key
+`GET /health` checks the process. `POST /notify` requires `Authorization: Bearer <Supabase access token>` and JSON `{ "eventId": "<uuid>" }`. The server verifies the session, looks up the caller's registration, and only sends to that caller's stored Expo push token. Callers cannot select another recipient. The endpoint is rate limited to 10 requests per minute per IP.
+
+The response `{ "success": true, "status": "accepted" }` means Expo accepted the push ticket; it does not prove device delivery. Push receipts, scheduled reminders, preferences, and admin broadcasts are not implemented.
+
+## Database and device prerequisites
+
+Review `../thabaat-mobile/database/migrations/20260921_prototype_integrity.sql` in staging first. The inspected original hosted prototype lacks `profiles.expo_push_token`. The migration was tested in isolated PostgreSQL and applied to a separate hosted staging project; the original database remains unchanged. Existing permissive RLS policies need owner review. Backend credentials must belong to the same project as the mobile app; its staging configuration currently leaves notifications disabled pending that setup.
+
+For actual delivery, configure an Expo project ID and APNs/FCM credentials, build the app for a physical device, and use Profile → Enable Notifications. Set the mobile `EXPO_PUBLIC_BACKEND_URL` to a reachable backend address. `localhost` on a phone points to the phone itself. If Expo push access-token security is enabled, set `EXPO_ACCESS_TOKEN` on this backend.

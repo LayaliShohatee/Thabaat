@@ -1,6 +1,7 @@
+import { authRedirectUrl } from '@/lib/auth-links'
+import { Alert } from '@/lib/alert'
 import { useState } from 'react';
 import {
-  Alert,
   StyleSheet,
   Text,
   TextInput,
@@ -15,28 +16,35 @@ export default function ForgotPasswordScreen() {
   const [loading, setLoading] = useState(false);
 
   async function handleResetRequest() {
-    if (!email) {
-      Alert.alert('Missing information', 'Please enter your email.');
-      return;
+    if (loading) return;
+    try {
+      if (!email) {
+        Alert.alert('Missing information', 'Please enter your email.');
+        return;
+      }
+
+      setLoading(true);
+
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: authRedirectUrl('reset-password'),
+      });
+
+      setLoading(false);
+
+      if (error) {
+        Alert.alert('Something went wrong', error.message);
+        return;
+      }
+
+      Alert.alert(
+        'Check your email',
+        'We sent you a password reset link.'
+      );
+    } catch (error) {
+      Alert.alert('Unable to complete request', error instanceof Error ? error.message : 'Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(true);
-
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'thabaat://auth/reset-password',
-    });
-
-    setLoading(false);
-
-    if (error) {
-      Alert.alert('Something went wrong', error.message);
-      return;
-    }
-
-    Alert.alert(
-      'Check your email',
-      'We sent you a password reset link.'
-    );
   }
 
   return (
@@ -44,7 +52,7 @@ export default function ForgotPasswordScreen() {
       <Text style={styles.title}>Forgot Password?</Text>
 
       <Text style={styles.subtitle}>
-        Enter your email and we'll send you a link to reset your password.
+        Enter your email and we&apos;ll send you a link to reset your password.
       </Text>
 
       <TextInput

@@ -1,15 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
-import dotenv from 'dotenv'
+import 'dotenv/config'
 
-dotenv.config()
-
-const supabaseUrl = process.env.SUPABASE_URL!
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_KEY!
-
-if (!supabaseUrl || !supabaseServiceKey) {
-  throw new Error('Missing Supabase environment variables')
-}
-
-// This client uses the service role key — it bypasses RLS
-// Never expose this key in the mobile app
-export const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
+const url = process.env.SUPABASE_URL
+const key = process.env.SUPABASE_SERVICE_KEY
+// Keep /health available without credentials; protected operations fail closed.
+export const supabaseAdmin = url && key ? createClient(url, key, {
+  auth: { persistSession: false, autoRefreshToken: false },
+}) : null

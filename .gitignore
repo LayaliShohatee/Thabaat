@@ -1,0 +1,40 @@
+# Local configuration and credentials
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p8
+*.p12
+*.jks
+*.mobileprovision
+*service-account*.json
+*service_account*.json
+credentials.json
+
+# Dependencies, generated native projects, build outputs and local CLI state
+node_modules/
+Pods/
+**/ios/
+**/android/
+.expo/
+dist/
+build/
+coverage/
+**/supabase/.temp/
+
+# Private phone/demo evidence and machine files
+demo-backups/
+*.ipa
+*.apk
+*.aab
+*.log
+.DS_Store
+Thumbs.db
+
+# Internal development acceptance/evidence notes remain local
+/docs/*_ACCEPTANCE.md
+/docs/DEMO_RUNBOOK.md
+/docs/REMAINING_STAGING_REVIEW.md
+/docs/NOTIFICATION_ACTIVATION_REVIEW.md
+/docs/ANONYMOUS_EXECUTE_REVIEW.md

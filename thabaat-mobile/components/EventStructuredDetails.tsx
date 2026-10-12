@@ -1,0 +1,6 @@
+import { Text, View } from 'react-native'
+import type { EventDetails } from '@/lib/event-details'
+import { managementStyles as styles } from './ManagementUI'
+export function EventStructuredDetails({event}: {event: EventDetails}) {
+ return <View>{event.members_only&&<Text style={styles.alert}>Members only · Active verified membership required to register.</Text>}{event.end_at&&<Text style={styles.text}>Ends {new Date(event.end_at).toLocaleString(undefined,event.timezone ? {timeZone:event.timezone}:undefined)} · {event.timezone || 'Displayed in your device timezone'}</Text>}{([['Address',event.address],['Speaker',event.speaker_name],['About the speaker',event.speaker_bio],['Age',event.age_min||event.age_max ? event.age_min && event.age_max ? `${event.age_min}–${event.age_max} years` : event.age_min ? `${event.age_min}+ years` : `Up to ${event.age_max} years` : null],['Gender eligibility',event.audience_gender],['Eligibility',event.eligibility],['Logistics',event.logistics],['FAQs',event.faqs]] as const).filter(([,text])=>!!text).map(([label,text])=><View key={label} style={{marginVertical:8}}><Text style={styles.heading}>{label}</Text><Text style={styles.text}>{text}</Text></View>)}</View>
+}

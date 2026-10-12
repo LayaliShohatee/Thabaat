@@ -1,0 +1,41 @@
+BEGIN;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS age_min text;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS age_max text;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS audience_gender text NOT NULL DEFAULT '';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS address text NOT NULL DEFAULT '';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS speaker_name text;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS speaker_bio text NOT NULL DEFAULT '';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS logistics text NOT NULL DEFAULT '';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS eligibility text NOT NULL DEFAULT '';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS faqs text NOT NULL DEFAULT '';
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS timezone text;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS end_at timestamptz;
+ALTER TABLE public.events ADD COLUMN IF NOT EXISTS members_only boolean NOT NULL DEFAULT false;
+CREATE OR REPLACE FUNCTION public.has_active_membership(p_user_id uuid) RETURNS boolean LANGUAGE sql STABLE SECURITY INVOKER SET search_path='' AS $$ SELECT EXISTS(SELECT 1 FROM public.memberships WHERE user_id=p_user_id AND status='active' AND starts_at<=now() AND expires_at>now() AND verified_at<=now()) $$;
+REVOKE ALL ON FUNCTION public.has_active_membership(uuid) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.has_active_membership(uuid) TO authenticated,service_role;
+CREATE OR REPLACE FUNCTION public.enforce_event_membership() RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$ BEGIN
+ IF TG_OP='UPDATE' AND NEW.status='cancelled' THEN RETURN NEW; END IF;
+ IF EXISTS(SELECT 1 FROM public.events WHERE id=NEW.event_id AND members_only) AND NOT public.has_active_membership(NEW.user_id) THEN RAISE EXCEPTION 'An active verified membership is required for this event'; END IF;
+ RETURN NEW; END $$;
+REVOKE ALL ON FUNCTION public.enforce_event_membership() FROM PUBLIC,anon,authenticated;
+DROP TRIGGER IF EXISTS thabaat_event_membership ON public.registrations;
+CREATE TRIGGER thabaat_event_membership BEFORE INSERT OR UPDATE OF status,event_id,user_id,ticket_type_id ON public.registrations FOR EACH ROW EXECUTE FUNCTION public.enforce_event_membership();
+CREATE OR REPLACE FUNCTION public.save_event_details(p_id uuid,p_title text,p_description text,p_date timestamptz,p_location text,p_capacity integer,p_details jsonb) RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+DECLARE result_id uuid; ending timestamptz; zone text;
+BEGIN
+ IF p_details IS NULL OR jsonb_typeof(p_details)<>'object' THEN RAISE EXCEPTION 'Event details must be an object'; END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_each_text(p_details) x WHERE x.key IN ('image_url','audience_gender','address','speaker_name','speaker_bio','logistics','eligibility','faqs') AND length(x.value)>5000) THEN RAISE EXCEPTION 'Event detail exceeds 5000 characters'; END IF;
+ IF coalesce(p_details->>'image_url','')<>'' AND (p_details->>'image_url') !~* '^https://' THEN RAISE EXCEPTION 'Event images must use HTTPS'; END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_each_text(p_details) x WHERE x.key IN ('age_min','age_max') AND coalesce(x.value,'')<>'' AND (x.value !~ '^[0-9]{1,3}$' OR CASE WHEN x.value ~ '^[0-9]{1,3}$' THEN x.value::integer>120 ELSE false END)) THEN RAISE EXCEPTION 'Age limits must be whole numbers from 0 to 120'; END IF;
+ IF nullif(p_details->>'age_min','')::integer>NULLIF(p_details->>'age_max','')::integer THEN RAISE EXCEPTION 'Maximum age must be at least minimum age'; END IF;
+ zone:=nullif(p_details->>'timezone','');
+ IF zone IS NOT NULL AND NOT EXISTS(SELECT 1 FROM pg_catalog.pg_timezone_names WHERE name=zone) THEN RAISE EXCEPTION 'Choose a valid IANA timezone'; END IF;
+ ending:=nullif(p_details->>'end_at','')::timestamptz;
+ IF ending IS NOT NULL AND ending<=p_date THEN RAISE EXCEPTION 'End time must be after start time'; END IF;
+ result_id:=public.save_managed_event(p_id,p_title,p_description,p_date,p_location,p_capacity);
+ UPDATE public.events SET image_url=nullif(p_details->>'image_url',''),age_min=nullif(p_details->>'age_min',''),age_max=nullif(p_details->>'age_max',''),audience_gender=coalesce(p_details->>'audience_gender',''),address=coalesce(p_details->>'address',''),speaker_name=nullif(p_details->>'speaker_name',''),speaker_bio=coalesce(p_details->>'speaker_bio',''),logistics=coalesce(p_details->>'logistics',''),eligibility=coalesce(p_details->>'eligibility',''),faqs=coalesce(p_details->>'faqs',''),timezone=zone,end_at=ending,members_only=coalesce((p_details->>'members_only')::boolean,false) WHERE id=result_id;
+ RETURN result_id; END $$;
+REVOKE ALL ON FUNCTION public.save_event_details(uuid,text,text,timestamptz,text,integer,jsonb) FROM PUBLIC,anon;
+GRANT EXECUTE ON FUNCTION public.save_event_details(uuid,text,text,timestamptz,text,integer,jsonb) TO authenticated;
+COMMIT;

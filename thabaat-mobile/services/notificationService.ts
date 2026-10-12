@@ -1,20 +1,22 @@
-const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL // make sure to add http://localhost:3000 to backend .env file
+import { supabase } from '@/lib/supabase'
 
-export async function sendRegistrationConfirmation(
-  userId: string,
-  eventId: string
-) {
+const BACKEND_URL = process.env.EXPO_PUBLIC_BACKEND_URL
+export async function sendRegistrationConfirmation(eventId: string): Promise<boolean> {
+  if (!BACKEND_URL) return false
   try {
-    const response = await fetch(`${BACKEND_URL}/notify`, {
+    const { data, error } = await supabase.auth.getSession()
+    if (error || !data.session) return false
+    const response = await fetch(`${BACKEND_URL.replace(/\/$/, '')}/notify`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, eventId })
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${data.session.access_token}` },
+      body: JSON.stringify({ eventId }),
+      signal: AbortSignal.timeout(5000),
     })
-
-    if (!response.ok) {
-      console.error('Failed to send notification')
-    }
-  } catch (error) {
-    console.error('Notification service error:', error)
+    if (!response.ok) return false
+    const result = await response.json()
+    return result.success === true
+  } catch {
+    // An unavailable notification service must not undo a saved registration.
+    return false
   }
 }

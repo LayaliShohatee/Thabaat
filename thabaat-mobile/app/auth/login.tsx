@@ -1,41 +1,51 @@
+import { Alert } from '@/lib/alert'
+import { brand } from '@/constants/brand'
 import { useState } from 'react';
 import {
-  Alert,
   StyleSheet,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import {eventReturnPath} from '@/lib/event-sharing';
 import { supabase } from '@/lib/supabase';
 
 export default function LoginScreen() {
+  const {eventId}=useLocalSearchParams<{eventId?:string}>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleLogin() {
-    if (!email || !password) {
-      Alert.alert('Missing information', 'Please enter your email and password.');
-      return;
+    if (loading) return;
+    try {
+      if (!email || !password) {
+        Alert.alert('Missing information', 'Please enter your email and password.');
+        return;
+      }
+
+      setLoading(true);
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      });
+
+      setLoading(false);
+
+      if (error) {
+        Alert.alert('Login failed', error.message);
+        return;
+      }
+
+      router.replace(eventReturnPath(eventId) ?? '/(tabs)');
+    } catch (error) {
+      Alert.alert('Unable to complete request', error instanceof Error ? error.message : 'Please try again.');
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(true);
-
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    setLoading(false);
-
-    if (error) {
-      Alert.alert('Login failed', error.message);
-      return;
-    }
-
-    router.replace('/(tabs)');
   }
 
   return (
@@ -43,6 +53,7 @@ export default function LoginScreen() {
       <Text style={styles.logo}>Thabaat</Text>
 
       <Text style={styles.title}>Welcome back</Text>
+      {eventReturnPath(eventId)?<Text style={{color:'#bbb',marginBottom:12}}>Sign in to open the shared event.</Text>:null}
 
       <Text style={styles.subtitle}>
         Log in to your account
@@ -64,6 +75,7 @@ export default function LoginScreen() {
         placeholderTextColor="#888"
         value={password}
         onChangeText={setPassword}
+        autoCapitalize="none"
         secureTextEntry
       />
 
@@ -81,10 +93,13 @@ export default function LoginScreen() {
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => router.push('/auth/register')}>
+      <TouchableOpacity onPress={() => router.push(eventReturnPath(eventId)?{pathname:'/auth/register',params:{eventId}}:'/auth/register')}>
         <Text style={styles.link}>
-          Don't have an account? Create one
+          Don&apos;t have an account? Create one
         </Text>
+      </TouchableOpacity>
+      <TouchableOpacity accessibilityRole="button" onPress={() => router.push('/public')}>
+        <Text style={styles.link}>Browse public events without signing in</Text>
       </TouchableOpacity>
     </View>
   );
@@ -101,7 +116,7 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#159A8C',
+    color: brand.green,
     textAlign: 'center',
     marginBottom: 25,
   },
@@ -109,13 +124,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#222222',
+    color: brand.ink,
     textAlign: 'center',
   },
 
   subtitle: {
     fontSize: 14,
-    color: '#666666',
+    color: brand.inkMuted,
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 28,
@@ -123,18 +138,18 @@ const styles = StyleSheet.create({
 
   input: {
     height: 50,
-    backgroundColor: '#F5F8F7',
+    backgroundColor: brand.page,
     borderWidth: 1,
-    borderColor: '#E1E8E6',
+    borderColor: brand.line,
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 15,
-    color: '#222222',
+    color: brand.ink,
     marginBottom: 14,
   },
 
   forgot: {
-    color: '#159A8C',
+    color: brand.green,
     textAlign: 'right',
     fontSize: 14,
     marginBottom: 18,
@@ -142,7 +157,7 @@ const styles = StyleSheet.create({
 
   button: {
     height: 50,
-    backgroundColor: '#159A8C',
+    backgroundColor: brand.green,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -156,7 +171,7 @@ const styles = StyleSheet.create({
   },
 
   link: {
-    color: '#159A8C',
+    color: brand.green,
     textAlign: 'center',
     fontSize: 14,
     fontWeight: '500',

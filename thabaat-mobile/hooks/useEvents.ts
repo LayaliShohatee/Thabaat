@@ -8,6 +8,7 @@ export function useEvents() {
   const [error, setError] = useState<string | null>(null)
 
   const fetchEvents = useCallback(async () => {
+    setLoading(true)
     try {
       const data = await getEvents()
       setEvents(data)
