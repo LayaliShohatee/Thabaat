@@ -36,7 +36,7 @@ npm run typecheck
 npm run lint
 npm test
 ```
-Expected: typecheck and lint clean, **58 test files / 336 tests passing**.
+Expected: typecheck and lint clean, **59 test files / 339 tests passing**.
 
 ## 5. Run the app
 - **Browser preview (easiest on Windows):** `npm run web`, then open the printed `http://localhost:8081` link.
@@ -74,6 +74,8 @@ Expected: **49 tests passing**. The `.env` needs the Supabase service key (serve
 | Process | CI workflow, security audit, performance plan, user manual, admin guide | `.github/workflows/ci.yml`, `docs/` |
 
 ## 8. Database — already done, do not re-run
+Also applied on October 12: the six earlier pending migrations (gifts, campaigns, friends, playlists, analytics, account/volunteer workflows) and `20261013120000_payment_sandbox`. **Test payments are ON** on staging, so you can buy memberships, pay for tickets and donate without real money (see ADMIN_GUIDE.md → Test payments).
+
 These migrations were **applied to the thabaat-staging Supabase project on October 12**:
 `20261012120000_backlog_completion`, `20261012120100_event_flyer_storage`, `20261012120200_refunds_discounts`, `20261012120300_membership_public_volunteers` (all in `thabaat-mobile/database/migrations`).
 Do not run them again or run other migrations in bulk; new database changes need team approval first.

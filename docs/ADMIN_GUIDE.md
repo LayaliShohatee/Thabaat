@@ -43,3 +43,9 @@ Staff analytics: events, attendance, revenue and fundraising summaries, with CSV
 
 ## Database changes (developers)
 New features ship as migration files in `thabaat-mobile/database/migrations`. Apply them to the hosted Supabase project in order, one at a time, only after approval. The October 12 files are `20261012120000` through `20261012120300`. The anonymous access in `20261012120300` needs the stakeholder's public-visibility approval.
+
+## Test payments (sandbox)
+The client is not using CharityStack, so payments run in **test mode** for development and demos: no money moves, and every test payment ID starts with `sandbox_`.
+- Turn it on or off on the **Staff memberships** screen → **Test payments**. It is currently **ON** for the thabaat-staging project.
+- With test mode on: members can **Join/Renew** membership plans, **Give $10/$25/$50** to campaigns, and **Pay** for paid tickets (member discount and discount codes are applied on the server). Approved refunds mark the test payment refunded.
+- Turn test mode **OFF** before any real launch, and connect a real payment provider at that point.
