@@ -1,4 +1,5 @@
 import { useFocusResource } from '@/hooks/useFocusResource'
+import { brand } from '@/constants/brand'
 import { Alert } from '@/lib/alert'
 import {
   View,
@@ -67,7 +68,7 @@ export default function RegistrationScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#fff" />
+        <ActivityIndicator size="large" color={brand.green} />
       </View>
     )
   }
@@ -168,13 +169,13 @@ export default function RegistrationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000'
+    backgroundColor: brand.page
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000'
+    backgroundColor: brand.page
   },
   header: {
     padding: 20,
@@ -182,13 +183,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 14,
-    color: '#aaa',
+    color: brand.inkMuted,
     marginBottom: 4
   },
   eventName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff'
+    color: brand.ink
   },
   section: {
     padding: 20
@@ -196,69 +197,69 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: brand.ink,
     marginBottom: 12
   },
   ticketOption: {
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: brand.line,
     borderRadius: 8,
     padding: 16,
     marginBottom: 10
   },
   ticketOptionSelected: {
-    borderColor: '#fff',
-    backgroundColor: '#111'
+    borderColor: brand.green,
+    backgroundColor: brand.card
   },
   ticketName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff'
+    color: brand.ink
   },
   ticketPrice: {
     fontSize: 15,
-    color: '#aaa',
+    color: brand.inkMuted,
     marginTop: 4
   },
   ticketDescription: {
     fontSize: 13,
-    color: '#666',
+    color: brand.inkMuted,
     marginTop: 4
   },
   noTickets: {
-    color: '#aaa',
+    color: brand.inkMuted,
     fontSize: 15
   },
   summary: {
     margin: 20,
     padding: 16,
-    backgroundColor: '#111',
+    backgroundColor: brand.card,
     borderRadius: 8
   },
   summaryText: {
-    color: '#ccc',
+    color: brand.inkMuted,
     fontSize: 15,
     marginBottom: 6
   },
-  codeInput: { borderWidth: 1, borderColor: '#444', borderRadius: 10, color: '#fff', paddingHorizontal: 12, paddingVertical: 10, marginTop: 8, marginBottom: 8 },
+  codeInput: { borderWidth: 1, borderColor: brand.line, borderRadius: 10, color: brand.ink, paddingHorizontal: 12, paddingVertical: 10, marginTop: 8, marginBottom: 8 },
   codeButton: { alignSelf: 'flex-start', backgroundColor: '#1F7A5C', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 8 },
-  codeButtonText: { color: '#fff', fontWeight: '600' },
+  codeButtonText: { color: brand.ink, fontWeight: '600' },
   footer: {
     padding: 20,
     paddingBottom: 40
   },
   confirmButton: {
-    backgroundColor: '#fff',
+    backgroundColor: brand.green,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 12
   },
   confirmButtonDisabled: {
-    backgroundColor: '#333'
+    backgroundColor: brand.greenSoft
   },
   confirmButtonText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold'
   },
@@ -267,11 +268,11 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
     cancelButtonText: {
-    color: '#aaa',
+    color: brand.inkMuted,
     fontSize: 16
   },
   errorText: {
-    color: '#fff',
+    color: brand.ink,
     fontSize: 16
   }
 })

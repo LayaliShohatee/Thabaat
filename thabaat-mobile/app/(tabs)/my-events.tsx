@@ -1,4 +1,5 @@
 import { useFocusResource } from '@/hooks/useFocusResource'
+import { brand } from '@/constants/brand'
 import {
   View,
   Text,
@@ -44,7 +45,7 @@ export default function MyEventsScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#fff" />
+        <ActivityIndicator size="large" color={brand.green} />
       </View>
     )
   }
@@ -117,11 +118,11 @@ export default function MyEventsScreen() {
 }
 
 const styles = StyleSheet.create({
-  actionButton: { padding: 16, borderTopWidth: 1, borderColor: '#333' },
+  actionButton: { padding: 16, borderTopWidth: 1, borderColor: brand.line },
   primaryAction: { backgroundColor:'#146B59',borderTopWidth:0 },
-  actionText: { color: '#fff', fontWeight: '600' },
+  actionText: { color: brand.ink, fontWeight: '600' },
   list: {
-    backgroundColor: '#000',
+    backgroundColor: brand.page,
     flexGrow: 1,
     paddingBottom: 40
   },
@@ -129,12 +130,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000'
+    backgroundColor: brand.page
   },
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: brand.ink,
     padding: 20,
     paddingTop: 72
   },
@@ -144,24 +145,24 @@ const styles = StyleSheet.create({
     paddingTop: 60
   },
   emptyText: {
-    color: '#aaa',
+    color: brand.inkMuted,
     fontSize: 16,
     marginBottom: 20
   },
   browseButton: {
-    backgroundColor: '#fff',
+    backgroundColor: brand.green,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8
   },
   browseButtonText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: 'bold'
   },
   card: {
     marginHorizontal: 16,
     marginVertical: 8,
-    backgroundColor: '#111',
+    backgroundColor: brand.card,
     borderRadius: 12,
     overflow: 'hidden'
   },
@@ -171,17 +172,17 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: brand.ink,
     marginBottom: 4
   },
   eventDate: {
     fontSize: 14,
-    color: '#aaa',
+    color: brand.inkMuted,
     marginBottom: 4
   },
   ticketType: {
     fontSize: 13,
-    color: '#bbb',
+    color: brand.inkMuted,
     marginBottom: 8
   },
   statusBadge: {
@@ -189,13 +190,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    backgroundColor: '#333'
+    backgroundColor: brand.greenSoft
   },
   statusConfirmed: {
-    backgroundColor: '#14532d'
+    backgroundColor: brand.greenSoft
   },
   statusText: {
-    color: '#fff',
+    color: brand.ink,
     fontSize: 12,
     fontWeight: '600',
     textTransform: 'capitalize'

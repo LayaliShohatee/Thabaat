@@ -1,4 +1,5 @@
 import { authRedirectUrl } from '@/lib/auth-links'
+import { brand } from '@/constants/brand'
 import { useState } from 'react';
 import {
   StyleSheet,
@@ -143,7 +144,7 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#159A8C',
+    color: brand.green,
     textAlign: 'center',
     marginBottom: 25,
   },
@@ -151,13 +152,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#222222',
+    color: brand.ink,
     textAlign: 'center',
   },
 
   subtitle: {
     fontSize: 14,
-    color: '#666666',
+    color: brand.inkMuted,
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 28,
@@ -165,18 +166,18 @@ const styles = StyleSheet.create({
 
   input: {
     height: 50,
-    backgroundColor: '#F5F8F7',
+    backgroundColor: brand.page,
     borderWidth: 1,
-    borderColor: '#E1E8E6',
+    borderColor: brand.line,
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 15,
-    color: '#222222',
+    color: brand.ink,
     marginBottom: 14,
   },
 
   feedback: {
-    color: '#38584F',
+    color: brand.inkMuted,
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
 
   button: {
     height: 50,
-    backgroundColor: '#159A8C',
+    backgroundColor: brand.green,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -204,7 +205,7 @@ const styles = StyleSheet.create({
   },
 
   link: {
-    color: '#159A8C',
+    color: brand.green,
     textAlign: 'center',
     fontSize: 14,
     fontWeight: '500',

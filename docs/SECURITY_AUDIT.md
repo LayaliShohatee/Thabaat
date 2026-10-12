@@ -38,10 +38,10 @@ Authentication, payments, gated (members-only) content and member data protectio
 | Event flyers use a separate public bucket limited to JPEG/PNG/WebP up to 5 MB, uploaded only by admins/organizers into their own folder; file signatures are checked in the app | Pass |
 
 ## Dependency scan (`npm audit --omit=dev`, October 12)
-| Package | Findings | Notes |
-|---|---|---|
-| thabaat-mobile | 34 (1 critical, 21 high, 12 moderate) | Almost all in Expo CLI/build tooling, not in the shipped app. Fix with an Expo SDK patch update after the presentation and retest. |
-| thabaat-backend | 5 (1 critical, 4 high) | `proxy-addr` (Express), `undici`, `node-forge`, `joi` and `passkit-generator`. Run `npm audit fix` and retest before deploying the backend. |
+| Package | Before | After non-breaking fixes | Notes |
+|---|---|---|---|
+| thabaat-mobile | 34 (1 critical, 21 high, 12 moderate) | 30 (0 critical, 18 high, 12 moderate) | Remaining findings are in Expo CLI/build tooling, not the shipped app; they clear with the next Expo SDK upgrade. |
+| thabaat-backend | 5 (1 critical, 4 high) | 3 high | Critical `proxy-addr` and `undici` fixed. Remaining `joi`/`node-forge` come from `passkit-generator` 3.6.1 (Apple Wallet). npm's suggested fix is a downgrade to 3.1.2, so it was not applied. Wallet pass signing stays disabled until approved, which limits exposure; upgrade when the library publishes a fix. |
 
 ## Recommended before launch
 1. Apply dependency updates above and rerun CI.

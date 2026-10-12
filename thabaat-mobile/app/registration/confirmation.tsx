@@ -1,4 +1,5 @@
 import { ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { brand } from '@/constants/brand'
 import { router, useLocalSearchParams } from 'expo-router'
 import RegisteredEventActions from '@/components/events/RegisteredEventActions'
 import { isDemoMode } from '@/lib/demo-mode'
@@ -42,30 +43,30 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: brand.page,
     padding: 32
   },
   checkmark: {
     fontSize: 64,
-    color: '#4ade80',
+    color: brand.green,
     marginBottom: 16
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#fff',
+    color: brand.ink,
     marginBottom: 12,
     textAlign: 'center'
   },
   subtitle: {
     fontSize: 16,
-    color: '#aaa',
+    color: brand.inkMuted,
     textAlign: 'center',
     marginBottom: 40,
     lineHeight: 24
   },
   button: {
-    backgroundColor: '#fff',
+    backgroundColor: brand.green,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -73,7 +74,7 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   buttonText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold'
   },
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
     width: '100%'
   },
   secondaryButtonText: {
-    color: '#aaa',
+    color: brand.inkMuted,
     fontSize: 16
   }
 })
