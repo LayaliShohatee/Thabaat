@@ -8,7 +8,7 @@ test('worker claims with limit and records accepted provider outcome only',async
  const client={rpc:async(name:string,args:unknown)=>{calls.push([name,args]);return{data:name==='claim_due_notification_jobs'?[job]:null,error:null}}} as unknown as SupabaseClient
  const result=await dispatchDueNotifications(client,async()=>[{status:'ok',id:'fixture-ticket'}],5)
  assert.deepEqual(result,{accepted:1,failed:0,uncertain:0})
- assert.deepEqual(calls,[['schedule_notification_jobs',undefined],['schedule_volunteer_shift_reminders',undefined],['claim_due_notification_jobs',{p_limit:5}],['complete_notification_job',{p_id:job.id,p_status:'accepted'}]])
+ assert.deepEqual(calls,[['schedule_notification_jobs',undefined],['schedule_volunteer_shift_reminders',undefined],['process_due_donation_pledges',undefined],['claim_due_notification_jobs',{p_limit:5}],['complete_notification_job',{p_id:job.id,p_status:'accepted'}]])
 })
 test('outage records uncertain instead of a repeatable failure',async()=>{
  let recorded:unknown
@@ -18,7 +18,7 @@ test('outage records uncertain instead of a repeatable failure',async()=>{
 })
 test('claim error and write error never imply completed delivery',async()=>{
  await assert.rejects(dispatchDueNotifications({rpc:async()=>({data:null,error:{message:'offline'}})} as unknown as SupabaseClient,async()=>[]),/schedule/)
- const client={rpc:async(name:string)=>name==='claim_due_notification_jobs'?{data:[job],error:null}:['schedule_notification_jobs','schedule_volunteer_shift_reminders'].includes(name)?{data:0,error:null}:{data:null,error:{message:'offline'}}} as unknown as SupabaseClient
+ const client={rpc:async(name:string)=>name==='claim_due_notification_jobs'?{data:[job],error:null}:['schedule_notification_jobs','schedule_volunteer_shift_reminders','process_due_donation_pledges'].includes(name)?{data:0,error:null}:{data:null,error:{message:'offline'}}} as unknown as SupabaseClient
  await assert.rejects(dispatchDueNotifications(client,async()=>[{status:'ok',id:'fixture'}]),/Do not retry/)
 })
 test('older databases without volunteer reminders still dispatch; other scheduling errors stop the run',async()=>{

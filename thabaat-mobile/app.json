@@ -74,7 +74,8 @@
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": true
         }
-      ]
+      ],
+      "react-native-google-cast"
     ],
     "experiments": {
       "typedRoutes": true,

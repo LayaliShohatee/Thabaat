@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
   },
   codeInput: { borderWidth: 1, borderColor: brand.line, borderRadius: 10, color: brand.ink, paddingHorizontal: 12, paddingVertical: 10, marginTop: 8, marginBottom: 8 },
   codeButton: { alignSelf: 'flex-start', backgroundColor: '#1F7A5C', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 8 },
-  codeButtonText: { color: brand.ink, fontWeight: '600' },
+  codeButtonText: { color: '#FFFFFF', fontWeight: '600' },
   footer: {
     padding: 20,
     paddingBottom: 40

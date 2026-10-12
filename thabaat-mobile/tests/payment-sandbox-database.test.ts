@@ -8,12 +8,12 @@ async function as(id:string){await db.exec('RESET ROLE');await db.query("SELECT 
 async function value<T>(sql:string,params:unknown[]=[]){return (await db.query<{v:T}>(sql,params)).rows[0].v}
 beforeAll(async()=>{
  db=await PGlite.create();await db.exec(`CREATE SCHEMA auth;CREATE ROLE anon;CREATE ROLE authenticated;CREATE ROLE service_role;CREATE TABLE auth.users(id uuid PRIMARY KEY,email text,raw_user_meta_data jsonb);CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$;GRANT USAGE ON SCHEMA auth,public TO authenticated;GRANT EXECUTE ON FUNCTION auth.uid() TO authenticated;`)
- for(const file of ['schema.sql','migrations/20260921_prototype_integrity.sql','migrations/20260928_membership_billing.sql','migrations/20260928_paid_event_test.sql','migrations/20260929_events_permissions.sql','migrations/20261005003918_registration_lifecycle.sql','migrations/20261005003948_staff_volunteer_reporting.sql','migrations/20261005004731_ticket_checkin.sql','migrations/20261005005702_membership_administration.sql','migrations/20261005012003_campaign_administration.sql','migrations/20261012120200_refunds_discounts.sql','migrations/20261013120000_payment_sandbox.sql'])await db.exec(await readFile(new URL('../database/'+file,import.meta.url),'utf8'))
+ for(const file of ['schema.sql','migrations/20260921_prototype_integrity.sql','migrations/20260928_membership_billing.sql','migrations/20260928_paid_event_test.sql','migrations/20260929_events_permissions.sql','migrations/20261005003918_registration_lifecycle.sql','migrations/20261005003948_staff_volunteer_reporting.sql','migrations/20261005004731_ticket_checkin.sql','migrations/20261005005702_membership_administration.sql','migrations/20261005012003_campaign_administration.sql','migrations/20261012120200_refunds_discounts.sql','migrations/20261013120000_payment_sandbox.sql','migrations/20261013120100_recurring_donations.sql'])await db.exec(await readFile(new URL('../database/'+file,import.meta.url),'utf8'))
  await db.exec('GRANT SELECT ON events,ticket_types TO authenticated;GRANT SELECT ON registrations TO authenticated')
  for(const [id,name] of [[admin,'Admin'],[owner,'Owner'],[member,'Member']])await db.query('INSERT INTO auth.users VALUES($1,$2,$3)',[id,name+'@example.invalid',JSON.stringify({full_name:name})])
 },30000)
 beforeEach(async()=>{
- await db.exec("RESET ROLE;TRUNCATE refund_requests,promo_codes,payment_records,paid_event_orders,memberships,membership_plans,donation_campaigns,staff_roles,registrations,ticket_types,events CASCADE;UPDATE app_settings SET value='off'")
+ await db.exec("RESET ROLE;TRUNCATE donation_pledges,refund_requests,promo_codes,payment_records,paid_event_orders,memberships,membership_plans,donation_campaigns,staff_roles,registrations,ticket_types,events CASCADE;UPDATE app_settings SET value='off'")
  await db.query("INSERT INTO staff_roles VALUES($1,'admin'),($2,'organizer')",[admin,owner])
  await as(owner);event=await value<string>("SELECT save_managed_event(null,'Gala','',now()+interval '2 days','Hall',50) AS v")
  await db.exec('RESET ROLE')
@@ -57,4 +57,16 @@ it('donations update campaign totals, and approved refunds mark the sandbox paym
  await db.exec('RESET ROLE')
  expect(await value<string>("SELECT status AS v FROM payment_records WHERE user_id=$1 AND purpose='event'",[member])).toBe('refunded')
  expect(await value<string>('SELECT status AS v FROM registrations WHERE id=$1',[reg])).toBe('cancelled')
+})
+
+it('monthly donations record the first gift, then each due month once, and can be cancelled',async()=>{
+ await as(admin);await db.query("SELECT set_payments_mode('sandbox')")
+ await as(member);const pledge=await value<string>('SELECT sandbox_start_monthly_donation($1,1000) AS v',[campaign])
+ await expect(db.query('SELECT sandbox_start_monthly_donation($1,1000)',[campaign])).rejects.toThrow('already give monthly')
+ expect((await value<any[]>('SELECT my_monthly_donations() AS v'))[0]).toMatchObject({campaign:'Masjid fund',amount_cents:1000})
+ await expect(db.query('SELECT process_due_donation_pledges()')).rejects.toThrow('permission denied')
+ await db.exec("RESET ROLE");await db.query("UPDATE donation_pledges SET next_charge_at=now()-interval '1 minute' WHERE id=$1",[pledge])
+ await db.exec('SET ROLE service_role');expect(await value<number>('SELECT process_due_donation_pledges() AS v')).toBe(1);expect(await value<number>('SELECT process_due_donation_pledges() AS v')).toBe(0)
+ await as(member);expect((await value<any[]>('SELECT campaign_listing() AS v'))[0].raised_cents).toBe(2000)
+ await db.query('SELECT cancel_monthly_donation($1)',[pledge]);expect(await value<any[]>('SELECT my_monthly_donations() AS v')).toEqual([])
 })

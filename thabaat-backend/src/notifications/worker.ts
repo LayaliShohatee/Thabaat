@@ -11,6 +11,9 @@ export async function dispatchDueNotifications(client:SupabaseClient,send:SendPu
  // Volunteer shift reminders (24 h ahead). Older databases without the function are skipped.
  const shifts=await client.rpc('schedule_volunteer_shift_reminders')
  if(shifts?.error&&shifts.error.code!=='PGRST202') throw new Error('Unable to schedule volunteer shift reminders')
+ // Monthly donations due today (test-payment mode only; the database no-ops otherwise).
+ const pledges=await client.rpc('process_due_donation_pledges')
+ if(pledges?.error&&pledges.error.code!=='PGRST202') throw new Error('Unable to process monthly donations')
  const {data,error}=await client.rpc('claim_due_notification_jobs',{p_limit:limit})
  if(error || !Array.isArray(data)) throw new Error('Unable to claim notification jobs')
  const totals={accepted:0,failed:0,uncertain:0}

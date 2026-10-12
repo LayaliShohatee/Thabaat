@@ -12,6 +12,21 @@ Prepared October 12, 2026. Covers load, notifications, video playback and the ti
 | Check-in roster | Refreshes every 5 seconds rather than continuously |
 | Database indexes | Due-notification index; unique indexes on discount codes and open refund/membership requests |
 
+## Load test results (October 12, 2026)
+Tool: k6 1.x, script `thabaat-mobile/tests/load/public-load.k6.js`, target: thabaat-staging (Supabase free plan).
+Run: `k6 run -e BASE=<supabase url> -e KEY=<publishable key> tests/load/public-load.k6.js`
+
+| Measure | Result | Target |
+|---|---|---|
+| Virtual users | Ramp to 25 concurrent, 55 s | — |
+| Requests | 1,932 (public event list + auth health) | — |
+| Failed requests | **0.00%** | < 1% |
+| Response time average | 54 ms | — |
+| Response time 95th percentile | **71 ms** | < 1,000 ms |
+| Slowest request | 267 ms | — |
+
+Result: **pass**. Write-heavy load (many simultaneous paid registrations) is protected by row locks in `sandbox_purchase_ticket` / registration triggers and covered by database tests; repeat at higher volume on the client's paid production plan before launch.
+
 ## Test runs (local)
 | Test | Result |
 |---|---|

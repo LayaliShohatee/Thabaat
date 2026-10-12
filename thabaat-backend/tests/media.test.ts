@@ -11,7 +11,7 @@ async function request(body:unknown={mediaId:id},token:string|null='valid',check
   storage:{from:(bucket:string)=>{
    assert.equal(bucket,'thabaat-media')
    return {createSignedUrl:async(path:string,ttl:number)=>{
-    signs++;assert.equal(path,'talks/video.mp4');assert.equal(ttl,60)
+    signs++;assert.equal(path,'talks/video.mp4');assert.equal(ttl,(body as {purpose?:string}|undefined)?.purpose==='cast'?7200:60)
     return fail?{data:null,error:{message:'offline'}}:{data:{signedUrl:'https://fixture.invalid/video?token=synthetic'},error:null}
    }}
   }}
@@ -36,4 +36,9 @@ test('caller-scoped RPC sends user bearer rather than service bearer',async()=>{
  const server=app.listen(0,'127.0.0.1');await new Promise<void>(resolve=>server.once('listening',resolve))
  try{process.env.SUPABASE_URL=`http://127.0.0.1:${(server.address() as {port:number}).port}`;process.env.SUPABASE_SERVICE_KEY='synthetic-server-api-key';assert.equal(await authorizeMediaRpc('caller-jwt',id),'talks/video.mp4')}
  finally{if(previousUrl===undefined)delete process.env.SUPABASE_URL;else process.env.SUPABASE_URL=previousUrl;if(previousKey===undefined)delete process.env.SUPABASE_SERVICE_KEY;else process.env.SUPABASE_SERVICE_KEY=previousKey;await new Promise<void>(resolve=>server.close(()=>resolve()))}
+})
+test('casting gets a 2-hour link only for an allowed member; other purposes are rejected',async()=>{
+ const cast=await request({mediaId:id,purpose:'cast'});assert.equal(cast.status,200);assert.equal(cast.signs,1)
+ const bad=await request({mediaId:id,purpose:'download'});assert.equal(bad.status,400);assert.equal(bad.signs,0)
+ const denied=await request({mediaId:id,purpose:'cast'},'valid',async()=>null);assert.equal(denied.status,403);assert.equal(denied.signs,0)
 })
