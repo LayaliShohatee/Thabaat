@@ -61,8 +61,8 @@
       [
         "expo-video",
         {
-          "supportsBackgroundPlayback": false,
-          "supportsPictureInPicture": false
+          "supportsBackgroundPlayback": true,
+          "supportsPictureInPicture": true
         }
       ],
       "expo-sharing",
@@ -74,7 +74,8 @@
           "recordAudioAndroid": false,
           "barcodeScannerEnabled": true
         }
-      ]
+      ],
+      "react-native-google-cast"
     ],
     "experiments": {
       "typedRoutes": true,

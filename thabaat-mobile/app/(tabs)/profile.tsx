@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { brand } from '@/constants/brand'
 import { ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
@@ -49,9 +50,9 @@ export default function ProfileScreen() {
   </ScrollView>
 }
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: '#000' },
+  screen: { flex: 1, backgroundColor: brand.page },
   container: { flexGrow: 1, padding: 24, justifyContent: 'center' },
-  title: { fontSize: 28, fontWeight: 'bold', color: '#fff', marginBottom: 16 },
-  detail: { color: '#eee', marginBottom: 12 },
-  button: { backgroundColor: '#fff', padding: 15, borderRadius: 8, alignItems: 'center', marginTop: 10 },
+  title: { fontSize: 28, fontWeight: 'bold', color: brand.ink, marginBottom: 16 },
+  detail: { color: brand.inkMuted, marginBottom: 12 },
+  button: { backgroundColor: brand.green, padding: 15, borderRadius: 8, alignItems: 'center', marginTop: 10 },
 })

@@ -1,4 +1,5 @@
 import { useFocusResource } from '@/hooks/useFocusResource'
+import { brand } from '@/constants/brand'
 import { Alert } from '@/lib/alert'
 import {
   View,
@@ -34,7 +35,7 @@ export default function EventDetailScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#fff" />
+        <ActivityIndicator size="large" color={brand.green} />
       </View>
     )
   }
@@ -108,13 +109,13 @@ export default function EventDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000'
+    backgroundColor: brand.page
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000'
+    backgroundColor: brand.page
   },
   image: {
     width: '100%',
@@ -126,34 +127,34 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: brand.ink,
     marginBottom: 8
   },
   date: {
     fontSize: 15,
-    color: '#aaa',
+    color: brand.inkMuted,
     marginBottom: 4
   },
   location: {
     fontSize: 15,
-    color: '#aaa',
+    color: brand.inkMuted,
     marginBottom: 4
   },
   speaker: {
     fontSize: 15,
-    color: '#aaa',
+    color: brand.inkMuted,
     marginBottom: 16
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: brand.ink,
     marginTop: 16,
     marginBottom: 8
   },
   description: {
     fontSize: 15,
-    color: '#ccc',
+    color: brand.inkMuted,
     lineHeight: 22
   },
   footer: {
@@ -161,21 +162,21 @@ const styles = StyleSheet.create({
     paddingBottom: 40
   },
   registerButton: {
-    backgroundColor: '#fff',
+    backgroundColor: brand.green,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center'
   },
   registeredButton: {
-    backgroundColor: '#333'
+    backgroundColor: brand.greenSoft
   },
   registerButtonText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold'
   },
   errorText: {
-    color: '#fff',
+    color: brand.ink,
     fontSize: 16
   }
 })

@@ -1,5 +1,17 @@
 import { StyleSheet, Text, TouchableOpacity } from 'react-native'
+import { brand, shadow } from '@/constants/brand'
 export function ManagementButton({label,onPress,disabled=false}:{label:string;onPress:()=>void;disabled?:boolean}) {
- return <TouchableOpacity accessibilityRole="button" disabled={disabled} accessibilityState={{disabled}} onPress={onPress} style={[managementStyles.button,disabled&&{opacity:0.5}]}><Text style={{color:'#fff',fontWeight:'600'}}>{label}</Text></TouchableOpacity>
+ return <TouchableOpacity accessibilityRole="button" disabled={disabled} accessibilityState={{disabled}} onPress={onPress} style={[managementStyles.button,disabled&&{opacity:0.5}]}><Text style={managementStyles.buttonText}>{label}</Text></TouchableOpacity>
 }
-export const managementStyles=StyleSheet.create({page:{flex:1,backgroundColor:'#F5F8F7'},content:{padding:24,paddingTop:60,paddingBottom:48,gap:16,maxWidth:760,width:'100%',alignSelf:'center'},title:{fontSize:28,fontWeight:'700',color:'#172B28'},heading:{fontSize:19,fontWeight:'600',color:'#172B28'},text:{fontSize:15,lineHeight:23,color:'#425550'},card:{padding:18,backgroundColor:'#fff',borderRadius:14,gap:12},input:{backgroundColor:'#fff',borderWidth:1,borderColor:'#9EB6AD',padding:14,borderRadius:8,fontSize:16,color:'#172B28'},button:{backgroundColor:'#146B59',padding:15,borderRadius:9,alignItems:'center'},alert:{padding:16,backgroundColor:'#FFF2CD',color:'#62470C',lineHeight:22}})
+export const managementStyles=StyleSheet.create({
+ page:{flex:1,backgroundColor:brand.page},
+ content:{padding:20,paddingTop:64,paddingBottom:48,gap:14,maxWidth:760,width:'100%',alignSelf:'center'},
+ title:{fontSize:30,fontWeight:'800',color:brand.ink,letterSpacing:-0.5},
+ heading:{fontSize:18,fontWeight:'700',color:brand.ink},
+ text:{fontSize:15,lineHeight:22,color:brand.inkMuted},
+ card:{padding:18,backgroundColor:brand.card,borderRadius:brand.radius,gap:12,borderWidth:1,borderColor:brand.line,...shadow},
+ input:{backgroundColor:brand.card,borderWidth:1,borderColor:brand.line,paddingVertical:13,paddingHorizontal:14,borderRadius:brand.radiusSmall,fontSize:16,color:brand.ink},
+ button:{backgroundColor:brand.green,paddingVertical:14,paddingHorizontal:18,borderRadius:999,alignItems:'center'},
+ buttonText:{color:'#FFFFFF',fontWeight:'700',fontSize:15,textAlign:'center'},
+ alert:{padding:14,backgroundColor:brand.goldSoft,color:'#6B4A0F',lineHeight:21,borderRadius:brand.radiusSmall,overflow:'hidden'},
+})

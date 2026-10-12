@@ -1,4 +1,5 @@
 import { View, Text, Pressable, Image, StyleSheet } from 'react-native'
+import { brand, shadow } from '@/constants/brand'
 import { router } from 'expo-router'
 import { Event } from '@/types'
 
@@ -76,7 +77,7 @@ const styles = StyleSheet.create({
   card: {
     marginHorizontal: 16,
     marginVertical: 8,
-    backgroundColor: '#111',
+    backgroundColor: brand.card, borderWidth: 1, borderColor: brand.line, ...shadow,
     borderRadius: 12,
     overflow: 'hidden',
   },
@@ -93,13 +94,13 @@ const styles = StyleSheet.create({
   imagePlaceholder: {
     width: '100%',
     height: 100,
-    backgroundColor: '#153A30',
+    backgroundColor: brand.green,
     justifyContent: 'center',
     alignItems: 'center',
   },
 
   placeholderText: {
-    color: '#E0FFF1',
+    color: brand.gold,
     fontSize: 20,
     fontWeight: 'bold',
     letterSpacing: 3,
@@ -110,39 +111,39 @@ const styles = StyleSheet.create({
   },
 
   title: {
-    color: '#fff',
+    color: brand.ink,
     fontSize: 20,
     fontWeight: 'bold',
     marginBottom: 8,
   },
 
   date: {
-    color: '#aaa',
+    color: brand.green,
     fontSize: 14,
     marginBottom: 4,
   },
 
   location: {
-    color: '#aaa',
+    color: brand.inkMuted,
     fontSize: 14,
     marginBottom: 4,
   },
 
   speaker: {
-    color: '#aaa',
+    color: brand.inkMuted,
     fontSize: 14,
     marginBottom: 8,
   },
 
   description: {
-    color: '#ccc',
+    color: brand.inkMuted,
     fontSize: 14,
     lineHeight: 20,
     marginTop: 4,
   },
 
   viewEvent: {
-    color: '#fff',
+    color: brand.green,
     fontSize: 14,
     fontWeight: '600',
     marginTop: 12,

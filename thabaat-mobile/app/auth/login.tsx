@@ -1,4 +1,5 @@
 import { Alert } from '@/lib/alert'
+import { brand } from '@/constants/brand'
 import { useState } from 'react';
 import {
   StyleSheet,
@@ -97,6 +98,9 @@ export default function LoginScreen() {
           Don&apos;t have an account? Create one
         </Text>
       </TouchableOpacity>
+      <TouchableOpacity accessibilityRole="button" onPress={() => router.push('/public')}>
+        <Text style={styles.link}>Browse public events without signing in</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -112,7 +116,7 @@ const styles = StyleSheet.create({
   logo: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#159A8C',
+    color: brand.green,
     textAlign: 'center',
     marginBottom: 25,
   },
@@ -120,13 +124,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontWeight: '700',
-    color: '#222222',
+    color: brand.ink,
     textAlign: 'center',
   },
 
   subtitle: {
     fontSize: 14,
-    color: '#666666',
+    color: brand.inkMuted,
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 28,
@@ -134,18 +138,18 @@ const styles = StyleSheet.create({
 
   input: {
     height: 50,
-    backgroundColor: '#F5F8F7',
+    backgroundColor: brand.page,
     borderWidth: 1,
-    borderColor: '#E1E8E6',
+    borderColor: brand.line,
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 15,
-    color: '#222222',
+    color: brand.ink,
     marginBottom: 14,
   },
 
   forgot: {
-    color: '#159A8C',
+    color: brand.green,
     textAlign: 'right',
     fontSize: 14,
     marginBottom: 18,
@@ -153,7 +157,7 @@ const styles = StyleSheet.create({
 
   button: {
     height: 50,
-    backgroundColor: '#159A8C',
+    backgroundColor: brand.green,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -167,7 +171,7 @@ const styles = StyleSheet.create({
   },
 
   link: {
-    color: '#159A8C',
+    color: brand.green,
     textAlign: 'center',
     fontSize: 14,
     fontWeight: '500',

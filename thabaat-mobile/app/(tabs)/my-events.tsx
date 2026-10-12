@@ -1,4 +1,5 @@
 import { useFocusResource } from '@/hooks/useFocusResource'
+import { brand } from '@/constants/brand'
 import {
   View,
   Text,
@@ -11,6 +12,7 @@ import { router } from 'expo-router'
 import { useCallback, useRef, useState } from 'react'
 import { cancelFreeRegistration, getUserRegistrations } from '@/services/registrationService'
 import { useAuth } from '@/hooks/useAuth'
+import { requestRefund } from '@/services/refundDiscountService'
 import { Registration } from '@/types'
 
 export default function MyEventsScreen() {
@@ -31,10 +33,19 @@ export default function MyEventsScreen() {
     finally { actionInFlight.current = false; setBusy(null) }
   }
 
+  // Paid tickets are cancelled through a refund request the event team approves before the refund deadline.
+  const refund = async (item: Registration) => {
+    if (actionInFlight.current) return
+    actionInFlight.current = true; setBusy(item.id); setNotice('')
+    try { await requestRefund(item.id, ''); setNotice('Refund requested. The event team will review it; your ticket stays active until approved.') }
+    catch (err) { setNotice(err instanceof Error ? err.message : 'Refund request failed. Please retry.') }
+    finally { actionInFlight.current = false; setBusy(null) }
+  }
+
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#fff" />
+        <ActivityIndicator size="large" color={brand.green} />
       </View>
     )
   }
@@ -98,6 +109,7 @@ export default function MyEventsScreen() {
             <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => setCancelId(null)}><Text style={styles.actionText}>Keep registration</Text></TouchableOpacity>
             <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => void cancel(item)}><Text style={styles.actionText}>{busy === item.id ? 'Cancelling…' : 'Confirm cancellation'}</Text></TouchableOpacity>
           </View>}
+          {item.status === 'confirmed' && !item.checked_in_at && Number(item.ticket_type?.price) > 0 && item.event && new Date(item.event.event_date).getTime() > now && <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => void refund(item)}><Text style={styles.actionText}>{busy === item.id ? 'Sending…' : 'Cancel and request refund'}</Text></TouchableOpacity>}
           {item.status === 'cancelled' && item.event && new Date(item.event.event_date).getTime() > now && <TouchableOpacity accessibilityRole="button" style={styles.actionButton} onPress={() => router.push(`/registration/${item.event_id}`)}><Text style={styles.actionText}>Register again</Text></TouchableOpacity>}
         </View>
       )}
@@ -106,11 +118,11 @@ export default function MyEventsScreen() {
 }
 
 const styles = StyleSheet.create({
-  actionButton: { padding: 16, borderTopWidth: 1, borderColor: '#333' },
+  actionButton: { padding: 16, borderTopWidth: 1, borderColor: brand.line },
   primaryAction: { backgroundColor:'#146B59',borderTopWidth:0 },
-  actionText: { color: '#fff', fontWeight: '600' },
+  actionText: { color: brand.ink, fontWeight: '600' },
   list: {
-    backgroundColor: '#000',
+    backgroundColor: brand.page,
     flexGrow: 1,
     paddingBottom: 40
   },
@@ -118,12 +130,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000'
+    backgroundColor: brand.page
   },
   header: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff',
+    color: brand.ink,
     padding: 20,
     paddingTop: 72
   },
@@ -133,24 +145,24 @@ const styles = StyleSheet.create({
     paddingTop: 60
   },
   emptyText: {
-    color: '#aaa',
+    color: brand.inkMuted,
     fontSize: 16,
     marginBottom: 20
   },
   browseButton: {
-    backgroundColor: '#fff',
+    backgroundColor: brand.green,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8
   },
   browseButtonText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontWeight: 'bold'
   },
   card: {
     marginHorizontal: 16,
     marginVertical: 8,
-    backgroundColor: '#111',
+    backgroundColor: brand.card,
     borderRadius: 12,
     overflow: 'hidden'
   },
@@ -160,17 +172,17 @@ const styles = StyleSheet.create({
   eventTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: brand.ink,
     marginBottom: 4
   },
   eventDate: {
     fontSize: 14,
-    color: '#aaa',
+    color: brand.inkMuted,
     marginBottom: 4
   },
   ticketType: {
     fontSize: 13,
-    color: '#bbb',
+    color: brand.inkMuted,
     marginBottom: 8
   },
   statusBadge: {
@@ -178,13 +190,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    backgroundColor: '#333'
+    backgroundColor: brand.greenSoft
   },
   statusConfirmed: {
-    backgroundColor: '#14532d'
+    backgroundColor: brand.greenSoft
   },
   statusText: {
-    color: '#fff',
+    color: brand.ink,
     fontSize: 12,
     fontWeight: '600',
     textTransform: 'capitalize'

@@ -7,6 +7,9 @@ vi.mock('expo-router',()=>({router:{push:vi.fn()}}))
 vi.mock('../hooks/useFocusResource',()=>({useFocusResource:()=>({...state,reload:vi.fn()})}))
 vi.mock('../services/managementService',()=>({getEventAttendees:vi.fn(),getPermissions:vi.fn(),getManagementEvents:vi.fn(),saveEvent:vi.fn(),archiveEvent:vi.fn()}))
 vi.mock('../components/FreeTicketInventory',()=>({FreeTicketInventory:()=>null}))
+vi.mock('../services/eventImageService',()=>({uploadEventFlyer:vi.fn()}))
+vi.mock('../components/EventRefundsAndCodes',()=>({EventRefundsAndCodes:()=>null}))
+vi.mock('../components/PublicEventPublisher',()=>({PublicEventPublisher:()=>null}))
 vi.mock('../components/ManagementUI',()=>({ManagementButton:()=>null,managementStyles:{}}))
 import {EventAttendees} from '../components/EventAttendees'
 import EventsTab from '../app/(tabs)/events'

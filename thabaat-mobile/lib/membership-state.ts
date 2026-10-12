@@ -1,7 +1,7 @@
 import { membershipIsActive, type Membership } from './billing'
 
 export function membershipSummary(membership: Membership | null, now = Date.now()) {
- if (!membership) return { label: 'Free', active: false, reminder: 'Choose a paid plan when purchases become available.' }
+ if (!membership) return { label: 'Free', active: false, reminder: 'Choose a paid plan below to become a member.' }
  const active = membershipIsActive(membership, now)
  const end = Date.parse(membership.expires_at)
  if (!Number.isFinite(end) || !Number.isFinite(Date.parse(membership.verified_at))) return { label: 'Needs review', active: false, reminder: 'Contact the team to verify this membership.' }

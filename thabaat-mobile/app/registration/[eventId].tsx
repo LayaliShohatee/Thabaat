@@ -1,4 +1,5 @@
 import { useFocusResource } from '@/hooks/useFocusResource'
+import { brand } from '@/constants/brand'
 import { Alert } from '@/lib/alert'
 import {
   View,
@@ -7,6 +8,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  TextInput,
 } from 'react-native'
 import { useLocalSearchParams, router } from 'expo-router'
 import { useCallback, useState } from 'react'
@@ -18,6 +20,10 @@ import { paidTestTicketId } from '@/lib/paid-event-test'
 import { isPaymentCheckEnabled } from '@/lib/payment-check'
 import { TicketType } from '@/types'
 import { isDemoMode } from '@/lib/demo-mode'
+import { categoryLabel, ticketOnSale } from '@/lib/ticket-categories'
+import { money } from '@/lib/billing'
+import { quoteTicketPrice, type PriceQuote } from '@/services/refundDiscountService'
+import { getPaymentsMode, sandboxPurchaseTicket, type PaymentsMode } from '@/services/sandboxPaymentService'
 
 export default function RegistrationScreen() {
   const { eventId } = useLocalSearchParams<{ eventId: string }>()
@@ -29,13 +35,34 @@ export default function RegistrationScreen() {
     return getEventById(eventId)
   }, [eventId])
   const { data: event, loading, error, reload } = useFocusResource(load, null)
-  const ticketTypes: TicketType[] = event?.ticket_types ?? []
+  const ticketTypes: TicketType[] = (event?.ticket_types ?? []).filter(ticket => ticketOnSale(ticket))
   const selectedTicket = ticketTypes.find(ticket => ticket.id === selectedTicketId) ?? ticketTypes[0] ?? null
+  const [code, setCode] = useState('')
+  const [quote, setQuote] = useState<PriceQuote | null>(null)
+  const [quoting, setQuoting] = useState(false)
+  const { data: paymentsMode } = useFocusResource(getPaymentsMode, 'off' as PaymentsMode)
+  const sandbox = paymentsMode === 'sandbox'
+  const applyQuote = async () => {
+    if (!selectedTicket || quoting) return
+    setQuoting(true)
+    try { setQuote(await quoteTicketPrice(selectedTicket.id, code)) }
+    catch (error: any) { Alert.alert('Price check failed', error.message) }
+    finally { setQuoting(false) }
+  }
 
   const handleConfirmRegistration = async () => {
     if (submitting || !user || !event || !selectedTicket) return
 
     if (selectedTicket.id === paidTestTicketId && isPaymentCheckEnabled) { router.push(`/payments/event/${event.id}`); return }
+    if (selectedTicket.price > 0 && sandbox) {
+      setSubmitting(true)
+      try {
+        const result = await sandboxPurchaseTicket(selectedTicket.id, code)
+        router.replace(`/registration/confirmation?eventTitle=${encodeURIComponent(event.title)}&notificationSent=false&freeRegistration=false&registrationId=${encodeURIComponent(result.registration_id)}&eventId=${encodeURIComponent(event.id)}&testCharge=${result.charged_cents}`)
+      } catch (error: any) { Alert.alert('Payment failed', error.message) }
+      finally { setSubmitting(false) }
+      return
+    }
     if (selectedTicket.price > 0) { Alert.alert('Payment unavailable', 'Paid ticket checkout is not connected yet.'); return }
     setSubmitting(true)
 
@@ -53,7 +80,7 @@ export default function RegistrationScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color="#fff" />
+        <ActivityIndicator size="large" color={brand.green} />
       </View>
     )
   }
@@ -90,6 +117,7 @@ export default function RegistrationScreen() {
               onPress={() => setSelectedTicketId(ticket.id)}
             >
               <Text style={styles.ticketName}>{ticket.name}</Text>
+              {!!ticket.category && ticket.category !== 'general' && <Text style={styles.ticketDescription}>{categoryLabel(ticket.category)}{ticket.sale_ends_at ? ` · on sale until ${new Date(ticket.sale_ends_at).toLocaleString()}` : ''}</Text>}
               <Text style={styles.ticketPrice}>
                 {ticket.price === 0 ? 'Free' : `$${ticket.price}`}
               </Text>
@@ -109,6 +137,22 @@ export default function RegistrationScreen() {
           <Text style={styles.summaryText}>
             Price: {selectedTicket.price === 0 ? 'Free' : `$${selectedTicket.price}`}
           </Text>
+          {selectedTicket.price > 0 && (
+            <>
+              <TextInput accessibilityLabel="Discount code" style={styles.codeInput} value={code} onChangeText={value => { setCode(value.toUpperCase()); setQuote(null) }} placeholder="Discount code (optional)" placeholderTextColor="#888" autoCapitalize="characters" />
+              <TouchableOpacity accessibilityRole="button" style={styles.codeButton} onPress={() => void applyQuote()} disabled={quoting}>
+                <Text style={styles.codeButtonText}>{quoting ? 'Checking…' : 'Check my price'}</Text>
+              </TouchableOpacity>
+              {quote && (
+                <>
+                  {quote.member_discount_cents > 0 && <Text style={styles.summaryText}>Member discount ({quote.member_discount_percent}%): −{money(quote.member_discount_cents)}</Text>}
+                  {quote.code_applied && <Text style={styles.summaryText}>Code {code}: −{money(quote.code_discount_cents)}</Text>}
+                  {!!quote.code_error && <Text style={styles.summaryText} accessibilityRole="alert">{quote.code_error}</Text>}
+                  <Text style={styles.summaryText}>Your price: {money(quote.final_cents)}</Text>
+                </>
+              )}
+            </>
+          )}
         </View>
       )}
 
@@ -116,10 +160,10 @@ export default function RegistrationScreen() {
         <TouchableOpacity
           style={[styles.confirmButton, submitting && styles.confirmButtonDisabled]}
           onPress={handleConfirmRegistration}
-          disabled={submitting || !selectedTicket || (selectedTicket.price > 0 && !(isPaymentCheckEnabled && selectedTicket.id === paidTestTicketId))}
+          disabled={submitting || !selectedTicket || (selectedTicket.price > 0 && !sandbox && !(isPaymentCheckEnabled && selectedTicket.id === paidTestTicketId))}
         >
           <Text style={styles.confirmButtonText}>
-            {submitting ? 'Confirming...' : selectedTicket?.id === paidTestTicketId && isPaymentCheckEnabled ? 'Continue to $1 paid test' : selectedTicket && selectedTicket.price > 0 ? 'Paid checkout not available' : 'Confirm Registration'}
+            {submitting ? 'Confirming...' : selectedTicket && selectedTicket.price > 0 && sandbox ? `Pay ${quote ? money(quote.final_cents) : `$${selectedTicket.price}`} (test payment)` : selectedTicket?.id === paidTestTicketId && isPaymentCheckEnabled ? 'Continue to $1 paid test' : selectedTicket && selectedTicket.price > 0 ? 'Paid checkout not available' : 'Confirm Registration'}
           </Text>
         </TouchableOpacity>
 
@@ -137,13 +181,13 @@ export default function RegistrationScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#000'
+    backgroundColor: brand.page
   },
   centered: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000'
+    backgroundColor: brand.page
   },
   header: {
     padding: 20,
@@ -151,13 +195,13 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 14,
-    color: '#aaa',
+    color: brand.inkMuted,
     marginBottom: 4
   },
   eventName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#fff'
+    color: brand.ink
   },
   section: {
     padding: 20
@@ -165,66 +209,69 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#fff',
+    color: brand.ink,
     marginBottom: 12
   },
   ticketOption: {
     borderWidth: 1,
-    borderColor: '#333',
+    borderColor: brand.line,
     borderRadius: 8,
     padding: 16,
     marginBottom: 10
   },
   ticketOptionSelected: {
-    borderColor: '#fff',
-    backgroundColor: '#111'
+    borderColor: brand.green,
+    backgroundColor: brand.card
   },
   ticketName: {
     fontSize: 16,
     fontWeight: '600',
-    color: '#fff'
+    color: brand.ink
   },
   ticketPrice: {
     fontSize: 15,
-    color: '#aaa',
+    color: brand.inkMuted,
     marginTop: 4
   },
   ticketDescription: {
     fontSize: 13,
-    color: '#666',
+    color: brand.inkMuted,
     marginTop: 4
   },
   noTickets: {
-    color: '#aaa',
+    color: brand.inkMuted,
     fontSize: 15
   },
   summary: {
     margin: 20,
     padding: 16,
-    backgroundColor: '#111',
+    backgroundColor: brand.card,
     borderRadius: 8
   },
   summaryText: {
-    color: '#ccc',
+    color: brand.inkMuted,
     fontSize: 15,
     marginBottom: 6
   },
+  codeInput: { borderWidth: 1, borderColor: brand.line, borderRadius: 10, color: brand.ink, paddingHorizontal: 12, paddingVertical: 10, marginTop: 8, marginBottom: 8 },
+  codeButton: { alignSelf: 'flex-start', backgroundColor: '#1F7A5C', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 8 },
+  codeButtonText: { color: '#FFFFFF', fontWeight: '600' },
   footer: {
     padding: 20,
     paddingBottom: 40
   },
   confirmButton: {
-    backgroundColor: '#fff',
+    backgroundColor: brand.green,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 12
   },
   confirmButtonDisabled: {
-    backgroundColor: '#333'
+    backgroundColor: brand.greenSoft
   },
   confirmButtonText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold'
   },
@@ -233,11 +280,11 @@ const styles = StyleSheet.create({
     alignItems: 'center'
   },
     cancelButtonText: {
-    color: '#aaa',
+    color: brand.inkMuted,
     fontSize: 16
   },
   errorText: {
-    color: '#fff',
+    color: brand.ink,
     fontSize: 16
   }
 })

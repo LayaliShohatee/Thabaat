@@ -1,10 +1,12 @@
 import { ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native'
+import { brand } from '@/constants/brand'
 import { router, useLocalSearchParams } from 'expo-router'
 import RegisteredEventActions from '@/components/events/RegisteredEventActions'
 import { isDemoMode } from '@/lib/demo-mode'
+import SuggestedDonation from '@/components/SuggestedDonation'
 
 export default function ConfirmationScreen() {
-  const { eventTitle, notificationSent, freeRegistration, registrationId, eventId } = useLocalSearchParams<{ eventTitle: string; notificationSent?: string; freeRegistration?: string; registrationId?: string; eventId?: string }>()
+  const { eventTitle, notificationSent, freeRegistration, registrationId, eventId, testCharge } = useLocalSearchParams<{ eventTitle: string; notificationSent?: string; freeRegistration?: string; registrationId?: string; eventId?: string; testCharge?: string }>()
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -16,14 +18,10 @@ export default function ConfirmationScreen() {
           : 'Your registration was successful'}
       </Text>
 
+      {testCharge !== undefined && <Text style={styles.subtitle}>Paid ${(Number(testCharge) / 100).toFixed(2)} — test payment, no money was charged. Your ticket is in My Events.</Text>}
       {!isDemoMode && notificationSent === 'false' && <Text style={styles.subtitle}>Your registration is saved. Push confirmation may be disabled or awaiting delivery.</Text>}
       {registrationId && eventId && <RegisteredEventActions registrationId={registrationId} eventId={eventId} />}
-      {!isDemoMode && freeRegistration === 'true' && <>
-        <Text style={styles.subtitle}>Your ticket is free. You can choose to support Thabaat separately.</Text>
-        <TouchableOpacity accessibilityRole="button" style={styles.secondaryButton} onPress={() => router.push('/donations')}>
-          <Text style={styles.secondaryButtonText}>Optional support</Text>
-        </TouchableOpacity>
-      </>}
+      {!isDemoMode && freeRegistration === 'true' && <SuggestedDonation styles={styles} />}
       <TouchableOpacity
         style={styles.button}
         onPress={() => router.replace('/(tabs)')}
@@ -46,30 +44,30 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: brand.page,
     padding: 32
   },
   checkmark: {
     fontSize: 64,
-    color: '#4ade80',
+    color: brand.green,
     marginBottom: 16
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#fff',
+    color: brand.ink,
     marginBottom: 12,
     textAlign: 'center'
   },
   subtitle: {
     fontSize: 16,
-    color: '#aaa',
+    color: brand.inkMuted,
     textAlign: 'center',
     marginBottom: 40,
     lineHeight: 24
   },
   button: {
-    backgroundColor: '#fff',
+    backgroundColor: brand.green,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
@@ -77,7 +75,7 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   buttonText: {
-    color: '#000',
+    color: '#FFFFFF',
     fontSize: 16,
     fontWeight: 'bold'
   },
@@ -87,7 +85,7 @@ const styles = StyleSheet.create({
     width: '100%'
   },
   secondaryButtonText: {
-    color: '#aaa',
+    color: brand.inkMuted,
     fontSize: 16
   }
 })
