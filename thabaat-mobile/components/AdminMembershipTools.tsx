@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { getPaymentsMode, setPaymentsMode, type PaymentsMode } from '@/services/sandboxPaymentService'
 import { Switch, Text, TextInput, View } from 'react-native'
 import { useFocusResource } from '@/hooks/useFocusResource'
 import { supabase } from '@/lib/supabase'
@@ -10,8 +11,8 @@ const blank={id:null as string|null,name:'',description:'',benefits:'',amount:''
 const labels:Record<MembershipChangeRequest['kind'],string>={cancel_renewal:'Stop renewing',resume_renewal:'Keep renewing',change_plan:'Change plan'}
 // #136 plan/tier management and #53–55 membership change review (administrators only).
 export function AdminMembershipTools() {
- const load=useCallback(async()=>{const [plans,requests]=await Promise.all([supabase.from('membership_plans').select('*').order('amount_cents'),listMembershipChangeRequests()]);if(plans.error)throw new Error(plans.error.message);return {plans:(plans.data||[]) as PlanRow[],requests}},[])
- const {data,error,reload}=useFocusResource(load,{plans:[] as PlanRow[],requests:[] as MembershipChangeRequest[]})
+ const load=useCallback(async()=>{const [plans,requests,mode]=await Promise.all([supabase.from('membership_plans').select('*').order('amount_cents'),listMembershipChangeRequests(),getPaymentsMode()]);if(plans.error)throw new Error(plans.error.message);return {plans:(plans.data||[]) as PlanRow[],requests,mode}},[])
+ const {data,error,reload}=useFocusResource(load,{plans:[] as PlanRow[],requests:[] as MembershipChangeRequest[],mode:'off' as PaymentsMode})
  const [form,setForm]=useState<typeof blank|null>(null),[busy,setBusy]=useState(false),[message,setMessage]=useState('')
  async function run(action:()=>Promise<unknown>,success:string){if(busy)return;setBusy(true);setMessage('');try{await action();setMessage(success);await reload()}catch(e){setMessage(e instanceof Error?e.message:'Unable to save')}finally{setBusy(false)}}
  function save(){
@@ -21,6 +22,9 @@ export function AdminMembershipTools() {
   void run(async()=>{await saveMembershipPlan({id:form.id,name:form.name,description:form.description,benefits:form.benefits.split('\n').map(b=>b.trim()).filter(Boolean),amount_cents:amount,billing_period:form.billing_period,checkout_url:form.checkout_url.trim()||null,published:form.published,ticket_discount_percent:discount});setForm(null)},'Membership plan saved.')
  }
  return <View style={styles.card}>
+  <Text style={styles.heading}>Test payments</Text>
+  <Text style={styles.text}>Test mode lets members buy tickets and memberships and donate without real money, so every flow can be checked end to end. Keep it off for a live launch.</Text>
+  <View><Text style={styles.text}>Test payments {data.mode==='sandbox'?'ON':'OFF'}</Text><Switch accessibilityLabel="Test payments mode" value={data.mode==='sandbox'} disabled={busy} onValueChange={on=>void run(()=>setPaymentsMode(on?'sandbox':'off'),on?'Test payments turned on.':'Test payments turned off.')}/></View>
   <Text style={styles.heading}>Membership tiers</Text>
   {!!(error||message)&&<Text accessibilityRole="alert" style={styles.alert}>{error||message}</Text>}
   {data.plans.map(p=><View key={p.id}><Text style={styles.text}>{p.name} · {p.amount_cents?`${money(p.amount_cents,p.currency)} ${periodLabel(p.billing_period)}`:'No price'} · {p.published?'Published':'Hidden'} · {p.ticket_discount_percent??0}% ticket discount</Text>

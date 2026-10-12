@@ -78,5 +78,5 @@ DO $$ DECLARE f record; body text; BEGIN
  END LOOP;
 END $$;
 -- Restrictive policies intersect existing authenticated policies; service-role processing remains unchanged.
-DO $$ DECLARE t record; BEGIN FOR t IN SELECT n.nspname,c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname IN ('public','storage') AND c.relkind='r' AND c.relrowsecurity LOOP EXECUTE format('CREATE POLICY account_active_guard ON %I.%I AS RESTRICTIVE FOR ALL TO authenticated USING (public.account_is_active(auth.uid())) WITH CHECK (public.account_is_active(auth.uid()))',t.nspname,t.relname); END LOOP; END $$;
+DO $$ DECLARE t record; BEGIN FOR t IN SELECT n.nspname,c.relname FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname IN ('public','storage') AND c.relkind='r' AND c.relrowsecurity AND pg_has_role(current_user,c.relowner,'MEMBER') AND NOT EXISTS(SELECT 1 FROM pg_policies p WHERE p.schemaname=n.nspname AND p.tablename=c.relname AND p.policyname='account_active_guard') LOOP EXECUTE format('CREATE POLICY account_active_guard ON %I.%I AS RESTRICTIVE FOR ALL TO authenticated USING (public.account_is_active(auth.uid())) WITH CHECK (public.account_is_active(auth.uid()))',t.nspname,t.relname); END LOOP; END $$;
 COMMIT;

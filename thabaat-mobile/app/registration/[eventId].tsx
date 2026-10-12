@@ -23,6 +23,7 @@ import { isDemoMode } from '@/lib/demo-mode'
 import { categoryLabel, ticketOnSale } from '@/lib/ticket-categories'
 import { money } from '@/lib/billing'
 import { quoteTicketPrice, type PriceQuote } from '@/services/refundDiscountService'
+import { getPaymentsMode, sandboxPurchaseTicket, type PaymentsMode } from '@/services/sandboxPaymentService'
 
 export default function RegistrationScreen() {
   const { eventId } = useLocalSearchParams<{ eventId: string }>()
@@ -39,6 +40,8 @@ export default function RegistrationScreen() {
   const [code, setCode] = useState('')
   const [quote, setQuote] = useState<PriceQuote | null>(null)
   const [quoting, setQuoting] = useState(false)
+  const { data: paymentsMode } = useFocusResource(getPaymentsMode, 'off' as PaymentsMode)
+  const sandbox = paymentsMode === 'sandbox'
   const applyQuote = async () => {
     if (!selectedTicket || quoting) return
     setQuoting(true)
@@ -51,6 +54,15 @@ export default function RegistrationScreen() {
     if (submitting || !user || !event || !selectedTicket) return
 
     if (selectedTicket.id === paidTestTicketId && isPaymentCheckEnabled) { router.push(`/payments/event/${event.id}`); return }
+    if (selectedTicket.price > 0 && sandbox) {
+      setSubmitting(true)
+      try {
+        const result = await sandboxPurchaseTicket(selectedTicket.id, code)
+        router.replace(`/registration/confirmation?eventTitle=${encodeURIComponent(event.title)}&notificationSent=false&freeRegistration=false&registrationId=${encodeURIComponent(result.registration_id)}&eventId=${encodeURIComponent(event.id)}&testCharge=${result.charged_cents}`)
+      } catch (error: any) { Alert.alert('Payment failed', error.message) }
+      finally { setSubmitting(false) }
+      return
+    }
     if (selectedTicket.price > 0) { Alert.alert('Payment unavailable', 'Paid ticket checkout is not connected yet.'); return }
     setSubmitting(true)
 
@@ -148,10 +160,10 @@ export default function RegistrationScreen() {
         <TouchableOpacity
           style={[styles.confirmButton, submitting && styles.confirmButtonDisabled]}
           onPress={handleConfirmRegistration}
-          disabled={submitting || !selectedTicket || (selectedTicket.price > 0 && !(isPaymentCheckEnabled && selectedTicket.id === paidTestTicketId))}
+          disabled={submitting || !selectedTicket || (selectedTicket.price > 0 && !sandbox && !(isPaymentCheckEnabled && selectedTicket.id === paidTestTicketId))}
         >
           <Text style={styles.confirmButtonText}>
-            {submitting ? 'Confirming...' : selectedTicket?.id === paidTestTicketId && isPaymentCheckEnabled ? 'Continue to $1 paid test' : selectedTicket && selectedTicket.price > 0 ? 'Paid checkout not available' : 'Confirm Registration'}
+            {submitting ? 'Confirming...' : selectedTicket && selectedTicket.price > 0 && sandbox ? `Pay ${quote ? money(quote.final_cents) : `$${selectedTicket.price}`} (test payment)` : selectedTicket?.id === paidTestTicketId && isPaymentCheckEnabled ? 'Continue to $1 paid test' : selectedTicket && selectedTicket.price > 0 ? 'Paid checkout not available' : 'Confirm Registration'}
           </Text>
         </TouchableOpacity>
 

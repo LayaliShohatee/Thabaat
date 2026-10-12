@@ -6,7 +6,7 @@ import { isDemoMode } from '@/lib/demo-mode'
 import SuggestedDonation from '@/components/SuggestedDonation'
 
 export default function ConfirmationScreen() {
-  const { eventTitle, notificationSent, freeRegistration, registrationId, eventId } = useLocalSearchParams<{ eventTitle: string; notificationSent?: string; freeRegistration?: string; registrationId?: string; eventId?: string }>()
+  const { eventTitle, notificationSent, freeRegistration, registrationId, eventId, testCharge } = useLocalSearchParams<{ eventTitle: string; notificationSent?: string; freeRegistration?: string; registrationId?: string; eventId?: string; testCharge?: string }>()
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -18,6 +18,7 @@ export default function ConfirmationScreen() {
           : 'Your registration was successful'}
       </Text>
 
+      {testCharge !== undefined && <Text style={styles.subtitle}>Paid ${(Number(testCharge) / 100).toFixed(2)} — test payment, no money was charged. Your ticket is in My Events.</Text>}
       {!isDemoMode && notificationSent === 'false' && <Text style={styles.subtitle}>Your registration is saved. Push confirmation may be disabled or awaiting delivery.</Text>}
       {registrationId && eventId && <RegisteredEventActions registrationId={registrationId} eventId={eventId} />}
       {!isDemoMode && freeRegistration === 'true' && <SuggestedDonation styles={styles} />}
