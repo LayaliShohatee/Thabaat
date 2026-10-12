@@ -2,6 +2,8 @@ import {eventReturnPath} from './event-sharing'
 export function authRedirect(signedIn: boolean, segments: readonly string[], returnEventId?: unknown) {
   const authPage = segments[0] === 'auth' ? segments[1] : undefined
   const publicAuth = ['login', 'register', 'forgot-password', 'callback', 'reset-password']
+  // Administrator-reviewed public event pages are viewable without signing in.
+  if (!signedIn && segments[0] === 'public') return null
   if (!signedIn && !publicAuth.includes(authPage ?? '')) return '/auth/login' as const
   if (signedIn && ['login', 'register', 'forgot-password'].includes(authPage ?? '')) return eventReturnPath(returnEventId) ?? '/(tabs)' as const
   return null

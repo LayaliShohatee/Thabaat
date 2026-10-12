@@ -2,6 +2,7 @@ import { ScrollView, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 import RegisteredEventActions from '@/components/events/RegisteredEventActions'
 import { isDemoMode } from '@/lib/demo-mode'
+import SuggestedDonation from '@/components/SuggestedDonation'
 
 export default function ConfirmationScreen() {
   const { eventTitle, notificationSent, freeRegistration, registrationId, eventId } = useLocalSearchParams<{ eventTitle: string; notificationSent?: string; freeRegistration?: string; registrationId?: string; eventId?: string }>()
@@ -18,12 +19,7 @@ export default function ConfirmationScreen() {
 
       {!isDemoMode && notificationSent === 'false' && <Text style={styles.subtitle}>Your registration is saved. Push confirmation may be disabled or awaiting delivery.</Text>}
       {registrationId && eventId && <RegisteredEventActions registrationId={registrationId} eventId={eventId} />}
-      {!isDemoMode && freeRegistration === 'true' && <>
-        <Text style={styles.subtitle}>Your ticket is free. You can choose to support Thabaat separately.</Text>
-        <TouchableOpacity accessibilityRole="button" style={styles.secondaryButton} onPress={() => router.push('/donations')}>
-          <Text style={styles.secondaryButtonText}>Optional support</Text>
-        </TouchableOpacity>
-      </>}
+      {!isDemoMode && freeRegistration === 'true' && <SuggestedDonation styles={styles} />}
       <TouchableOpacity
         style={styles.button}
         onPress={() => router.replace('/(tabs)')}

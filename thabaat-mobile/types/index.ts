@@ -24,6 +24,8 @@ export interface TicketType {
   name: string
   price: number
   description?: string | null
+  category?: string | null
+  sale_ends_at?: string | null
 }
 
 export interface Registration {

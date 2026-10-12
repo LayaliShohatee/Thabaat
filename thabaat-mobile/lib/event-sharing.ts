@@ -11,7 +11,7 @@ export function eventShareLink(eventId:string,origin?:string):{url:string;webFal
   let url:URL
   try{url=new URL(origin)}catch{throw new Error('The event sharing website is not configured correctly.')}
   if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash||(url.pathname!=='/'&&url.pathname!=='')||['localhost','127.0.0.1','::1','[::1]'].includes(url.hostname))throw new Error('Event sharing requires an approved HTTPS website origin.')
-  return{url:`${url.origin}/event/${eventId}`,webFallback:true}
+  return{url:`${url.origin}/public/event/${eventId}`,webFallback:true}
  }
  return{url:`thabaat://event/${eventId}`,webFallback:false}
 }

@@ -8,6 +8,9 @@ export type NotificationJob={id:string;kind:string;token:string;title:string;bod
 export async function dispatchDueNotifications(client:SupabaseClient,send:SendPush,limit=20):Promise<{accepted:number;failed:number;uncertain:number}> {
  const {error:scheduleError}=await client.rpc('schedule_notification_jobs')
  if(scheduleError) throw new Error('Unable to schedule notification jobs')
+ // Volunteer shift reminders (24 h ahead). Older databases without the function are skipped.
+ const shifts=await client.rpc('schedule_volunteer_shift_reminders')
+ if(shifts?.error&&shifts.error.code!=='PGRST202') throw new Error('Unable to schedule volunteer shift reminders')
  const {data,error}=await client.rpc('claim_due_notification_jobs',{p_limit:limit})
  if(error || !Array.isArray(data)) throw new Error('Unable to claim notification jobs')
  const totals={accepted:0,failed:0,uncertain:0}

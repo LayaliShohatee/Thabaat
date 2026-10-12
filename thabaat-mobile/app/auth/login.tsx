@@ -97,6 +97,9 @@ export default function LoginScreen() {
           Don&apos;t have an account? Create one
         </Text>
       </TouchableOpacity>
+      <TouchableOpacity accessibilityRole="button" onPress={() => router.push('/public')}>
+        <Text style={styles.link}>Browse public events without signing in</Text>
+      </TouchableOpacity>
     </View>
   );
 }

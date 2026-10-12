@@ -5,6 +5,7 @@ import { useFocusResource } from '@/hooks/useFocusResource'
 import { emptyBilling, membershipIsActive, money, periodLabel } from '@/lib/billing'
 import { getBilling, openHostedCheckout } from '@/services/billingService'
 import { membershipSummary } from '@/lib/membership-state'
+import MembershipChangeCard from '@/components/MembershipChangeCard'
 
 function BillingButton({ label, onPress, disabled = false }: { label: string; onPress: () => void; disabled?: boolean }) {
  return <TouchableOpacity accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[styles.button, disabled && styles.disabled]}><Text style={styles.buttonText}>{label}</Text></TouchableOpacity>
@@ -41,7 +42,7 @@ export function BillingScreen({ section }: { section: 'membership' | 'donations'
    <Text style={styles.heading}>Membership plans</Text>
    {data.plans.filter(p => p.published).length === 0 && <View style={styles.card}><Text style={styles.copy}>Paid plans are not available yet. Prices, benefits, and checkout will appear here when Thabaat publishes them.</Text></View>}
    {data.plans.filter(p => p.published).map(plan => <View key={plan.id} style={styles.card}><Text style={styles.heading}>{plan.name}</Text><Text style={styles.price}>{plan.acquisition_mode==='complimentary' ? 'Complimentary · issued by Thabaat' : plan.amount_cents === null ? 'Price not set' : `${money(plan.amount_cents, plan.currency)} ${periodLabel(plan.billing_period)}`}</Text><Text style={styles.copy}>{plan.description}</Text>{plan.benefits.map(benefit => <Text key={benefit} style={styles.copy}>• {benefit}</Text>)}<Text style={styles.copy}>{plan.acquisition_mode==='complimentary'?'Complimentary access requires an approved administrator issuance with a recorded end date.':'Purchases are not enabled until membership activation is connected.'}</Text><BillingButton label={active && plan.id === membership?.plan_id ? 'Current plan' : plan.acquisition_mode==='complimentary'?'Administrator issuance required':'Purchases unavailable'} onPress={() => {}} disabled /></View>)}
-   {membership?.source === 'charitystack' && <View style={styles.card}><Text style={styles.heading}>Renewals and cancellation</Text><Text style={styles.copy}>Use the subscription-management link in your CharityStack email to manage recurring payments. Renewals, upgrades, and cancellations are not yet available inside Thabaat. Closing this app does not cancel a subscription.</Text></View>}
+   {membership?.source === 'charitystack' && <MembershipChangeCard membership={membership} plans={data.plans} styles={styles}/>}
   </>}
   {!loading && !error && section === 'donations' && <>
    {data.campaigns.length === 0 && <View style={styles.card}><Text style={styles.copy}>No donation campaigns have been published in the app yet.</Text></View>}

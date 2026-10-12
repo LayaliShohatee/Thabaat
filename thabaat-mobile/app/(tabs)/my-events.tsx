@@ -11,6 +11,7 @@ import { router } from 'expo-router'
 import { useCallback, useRef, useState } from 'react'
 import { cancelFreeRegistration, getUserRegistrations } from '@/services/registrationService'
 import { useAuth } from '@/hooks/useAuth'
+import { requestRefund } from '@/services/refundDiscountService'
 import { Registration } from '@/types'
 
 export default function MyEventsScreen() {
@@ -28,6 +29,15 @@ export default function MyEventsScreen() {
     actionInFlight.current = true; setBusy(item.id); setNotice('')
     try { await cancelFreeRegistration(item.id); setCancelId(null); setNotice('Registration cancelled. Your ticket remains in history.'); await reload() }
     catch (err) { setNotice(err instanceof Error ? err.message : typeof err === 'object' && err && 'message' in err ? String(err.message) : 'Cancellation failed. Please retry.') }
+    finally { actionInFlight.current = false; setBusy(null) }
+  }
+
+  // Paid tickets are cancelled through a refund request the event team approves before the refund deadline.
+  const refund = async (item: Registration) => {
+    if (actionInFlight.current) return
+    actionInFlight.current = true; setBusy(item.id); setNotice('')
+    try { await requestRefund(item.id, ''); setNotice('Refund requested. The event team will review it; your ticket stays active until approved.') }
+    catch (err) { setNotice(err instanceof Error ? err.message : 'Refund request failed. Please retry.') }
     finally { actionInFlight.current = false; setBusy(null) }
   }
 
@@ -98,6 +108,7 @@ export default function MyEventsScreen() {
             <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => setCancelId(null)}><Text style={styles.actionText}>Keep registration</Text></TouchableOpacity>
             <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => void cancel(item)}><Text style={styles.actionText}>{busy === item.id ? 'Cancelling…' : 'Confirm cancellation'}</Text></TouchableOpacity>
           </View>}
+          {item.status === 'confirmed' && !item.checked_in_at && Number(item.ticket_type?.price) > 0 && item.event && new Date(item.event.event_date).getTime() > now && <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => void refund(item)}><Text style={styles.actionText}>{busy === item.id ? 'Sending…' : 'Cancel and request refund'}</Text></TouchableOpacity>}
           {item.status === 'cancelled' && item.event && new Date(item.event.event_date).getTime() > now && <TouchableOpacity accessibilityRole="button" style={styles.actionButton} onPress={() => router.push(`/registration/${item.event_id}`)}><Text style={styles.actionText}>Register again</Text></TouchableOpacity>}
         </View>
       )}

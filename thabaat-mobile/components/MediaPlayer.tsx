@@ -7,7 +7,7 @@ import { getMediaPlayback, getMediaProgress, saveMediaProgress } from '@/service
 
 export default function MediaPlayer({ item }: { item: MediaItem }) {
  const [message,setMessage]=useState('Loading secure playback…')
- const player=useVideoPlayer(null,p=>{p.timeUpdateEventInterval=10;p.staysActiveInBackground=false;p.allowsExternalPlayback=true})
+ const player=useVideoPlayer(null,p=>{p.timeUpdateEventInterval=10;p.staysActiveInBackground=true;p.showNowPlayingNotification=true;p.allowsExternalPlayback=true})
  useEffect(()=>{
   let active=true, refreshing=false, denied=false, ready=false, pendingPosition=0, resumePlaying=false
   const stop=(text:string)=>{if(!active)return;denied=true;player.pause();void player.replaceAsync(null);setMessage(text)}
@@ -46,8 +46,8 @@ export default function MediaPlayer({ item }: { item: MediaItem }) {
   return()=>{active=false;clearInterval(interval);progress.remove();status.remove();loaded.remove();app.remove();player.pause()}
  },[item,player])
  return <View>
-  <VideoView player={player} style={{width:'100%',height:240}} nativeControls fullscreenOptions={{enable:true}} allowsPictureInPicture={false}/>
-  {Platform.OS==='ios'&&!message&&<View style={{flexDirection:'row',alignItems:'center',gap:12}}><VideoAirPlayButton accessibilityLabel="Choose AirPlay device" tint="#fff" activeTint="#4ade80" style={{width:44,height:44}}/><Text style={{color:'#bbb',flex:1}}>AirPlay device picker. Keep Thabaat open; playback pauses when you leave the app.</Text></View>}
+  <VideoView player={player} style={{width:'100%',height:240}} nativeControls fullscreenOptions={{enable:true}} allowsPictureInPicture startsPictureInPictureAutomatically/>
+  {Platform.OS==='ios'&&!message&&<View style={{flexDirection:'row',alignItems:'center',gap:12}}><VideoAirPlayButton accessibilityLabel="Choose AirPlay device" tint="#fff" activeTint="#4ade80" style={{width:44,height:44}}/><Text style={{color:'#bbb',flex:1}}>AirPlay device picker. Playback continues in the background and in picture-in-picture when you leave the app.</Text></View>}
   {!!message&&<Text accessibilityLiveRegion="polite" style={{color:'#ddd',padding:12}}>{message}</Text>}
  </View>
 }

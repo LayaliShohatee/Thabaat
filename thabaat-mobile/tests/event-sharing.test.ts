@@ -8,7 +8,7 @@ it('shares only event route without account, ticket, payment or member-content f
  expect(eventShareMessage(link.url)).toBe(`View this Thabaat event (sign-in required): thabaat://event/${id}`)
 })
 it('requires explicit valid HTTPS origin for browser fallback without inventing a host',()=>{
- expect(eventShareLink(id,'https://approved.example.invalid/')).toEqual({url:`https://approved.example.invalid/event/${id}`,webFallback:true})
+ expect(eventShareLink(id,'https://approved.example.invalid/')).toEqual({url:`https://approved.example.invalid/public/event/${id}`,webFallback:true})
  for(const origin of ['http://example.invalid','https://username:password@example.invalid','https://example.invalid/path','https://example.invalid/?redirect=evil','https://localhost','javascript:alert(1)'])expect(()=>eventShareLink(id,origin)).toThrow()
  expect(()=>eventShareLink('../payments')).toThrow()
 })

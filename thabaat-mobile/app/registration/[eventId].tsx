@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  TextInput,
 } from 'react-native'
 import { useLocalSearchParams, router } from 'expo-router'
 import { useCallback, useState } from 'react'
@@ -18,6 +19,9 @@ import { paidTestTicketId } from '@/lib/paid-event-test'
 import { isPaymentCheckEnabled } from '@/lib/payment-check'
 import { TicketType } from '@/types'
 import { isDemoMode } from '@/lib/demo-mode'
+import { categoryLabel, ticketOnSale } from '@/lib/ticket-categories'
+import { money } from '@/lib/billing'
+import { quoteTicketPrice, type PriceQuote } from '@/services/refundDiscountService'
 
 export default function RegistrationScreen() {
   const { eventId } = useLocalSearchParams<{ eventId: string }>()
@@ -29,8 +33,18 @@ export default function RegistrationScreen() {
     return getEventById(eventId)
   }, [eventId])
   const { data: event, loading, error, reload } = useFocusResource(load, null)
-  const ticketTypes: TicketType[] = event?.ticket_types ?? []
+  const ticketTypes: TicketType[] = (event?.ticket_types ?? []).filter(ticket => ticketOnSale(ticket))
   const selectedTicket = ticketTypes.find(ticket => ticket.id === selectedTicketId) ?? ticketTypes[0] ?? null
+  const [code, setCode] = useState('')
+  const [quote, setQuote] = useState<PriceQuote | null>(null)
+  const [quoting, setQuoting] = useState(false)
+  const applyQuote = async () => {
+    if (!selectedTicket || quoting) return
+    setQuoting(true)
+    try { setQuote(await quoteTicketPrice(selectedTicket.id, code)) }
+    catch (error: any) { Alert.alert('Price check failed', error.message) }
+    finally { setQuoting(false) }
+  }
 
   const handleConfirmRegistration = async () => {
     if (submitting || !user || !event || !selectedTicket) return
@@ -90,6 +104,7 @@ export default function RegistrationScreen() {
               onPress={() => setSelectedTicketId(ticket.id)}
             >
               <Text style={styles.ticketName}>{ticket.name}</Text>
+              {!!ticket.category && ticket.category !== 'general' && <Text style={styles.ticketDescription}>{categoryLabel(ticket.category)}{ticket.sale_ends_at ? ` · on sale until ${new Date(ticket.sale_ends_at).toLocaleString()}` : ''}</Text>}
               <Text style={styles.ticketPrice}>
                 {ticket.price === 0 ? 'Free' : `$${ticket.price}`}
               </Text>
@@ -109,6 +124,22 @@ export default function RegistrationScreen() {
           <Text style={styles.summaryText}>
             Price: {selectedTicket.price === 0 ? 'Free' : `$${selectedTicket.price}`}
           </Text>
+          {selectedTicket.price > 0 && (
+            <>
+              <TextInput accessibilityLabel="Discount code" style={styles.codeInput} value={code} onChangeText={value => { setCode(value.toUpperCase()); setQuote(null) }} placeholder="Discount code (optional)" placeholderTextColor="#888" autoCapitalize="characters" />
+              <TouchableOpacity accessibilityRole="button" style={styles.codeButton} onPress={() => void applyQuote()} disabled={quoting}>
+                <Text style={styles.codeButtonText}>{quoting ? 'Checking…' : 'Check my price'}</Text>
+              </TouchableOpacity>
+              {quote && (
+                <>
+                  {quote.member_discount_cents > 0 && <Text style={styles.summaryText}>Member discount ({quote.member_discount_percent}%): −{money(quote.member_discount_cents)}</Text>}
+                  {quote.code_applied && <Text style={styles.summaryText}>Code {code}: −{money(quote.code_discount_cents)}</Text>}
+                  {!!quote.code_error && <Text style={styles.summaryText} accessibilityRole="alert">{quote.code_error}</Text>}
+                  <Text style={styles.summaryText}>Your price: {money(quote.final_cents)}</Text>
+                </>
+              )}
+            </>
+          )}
         </View>
       )}
 
@@ -209,6 +240,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     marginBottom: 6
   },
+  codeInput: { borderWidth: 1, borderColor: '#444', borderRadius: 10, color: '#fff', paddingHorizontal: 12, paddingVertical: 10, marginTop: 8, marginBottom: 8 },
+  codeButton: { alignSelf: 'flex-start', backgroundColor: '#1F7A5C', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 8 },
+  codeButtonText: { color: '#fff', fontWeight: '600' },
   footer: {
     padding: 20,
     paddingBottom: 40

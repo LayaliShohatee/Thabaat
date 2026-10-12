@@ -6,7 +6,7 @@ export type Permissions = { user_id: string; staff_role: StaffRole | null; can_m
 export type RoleAccount = { user_id: string; full_name: string; email: string; staff_role: StaffRole | null }
 export type ManagedEvent = Event & EventDetails & { created_by?: string | null; archived?: boolean }
 export type EventAttendees = {
- attendees: { registration_id:string; full_name:string; ticket_name:string; status:'confirmed'|'pending'|'cancelled'; registered_at:string }[]
+ attendees: { registration_id:string; full_name:string; ticket_name:string; ticket_category?:string|null; status:'confirmed'|'pending'|'cancelled'; registered_at:string; gender?:string|null; age?:number|null }[]
  counts: { total:number; confirmed:number; pending:number; cancelled:number }
  capacity:number; reserved:number
 }
