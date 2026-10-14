@@ -10,10 +10,10 @@ vi.mock('../components/FreeTicketInventory',()=>({FreeTicketInventory:()=>null})
 vi.mock('../services/eventImageService',()=>({uploadEventFlyer:vi.fn()}))
 vi.mock('../components/EventRefundsAndCodes',()=>({EventRefundsAndCodes:()=>null}))
 vi.mock('../components/PublicEventPublisher',()=>({PublicEventPublisher:()=>null}))
-vi.mock('../components/ManagementUI',()=>({ManagementButton:()=>null,managementStyles:{}}))
+vi.mock('../components/ManagementUI',()=>({ManagementButton:()=>null,ManagementChip:()=>null,ManagementLink:()=>null,managementStyles:{}}))
 import {EventAttendees} from '../components/EventAttendees'
-import EventsTab from '../app/(tabs)/admin'
+import AdminTab from '../app/(tabs)/admin'
 it('native attendee loading and no-result states render without stray text',()=>{for(const data of [null,{counts:{total:0,confirmed:0,pending:0,cancelled:0},capacity:20,reserved:0,attendees:[]}]){state.data=data;state.loading=false;state.error='';expect(()=>renderToStaticMarkup(React.createElement(EventAttendees,{eventId:'fixture'}))).not.toThrow()}})
 it('native attendee success and error recovery render a valid Text tree',()=>{state.data={counts:{total:1,confirmed:1,pending:0,cancelled:0},capacity:20,reserved:0,attendees:[{registration_id:'fixture',full_name:'Synthetic attendee',ticket_name:'Free',status:'confirmed',registered_at:'2030-01-01'}]};state.error='';expect(renderToStaticMarkup(React.createElement(EventAttendees,{eventId:'fixture'}))).toContain('Synthetic attendee');state.error='Retry permitted';expect(renderToStaticMarkup(React.createElement(EventAttendees,{eventId:'fixture'}))).toContain('Retry permitted')})
 
-it('native staff event list renders without stray text between controls',()=>{state.data={events:[{id:'fixture',title:'Synthetic event',event_date:'2030-01-01',location:'Synthetic venue',capacity:20,created_by:'staff'}],permissions:{user_id:'staff',staff_role:'admin',can_manage_events:true},setupError:''};state.error='';state.loading=false;expect(()=>renderToStaticMarkup(React.createElement(EventsTab))).not.toThrow()})
+it('native staff event list renders without stray text between controls',()=>{state.data={events:[{id:'fixture',title:'Synthetic event',event_date:'2030-01-01',location:'Synthetic venue',capacity:20,created_by:'staff'}],permissions:{user_id:'staff',staff_role:'admin',can_manage_events:true},setupError:''};state.error='';state.loading=false;expect(()=>renderToStaticMarkup(React.createElement(AdminTab))).not.toThrow()})

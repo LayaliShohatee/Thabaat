@@ -4,7 +4,7 @@ import { useFocusResource } from '@/hooks/useFocusResource'
 import { getEventAttendees, type EventAttendees as Attendees } from '@/services/managementService'
 import { AGE_FILTERS, GENDER_FILTERS, filterAttendees, genderLabel, type AgeFilter, type GenderFilter } from '@/lib/attendee-filters'
 import { categoryLabel } from '@/lib/ticket-categories'
-import { ManagementButton as Button, managementStyles as styles } from './ManagementUI'
+import { ManagementChip as Chip, ManagementLink as Link, managementStyles as styles } from './ManagementUI'
 
 export function EventAttendees({eventId}:{eventId:string}) {
  const [offset,setOffset]=useState(0)
@@ -21,9 +21,9 @@ export function EventAttendees({eventId}:{eventId:string}) {
    {!data.counts.total&&<Text style={styles.text}>No registrations yet.</Text>}
    {data.counts.total>0&&<>
     <Text style={styles.text}>Filter by gender</Text>
-    <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{GENDER_FILTERS.map(([value,label])=><Button key={value} label={`${gender===value?'✓ ':''}${label}`} onPress={()=>setGender(value)}/>)}</View>
+    <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{GENDER_FILTERS.map(([value,label])=><Chip key={value} label={label} selected={gender===value} onPress={()=>setGender(value)}/>)}</View>
     <Text style={styles.text}>Filter by age</Text>
-    <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{AGE_FILTERS.map(([value,label])=><Button key={value} label={`${age===value?'✓ ':''}${label}`} onPress={()=>setAge(value)}/>)}</View>
+    <View style={{flexDirection:'row',flexWrap:'wrap',gap:8}}>{AGE_FILTERS.map(([value,label])=><Chip key={value} label={label} selected={age===value} onPress={()=>setAge(value)}/>)}</View>
     <Text style={styles.text}>Matching on this page: {shown.length} of {data.attendees.length}</Text>
    </>}
    {shown.map(attendee=><View key={attendee.registration_id}>
@@ -34,8 +34,8 @@ export function EventAttendees({eventId}:{eventId:string}) {
    </View>)}
    {data.counts.total>0&&<Text style={styles.text}>Showing {data.attendees.length?offset+1:0}–{offset+data.attendees.length} of {data.counts.total}</Text>}
   </>}
-  {offset>0&&<Button label="Previous attendees" disabled={loading} onPress={()=>setOffset(Math.max(0,offset-50))}/>}
-  {!error&&data&&offset+50<data.counts.total&&<Button label="Next attendees" disabled={loading} onPress={()=>setOffset(offset+50)}/>}
-  <Button label="Refresh attendees" disabled={loading} onPress={()=>void reload()}/>
+  {offset>0&&<Link label="Previous attendees" disabled={loading} onPress={()=>setOffset(Math.max(0,offset-50))}/>}
+  {!error&&data&&offset+50<data.counts.total&&<Link label="Next attendees" disabled={loading} onPress={()=>setOffset(offset+50)}/>}
+  <Link label="Refresh attendees" disabled={loading} onPress={()=>void reload()}/>
  </View>
 }
