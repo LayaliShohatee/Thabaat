@@ -80,7 +80,7 @@ export default function RegistrationScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={brand.green} />
+        <ActivityIndicator size="large" color={brand.primary} />
       </View>
     )
   }
@@ -220,7 +220,7 @@ const styles = StyleSheet.create({
     marginBottom: 10
   },
   ticketOptionSelected: {
-    borderColor: brand.green,
+    borderColor: brand.primary,
     backgroundColor: brand.card
   },
   ticketName: {
@@ -254,21 +254,21 @@ const styles = StyleSheet.create({
     marginBottom: 6
   },
   codeInput: { borderWidth: 1, borderColor: brand.line, borderRadius: 10, color: brand.ink, paddingHorizontal: 12, paddingVertical: 10, marginTop: 8, marginBottom: 8 },
-  codeButton: { alignSelf: 'flex-start', backgroundColor: '#1F7A5C', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 8 },
+  codeButton: { alignSelf: 'flex-start', backgroundColor: '#0E7C7A', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 8 },
   codeButtonText: { color: '#FFFFFF', fontWeight: '600' },
   footer: {
     padding: 20,
     paddingBottom: 40
   },
   confirmButton: {
-    backgroundColor: brand.green,
+    backgroundColor: brand.primary,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 12
   },
   confirmButtonDisabled: {
-    backgroundColor: brand.greenSoft
+    backgroundColor: brand.primarySoft
   },
   confirmButtonText: {
     color: '#FFFFFF',

@@ -27,4 +27,4 @@ export default function CalendarActions({ event }: { event: CalendarEvent }) {
     {!!message && <Text accessibilityLiveRegion="polite" style={styles.note}>{message}</Text>}
   </View>
 }
-const styles = StyleSheet.create({ container: { marginBottom: 20, gap: 12, backgroundColor: '#fff', padding: 18, borderRadius: 14 }, heading: { color: '#172B28', fontSize: 18, fontWeight: '600' }, note: { color: '#425550', lineHeight: 23 }, button: { backgroundColor: '#146B59', borderRadius: 9, padding: 15 }, label: { color: '#fff', textAlign: 'center', fontWeight: '600' } })
+const styles = StyleSheet.create({ container: { marginBottom: 20, gap: 12, backgroundColor: '#fff', padding: 18, borderRadius: 14 }, heading: { color: '#172B28', fontSize: 18, fontWeight: '600' }, note: { color: '#425550', lineHeight: 23 }, button: { backgroundColor: '#0E7C7A', borderRadius: 9, padding: 15 }, label: { color: '#fff', textAlign: 'center', fontWeight: '600' } })

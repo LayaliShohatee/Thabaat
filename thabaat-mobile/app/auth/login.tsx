@@ -1,5 +1,5 @@
 import { Alert } from '@/lib/alert'
-import { brand } from '@/constants/brand'
+import { brand, fonts } from '@/constants/brand'
 import { useState } from 'react';
 import {
   StyleSheet,
@@ -50,7 +50,7 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.logo}>Thabaat</Text>
+      <Text style={styles.logo}>THABAAT</Text>
 
       <Text style={styles.title}>Welcome back</Text>
       {eventReturnPath(eventId)?<Text style={{color:'#bbb',marginBottom:12}}>Sign in to open the shared event.</Text>:null}
@@ -114,16 +114,17 @@ const styles = StyleSheet.create({
   },
 
   logo: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: brand.green,
+    fontSize: 26,
+    fontFamily: fonts.heading,
+    letterSpacing: 7,
+    color: brand.teal,
     textAlign: 'center',
     marginBottom: 25,
   },
 
   title: {
     fontSize: 26,
-    fontWeight: '700',
+    fontFamily: fonts.headingHeavy,
     color: brand.ink,
     textAlign: 'center',
   },
@@ -149,7 +150,7 @@ const styles = StyleSheet.create({
   },
 
   forgot: {
-    color: brand.green,
+    color: brand.primary,
     textAlign: 'right',
     fontSize: 14,
     marginBottom: 18,
@@ -157,7 +158,7 @@ const styles = StyleSheet.create({
 
   button: {
     height: 50,
-    backgroundColor: brand.green,
+    backgroundColor: brand.primary,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
   },
 
   link: {
-    color: brand.green,
+    color: brand.primary,
     textAlign: 'center',
     fontSize: 14,
     fontWeight: '500',

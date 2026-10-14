@@ -3,7 +3,7 @@ import {renderToStaticMarkup} from 'react-dom/server'
 import {beforeEach,expect,it,vi} from 'vitest'
 import Actions from '../components/events/RegisteredEventActions'
 import Confirmation from '../app/registration/confirmation'
-import MyEvents from '../app/(tabs)/my-events'
+import MyEvents from '../components/events/MyTickets'
 import Ticket from '../app/ticket/[id]'
 import Roster from '../components/EventAttendanceRoster'
 const state=vi.hoisted(()=>({params:{} as Record<string,string>,data:null as any,error:'',loading:false,buttons:[] as any[],push:vi.fn(),reload:vi.fn()}))
@@ -28,7 +28,7 @@ vi.mock('react-native-qrcode-svg',()=>({default:()=>React.createElement('div',nu
 const render=(component:any)=>renderToStaticMarkup(React.createElement(component))
 beforeEach(()=>{state.params={eventId:'event-1',registrationId:'registration-1',eventTitle:'Synthetic event',notificationSent:'false'};state.data={id:'event-1',event_id:'event-1',registration_id:'registration-1',title:'Synthetic event',event_date:'2030-01-01',token:'a'.repeat(64)};state.error='';state.loading=false;state.buttons=[];vi.clearAllMocks()})
 it('confirmation offers both actions for the saved registration despite unavailable Wallet',()=>{
- const html=render(Confirmation);expect(html).toContain('Registered!');expect(html).toContain('Your registration is saved');expect(html).toContain('Add to calendar');expect(html).toContain('data-event="event-1"');expect(html).toContain('data-registration="registration-1"');expect(html).toContain('Wallet signing unavailable');expect(html).toContain('View My Events')
+ const html=render(Confirmation);expect(html).toContain('Registered!');expect(html).toContain('Your registration is saved');expect(html).toContain('Add to calendar');expect(html).toContain('data-event="event-1"');expect(html).toContain('data-registration="registration-1"');expect(html).toContain('Wallet signing unavailable');expect(html).toContain('View my tickets')
 })
 it('offline calendar loading preserves confirmation, Wallet and retry',()=>{
  state.error='offline';state.data=null

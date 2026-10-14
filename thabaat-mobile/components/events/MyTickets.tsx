@@ -14,8 +14,10 @@ import { cancelFreeRegistration, getUserRegistrations } from '@/services/registr
 import { useAuth } from '@/hooks/useAuth'
 import { requestRefund } from '@/services/refundDiscountService'
 import { Registration } from '@/types'
+import { sortTickets } from '@/lib/ticket-order'
 
-export default function MyEventsScreen() {
+// The caller's bookings, shown under Events → My tickets.
+export default function MyTickets() {
   const { user } = useAuth()
   const [now] = useState(Date.now)
   const [busy, setBusy] = useState<string | null>(null)
@@ -45,7 +47,7 @@ export default function MyEventsScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={brand.green} />
+        <ActivityIndicator size="large" color={brand.primary} />
       </View>
     )
   }
@@ -54,18 +56,18 @@ export default function MyEventsScreen() {
 
   return (
     <FlatList
-      data={registrations}
+      data={sortTickets(registrations, now)}
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.list}
       ListHeaderComponent={
-        <View><Text style={styles.header}>My Events</Text>{Boolean(notice) && <Text accessibilityRole="alert" style={styles.emptyText}>{notice}</Text>}</View>
+        <View>{Boolean(notice) && <Text accessibilityRole="alert" style={styles.emptyText}>{notice}</Text>}</View>
       }
       ListEmptyComponent={
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>No registered events yet</Text>
+          <Text style={styles.emptyText}>You haven’t registered for any events yet</Text>
           <TouchableOpacity
             style={styles.browseButton}
-            onPress={() => router.push('/(tabs)')}
+            onPress={() => router.push('/(tabs)/events')}
           >
             <Text style={styles.browseButtonText}>Browse Events</Text>
           </TouchableOpacity>
@@ -102,7 +104,7 @@ export default function MyEventsScreen() {
             {item.status === 'confirmed' && item.checked_in_at !== undefined && <Text accessibilityLiveRegion="polite" style={styles.actionText}>{item.checked_in_at ? `Checked in · ${new Date(item.checked_in_at).toLocaleString()}` : 'Not checked in'}</Text>}
           </View>
         </TouchableOpacity>
-          {item.status === 'confirmed' && <TouchableOpacity accessibilityRole="button" style={[styles.actionButton,styles.primaryAction]} onPress={() => router.push(`/ticket/${item.id}`)}><Text style={styles.actionText}>Open ticket</Text></TouchableOpacity>}
+          {item.status === 'confirmed' && <TouchableOpacity accessibilityRole="button" style={[styles.actionButton,styles.primaryAction]} onPress={() => router.push(`/ticket/${item.id}`)}><Text style={styles.primaryActionText}>Open ticket</Text></TouchableOpacity>}
           {item.status === 'confirmed' && !item.checked_in_at && Number(item.ticket_type?.price) === 0 && item.event && new Date(item.event.event_date).getTime() > now && <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => setCancelId(item.id)}><Text style={styles.actionText}>{busy === item.id ? 'Cancelling…' : 'Cancel free registration'}</Text></TouchableOpacity>}
           {cancelId === item.id && item.status === 'confirmed' && <View style={styles.cardContent}>
             <Text style={styles.actionText}>Cancel this free registration? Your place will be released. Re-registering depends on remaining availability.</Text>
@@ -119,11 +121,13 @@ export default function MyEventsScreen() {
 
 const styles = StyleSheet.create({
   actionButton: { padding: 16, borderTopWidth: 1, borderColor: brand.line },
-  primaryAction: { backgroundColor:'#146B59',borderTopWidth:0 },
+  primaryAction: { backgroundColor: brand.primary, borderTopWidth: 0 },
+  primaryActionText: { color: '#FFFFFF', fontWeight: '700' },
   actionText: { color: brand.ink, fontWeight: '600' },
   list: {
     backgroundColor: brand.page,
     flexGrow: 1,
+    paddingTop: 8,
     paddingBottom: 40
   },
   centered: {
@@ -131,13 +135,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: brand.page
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: brand.ink,
-    padding: 20,
-    paddingTop: 72
   },
   empty: {
     flex: 1,
@@ -150,7 +147,7 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   browseButton: {
-    backgroundColor: brand.green,
+    backgroundColor: brand.primary,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8
@@ -190,10 +187,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    backgroundColor: brand.greenSoft
+    backgroundColor: brand.primarySoft
   },
   statusConfirmed: {
-    backgroundColor: brand.greenSoft
+    backgroundColor: brand.primarySoft
   },
   statusText: {
     color: brand.ink,

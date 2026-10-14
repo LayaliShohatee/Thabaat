@@ -18,7 +18,7 @@ export default function ConfirmationScreen() {
           : 'Your registration was successful'}
       </Text>
 
-      {testCharge !== undefined && <Text style={styles.subtitle}>Paid ${(Number(testCharge) / 100).toFixed(2)} — test payment, no money was charged. Your ticket is in My Events.</Text>}
+      {testCharge !== undefined && <Text style={styles.subtitle}>Paid ${(Number(testCharge) / 100).toFixed(2)} — test payment, no money was charged. Your ticket is in Events → My tickets.</Text>}
       {!isDemoMode && notificationSent === 'false' && <Text style={styles.subtitle}>Your registration is saved. Push confirmation may be disabled or awaiting delivery.</Text>}
       {registrationId && eventId && <RegisteredEventActions registrationId={registrationId} eventId={eventId} />}
       {!isDemoMode && freeRegistration === 'true' && <SuggestedDonation styles={styles} />}
@@ -31,9 +31,9 @@ export default function ConfirmationScreen() {
 
       <TouchableOpacity
         style={styles.secondaryButton}
-        onPress={() => router.replace('/(tabs)/my-events')}
+        onPress={() => router.replace('/(tabs)/events?view=tickets')}
       >
-        <Text style={styles.secondaryButtonText}>View My Events</Text>
+        <Text style={styles.secondaryButtonText}>View my tickets</Text>
       </TouchableOpacity>
     </ScrollView>
   )
@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   },
   checkmark: {
     fontSize: 64,
-    color: brand.green,
+    color: brand.primary,
     marginBottom: 16
   },
   title: {
@@ -67,7 +67,7 @@ const styles = StyleSheet.create({
     lineHeight: 24
   },
   button: {
-    backgroundColor: brand.green,
+    backgroundColor: brand.primary,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',

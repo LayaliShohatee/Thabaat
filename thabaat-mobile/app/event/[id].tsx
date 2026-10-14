@@ -35,7 +35,7 @@ export default function EventDetailScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={brand.green} />
+        <ActivityIndicator size="large" color={brand.primary} />
       </View>
     )
   }
@@ -162,13 +162,13 @@ const styles = StyleSheet.create({
     paddingBottom: 40
   },
   registerButton: {
-    backgroundColor: brand.green,
+    backgroundColor: brand.primary,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center'
   },
   registeredButton: {
-    backgroundColor: brand.greenSoft
+    backgroundColor: brand.primarySoft
   },
   registerButtonText: {
     color: '#FFFFFF',
