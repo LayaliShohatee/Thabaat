@@ -21,7 +21,7 @@ export default function EventsScreen() {
   const [linkedView, setLinkedView] = useState(params.view)
   if (params.view !== linkedView) { setLinkedView(params.view); if (params.view === 'tickets' || params.view === 'upcoming') setView(params.view) }
   const switcher = <View style={[styles.segment, { marginTop: insets.top + 16 }]}>
-    {(['upcoming', 'tickets'] as const).map(value => <PressableScale key={value} accessibilityRole="tab" accessibilityState={{ selected: view === value }} onPress={() => setView(value)} style={[styles.segmentItem, view === value && styles.segmentSelected]}>
+    {(['upcoming', 'tickets'] as const).map(value => <PressableScale key={value} accessibilityRole="tab" accessibilityState={{ selected: view === value }} onPress={() => setView(value)} hitSlop={4} style={[styles.segmentItem, view === value && styles.segmentSelected]}>
       <Text style={[styles.segmentText, view === value && styles.segmentSelectedText]}>{value === 'upcoming' ? 'Upcoming' : 'My tickets'}</Text>
     </PressableScale>)}
   </View>

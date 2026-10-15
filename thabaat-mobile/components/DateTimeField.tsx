@@ -23,7 +23,7 @@ export function DateTimeField({ label, value, onChange, optional = false }: { la
  }
  const first = new Date(month.y, month.m, 1).getDay(), count = new Date(month.y, month.m + 1, 0).getDate()
  const cells: (number | null)[] = [...Array(first).fill(null), ...Array.from({ length: count }, (_, i) => i + 1)]
- const chip = (text: string, selected: boolean, onPress: () => void, key = text, a11y = text) => <PressableScale key={key} accessibilityRole="button" accessibilityLabel={a11y} accessibilityState={{ selected }} onPress={onPress}
+ const chip = (text: string, selected: boolean, onPress: () => void, key = text, a11y = text) => <PressableScale key={key} accessibilityRole="button" accessibilityLabel={a11y} accessibilityState={{ selected }} onPress={onPress} hitSlop={4}
   style={{ minWidth: 40, paddingVertical: 8, paddingHorizontal: 8, borderRadius: 10, alignItems: 'center', backgroundColor: selected ? brand.primary : brand.card, borderWidth: 1, borderColor: selected ? brand.primary : brand.line }}>
   <Text style={{ color: selected ? '#FFFFFF' : brand.ink, fontFamily: fonts.label, fontSize: 14 }}>{text}</Text>
  </PressableScale>
@@ -37,9 +37,9 @@ export function DateTimeField({ label, value, onChange, optional = false }: { la
   </PressableScale>
   {open && <View style={{ gap: 10, padding: 12, borderRadius: 12, backgroundColor: brand.page, borderWidth: 1, borderColor: brand.line }}>
    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-    <PressableScale accessibilityRole="button" accessibilityLabel="Previous month" onPress={() => setMonth(month.m ? { y: month.y, m: month.m - 1 } : { y: month.y - 1, m: 11 })}><Text style={{ fontSize: 22, color: brand.primary, paddingHorizontal: 10 }}>‹</Text></PressableScale>
+    <PressableScale accessibilityRole="button" accessibilityLabel="Previous month" hitSlop={12} onPress={() => setMonth(month.m ? { y: month.y, m: month.m - 1 } : { y: month.y - 1, m: 11 })}><Text style={{ fontSize: 22, color: brand.primary, paddingHorizontal: 10 }}>‹</Text></PressableScale>
     <Text style={{ fontFamily: fonts.heading, color: brand.ink, fontSize: 16 }}>{new Date(month.y, month.m, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</Text>
-    <PressableScale accessibilityRole="button" accessibilityLabel="Next month" onPress={() => setMonth(month.m === 11 ? { y: month.y + 1, m: 0 } : { y: month.y, m: month.m + 1 })}><Text style={{ fontSize: 22, color: brand.primary, paddingHorizontal: 10 }}>›</Text></PressableScale>
+    <PressableScale accessibilityRole="button" accessibilityLabel="Next month" hitSlop={12} onPress={() => setMonth(month.m === 11 ? { y: month.y + 1, m: 0 } : { y: month.y, m: month.m + 1 })}><Text style={{ fontSize: 22, color: brand.primary, paddingHorizontal: 10 }}>›</Text></PressableScale>
    </View>
    <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
     {DAYS.map((d, i) => <Text key={`h${i}`} style={{ width: '14.28%', textAlign: 'center', color: brand.inkMuted, fontSize: 12, fontFamily: fonts.label }}>{d}</Text>)}
@@ -47,7 +47,7 @@ export function DateTimeField({ label, value, onChange, optional = false }: { la
      const date = day ? `${month.y}-${pad(month.m + 1)}-${pad(day)}` : ''
      const selected = !!day && value?.date === date
      return <View key={i} style={{ width: '14.28%', alignItems: 'center', paddingVertical: 3 }}>
-      {day ? <PressableScale accessibilityRole="button" accessibilityLabel={new Date(month.y, month.m, day).toDateString()} accessibilityState={{ selected }} onPress={() => set({ date })}
+      {day ? <PressableScale accessibilityRole="button" accessibilityLabel={new Date(month.y, month.m, day).toDateString()} accessibilityState={{ selected }} onPress={() => set({ date })} hitSlop={4}
        style={{ width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: selected ? brand.primary : 'transparent' }}>
        <Text style={{ color: selected ? '#FFFFFF' : brand.ink, fontSize: 15 }}>{day}</Text></PressableScale> : null}
      </View>

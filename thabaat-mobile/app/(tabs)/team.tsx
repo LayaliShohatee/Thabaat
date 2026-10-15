@@ -42,7 +42,7 @@ export default function TeamTab() {
     <Text style={styles.title}>Team view</Text>
     <Text style={styles.text}>Your events for check-in and event day.</Text>
     <View style={{ flexDirection: 'row', gap: 8 }}>
-      {(['upcoming', 'archive'] as const).map(value => <PressableScale key={value} accessibilityRole="tab" accessibilityState={{ selected: view === value }} onPress={() => setView(value)}
+      {(['upcoming', 'archive'] as const).map(value => <PressableScale key={value} accessibilityRole="tab" accessibilityState={{ selected: view === value }} onPress={() => setView(value)} hitSlop={4}
         style={{ flex: 1, paddingVertical: 10, borderRadius: 999, alignItems: 'center', backgroundColor: view === value ? brand.navy : brand.card, borderWidth: 1, borderColor: view === value ? brand.navy : brand.line }}>
         <Text style={{ fontFamily: fonts.label, color: view === value ? '#FFFFFF' : brand.ink }}>{value === 'upcoming' ? 'Upcoming' : 'Archive'}</Text>
       </PressableScale>)}
