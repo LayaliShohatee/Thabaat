@@ -122,7 +122,7 @@ const styles = StyleSheet.create({
   },
   image: {
     width: '100%',
-    height: 250
+    aspectRatio: 4 / 5 // flyers are 1080×1350; show the whole poster
   },
   content: {
     padding: 20

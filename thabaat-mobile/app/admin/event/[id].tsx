@@ -67,7 +67,7 @@ export default function EventEditor() {
     </TouchableOpacity>)}
    </View>
 
-   <View style={[styles.card, { borderWidth: 2, borderColor: brand.zayt, backgroundColor: brand.page, gap: 16 }]}>
+   <View style={[styles.card, { borderWidth: 2, borderColor: brand.sage, backgroundColor: brand.page, gap: 16 }]}>
     <Text style={styles.heading}>Required to create the event</Text>
     <Field label="Title" shown><TextInput accessibilityLabel="Event title" style={styles.input} value={form.title} onChangeText={title => update({ title })} placeholder="e.g. Pop-Up @ Kitab" /></Field>
     <Field label="Starts" shown><DateTimeField label="" value={form.start} onChange={start => update({ start })} /></Field>

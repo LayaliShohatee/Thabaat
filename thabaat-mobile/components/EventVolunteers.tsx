@@ -74,7 +74,7 @@ export function EventVolunteers({ eventId }: { eventId: string }) {
 
  return <View style={{ gap: 14 }}>
   {!!message && <Text accessibilityRole="alert" style={styles.alert}>{message}</Text>}
-  {requested.length > 0 && <View style={[styles.card, { borderWidth: 1, borderColor: brand.zayt }]}>
+  {requested.length > 0 && <View style={[styles.card, { borderWidth: 1, borderColor: brand.sage }]}>
    <Text style={styles.heading}>Sign-ups to review ({requested.length})</Text>
    {requested.map(s => <View key={s.user_id} style={{ gap: 4, paddingVertical: 8, borderTopWidth: 1, borderColor: brand.line }}>
     <Text style={{ fontFamily: fonts.label, color: brand.ink, fontSize: 15 }}>{s.full_name}</Text>

@@ -57,11 +57,11 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: brand.page },
-  hero: { backgroundColor: brand.forest, paddingHorizontal: 24, paddingBottom: 56, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
+  hero: { backgroundColor: brand.hero, paddingHorizontal: 24, paddingBottom: 56, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
   tagline: { color: brand.forestSoft, fontFamily: fonts.label, fontSize: 11, letterSpacing: 3, marginTop: 12 },
   greeting: { color: brand.page, fontFamily: fonts.headingHeavy, fontSize: 24, marginTop: 28 },
   heroText: { color: brand.forestSoft, fontSize: 15, lineHeight: 22, marginTop: 6 },
-  nextCard: { marginHorizontal: 16, marginTop: -36, backgroundColor: brand.card, borderRadius: brand.radius, padding: 18, borderLeftWidth: 5, borderLeftColor: brand.zayt, ...shadow },
+  nextCard: { marginHorizontal: 16, marginTop: -36, backgroundColor: brand.card, borderRadius: brand.radius, padding: 18, borderLeftWidth: 3, borderLeftColor: brand.sage, ...shadow },
   nextLabel: { color: brand.primary, fontFamily: fonts.label, fontSize: 11, letterSpacing: 1.5 },
   nextTitle: { color: brand.ink, fontFamily: fonts.heading, fontSize: 19, marginTop: 6 },
   nextMeta: { color: brand.inkMuted, fontSize: 14, marginTop: 4 },

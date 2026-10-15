@@ -9,7 +9,8 @@ export const brand = {
  primary: '#1E3328', // forest 700 · buttons and primary actions (cream text on it)
  primaryDark: '#14231B', // forest 800 · pressed state, deep grounds
  primarySoft: '#EEF2EF', // forest 50 · soft chips and selected rows
- forest: '#1E3328', // forest 700 · hero and header grounds
+ forest: '#1E3328', // forest 700 · header grounds and selected pills
+ hero: '#14231B', // forest 800 · the Home hero: deeper and quieter than forest 700
  forestDeep: '#0B150F', // forest 900 · night grounds
  forestSoft: '#E6DFCC', // sand 200 · secondary text on forest grounds
  ink: '#1E3328', // forest 700 · all text

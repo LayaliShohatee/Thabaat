@@ -1,5 +1,6 @@
 import { View, Text, Pressable, Image, StyleSheet } from 'react-native'
 import { brand, fonts, shadow } from '@/constants/brand'
+import { BrandLogo } from '@/components/BrandLogo'
 import { router } from 'expo-router'
 import { Event } from '@/types'
 
@@ -42,7 +43,7 @@ export default function EventCard({ event }: Props) {
           />
         ) : (
           <View style={styles.imagePlaceholder}>
-            <Text style={styles.placeholderText}>THABAAT</Text>
+            <BrandLogo variant="icon" height={56} />
           </View>
         )}
         <View style={styles.dateBadge} accessible={false}>
@@ -91,18 +92,17 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   cardPressed: { opacity: 0.8 },
-  image: { width: '100%', height: 180 },
+  image: { width: '100%', aspectRatio: 4 / 5 }, // flyers are 1080×1350; show the whole poster instead of a cropped strip
   imagePlaceholder: {
     width: '100%',
     height: 120,
-    backgroundColor: brand.forest,
+    backgroundColor: brand.primarySoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  placeholderText: { color: brand.teal, fontSize: 20, fontFamily: fonts.heading, letterSpacing: 6 },
   dateBadge: {
     position: 'absolute', left: 14, bottom: -22,
-    backgroundColor: brand.zayt, borderRadius: brand.radiusSmall,
+    backgroundColor: brand.card, borderWidth: 1, borderColor: brand.sage, borderRadius: brand.radiusSmall,
     paddingVertical: 6, paddingHorizontal: 12, alignItems: 'center', ...shadow,
   },
   dateBadgeMonth: { color: brand.forest, fontSize: 11, fontFamily: fonts.heading, letterSpacing: 1 },

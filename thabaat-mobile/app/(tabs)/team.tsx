@@ -51,7 +51,7 @@ export default function TeamTab() {
         <Text style={{ fontFamily: fonts.label, color: view === value ? brand.page : brand.ink }}>{value === 'upcoming' ? 'Upcoming' : 'Archive'}</Text>
       </TouchableOpacity>)}
     </View>
-    {view === 'upcoming' && team.pending.length > 0 && <View style={[styles.card, { borderWidth: 1, borderColor: brand.zayt }]}>
+    {view === 'upcoming' && team.pending.length > 0 && <View style={[styles.card, { borderWidth: 1, borderColor: brand.sage }]}>
       <Text style={styles.heading}>Waiting for the team to confirm</Text>
       {team.pending.map(s => <View key={s.event_id} style={{ gap: 2, paddingVertical: 6, borderTopWidth: 1, borderColor: brand.line }}>
         <Text style={{ fontFamily: fonts.label, color: brand.ink }}>{s.title}</Text>
