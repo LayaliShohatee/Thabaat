@@ -18,6 +18,7 @@ import EventShareActions from '@/components/events/EventShareActions'
 import { PressableScale } from '@/components/PressableScale'
 import { ManagementButton as Button } from '@/components/ManagementUI'
 import { isDemoMode } from '@/lib/demo-mode'
+import { Reveal } from '@/components/Reveal'
 
 type Registration = { id: string; status: string } | null
 
@@ -69,8 +70,8 @@ export default function EventDetailScreen() {
           {!isDemoMode && quiet('Share', () => toggle('share'), extra === 'share')}
           {!isDemoMode && quiet('Waitlist', () => router.push(`/waitlist/${id}`))}
         </View>
-        {extra === 'calendar' && <CalendarActions event={event} showHeading={false} />}
-        {extra === 'share' && <EventShareActions eventId={event.id} />}
+        {extra === 'calendar' && <Reveal><CalendarActions event={event} showHeading={false} /></Reveal>}
+        {extra === 'share' && <Reveal><EventShareActions eventId={event.id} /></Reveal>}
 
         {!!event.description && <><Text style={styles.sectionTitle}>About this event</Text><Text style={styles.description}>{event.description}</Text></>}
         <EventStructuredDetails event={event as Event & EventDetails} />

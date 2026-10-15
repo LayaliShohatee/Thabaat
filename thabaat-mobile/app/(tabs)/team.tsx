@@ -10,6 +10,7 @@ import { appRole } from '@/lib/app-role'
 import EventAttendanceRoster from '@/components/EventAttendanceRoster'
 import { ManagementButton as Button, managementStyles as styles } from '@/components/ManagementUI'
 import { useStatusBarStyle } from '@/hooks/useStatusBarStyle'
+import { Reveal } from '@/components/Reveal'
 
 type TeamEvent = { id: string; title: string; date: string; location?: string; duty?: string; canSeeRoster: boolean }
 
@@ -58,7 +59,7 @@ export default function TeamTab() {
       {event.canSeeRoster && <PressableScale accessibilityRole="button" onPress={() => setRosterEvent(rosterEvent === event.id ? null : event.id)}>
         <Text style={{ color: brand.primary, fontFamily: fonts.label, textAlign: 'center', paddingVertical: 6 }}>{rosterEvent === event.id ? 'Hide registered people' : 'See who’s registered'}</Text>
       </PressableScale>}
-      {rosterEvent === event.id && <EventAttendanceRoster eventId={event.id} />}
+      {rosterEvent === event.id && <Reveal><EventAttendanceRoster eventId={event.id} /></Reveal>}
     </View>)}
     <Button label={loading ? 'Refreshing…' : 'Refresh'} disabled={loading} onPress={() => void reload()} />
   </ScrollView>

@@ -4,6 +4,7 @@ import { PressableScale } from '@/components/PressableScale'
 import { brand, fonts } from '@/constants/brand'
 import { EVENT_TZ, formatEventTime, wallTimeToIso, type WallTime } from '@/lib/event-time'
 import { managementStyles as styles } from './ManagementUI'
+import { Reveal } from '@/components/Reveal'
 
 const DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 const MINUTES = ['00', '15', '30', '45']
@@ -35,7 +36,7 @@ export function DateTimeField({ label, value, onChange, optional = false }: { la
   <PressableScale accessibilityRole="button" accessibilityLabel={`${label || 'Date and time'}: ${shown}`} onPress={() => setOpen(!open)} style={[styles.input, { flexDirection: 'row', justifyContent: 'space-between' }]}>
    <Text style={{ color: value ? brand.ink : brand.inkMuted, fontSize: 16 }}>{shown}</Text><Text style={{ color: brand.primary, fontFamily: fonts.label }}>{open ? 'Done' : 'Change'}</Text>
   </PressableScale>
-  {open && <View style={{ gap: 10, padding: 12, borderRadius: 12, backgroundColor: brand.page, borderWidth: 1, borderColor: brand.line }}>
+  {open && <Reveal style={{ gap: 10, padding: 12, borderRadius: 12, backgroundColor: brand.page, borderWidth: 1, borderColor: brand.line }}>
    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
     <PressableScale accessibilityRole="button" accessibilityLabel="Previous month" hitSlop={12} onPress={() => setMonth(month.m ? { y: month.y, m: month.m - 1 } : { y: month.y - 1, m: 11 })}><Text style={{ fontSize: 22, color: brand.primary, paddingHorizontal: 10 }}>‹</Text></PressableScale>
     <Text style={{ fontFamily: fonts.heading, color: brand.ink, fontSize: 16 }}>{new Date(month.y, month.m, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}</Text>
@@ -61,6 +62,6 @@ export function DateTimeField({ label, value, onChange, optional = false }: { la
    </View>
    <Text style={styles.text}>Times are Detroit time (Eastern).</Text>
    {optional && value && <PressableScale accessibilityRole="button" onPress={() => { onChange(null); setOpen(false) }}><Text style={{ color: brand.danger, fontFamily: fonts.label }}>Clear</Text></PressableScale>}
-  </View>}
+  </Reveal>}
  </View>
 }

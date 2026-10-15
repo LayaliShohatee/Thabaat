@@ -9,6 +9,7 @@ import { useFocusResource } from '@/hooks/useFocusResource'
 import { getMyTicket, type TicketCredential } from '@/services/ticketService'
 import { formatEventTime } from '@/lib/event-time'
 import { ManagementLink as Link, managementStyles as styles } from '@/components/ManagementUI'
+import { Reveal } from '@/components/Reveal'
 
 // The ticket: event, time and a big QR code. The private code and transfer options stay out of the way.
 export default function TicketScreen(){
@@ -31,10 +32,10 @@ export default function TicketScreen(){
    <Text style={[styles.text,{textAlign:'center'}]}>Show this at the door.</Text>
    {!isDemoMode&&<View>
     <Link center label={showCode?'Hide private code':'Show private code'} color={brand.inkMuted} onPress={()=>setShowCode(!showCode)}/>
-    {showCode&&<View style={{gap:6}}>
+    {showCode&&<Reveal style={{gap:6}}>
      <Text selectable style={[styles.text,{fontSize:13,textAlign:'center'}]}>{ticket.token}</Text>
      <Text style={[styles.text,{fontSize:13,textAlign:'center'}]}>Keep this private: anyone holding it can use your ticket. Cancelling makes it stop working.</Text>
-    </View>}
+    </Reveal>}
    </View>}
   </View>}
   {ticket&&!error&&<RegisteredEventActions registrationId={ticket.registration_id} eventId={ticket.event_id}/>}

@@ -3,6 +3,8 @@ import { Linking, ScrollView, Text, View } from 'react-native'
 import { PressableScale } from '@/components/PressableScale'
 import { brand, fonts, links } from '@/constants/brand'
 import { managementStyles as styles } from '@/components/ManagementUI'
+import { Reveal } from '@/components/Reveal'
+import Animated, { cubicBezier, useReducedMotion } from 'react-native-reanimated'
 
 // Draft answers built from thabaat.org and the app's behaviour. The client should review the wording before release.
 export const faqs: { q: string; a: string }[] = [
@@ -19,14 +21,15 @@ export const faqs: { q: string; a: string }[] = [
 
 export default function FaqScreen() {
  const [open, setOpen] = useState<number | null>(0)
+ const reduced = useReducedMotion()
  return <ScrollView style={styles.page} contentContainerStyle={[styles.content, { paddingTop: 20 }]}>
   <Text style={styles.title}>Questions? We’ve got you.</Text>
   {faqs.map((item, index) => <View key={item.q} style={[styles.card, { gap: 8, paddingVertical: 14 }]}>
    <PressableScale accessibilityRole="button" accessibilityState={{ expanded: open === index }} onPress={() => setOpen(open === index ? null : index)} style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
     <Text style={[styles.heading, { flex: 1, fontSize: 16 }]}>{item.q}</Text>
-    <Text style={{ color: brand.primary, fontFamily: fonts.heading, fontSize: 18 }}>{open === index ? '−' : '+'}</Text>
+    <Animated.Text style={{ color: brand.primary, fontFamily: fonts.heading, fontSize: 20, transform: [{ rotate: open === index && !reduced ? '45deg' : '0deg' }], transitionProperty: 'transform', transitionDuration: 180, transitionTimingFunction: cubicBezier(0.23, 1, 0.32, 1) }}>{reduced && open === index ? '×' : '+'}</Animated.Text>
    </PressableScale>
-   {open === index && <Text style={styles.text}>{item.a}</Text>}
+   {open === index && <Reveal><Text style={styles.text}>{item.a}</Text></Reveal>}
   </View>)}
   <PressableScale accessibilityRole="button" onPress={() => void Linking.openURL(`mailto:${links.email}`)}><Text style={{ color: brand.primary, fontFamily: fonts.label, textAlign: 'center', fontSize: 15 }}>Still stuck? Email {links.email}</Text></PressableScale>
  </ScrollView>
