@@ -1,11 +1,10 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router/react-navigation'
+import { DefaultTheme, ThemeProvider } from 'expo-router/react-navigation'
 import { Stack, router, useSegments, usePathname, useGlobalSearchParams } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
 import { useFonts, Montserrat_600SemiBold, Montserrat_700Bold, Montserrat_800ExtraBold } from '@expo-google-fonts/montserrat'
 import * as SplashScreen from 'expo-splash-screen'
 import 'react-native-reanimated'
-import { useColorScheme } from '@/hooks/use-color-scheme'
 import { AuthProvider, useAuth } from '@/hooks/useAuth'
 import { authRedirect } from '@/lib/auth-routing'
 import {eventIdFromPath} from '@/lib/event-sharing'
@@ -14,12 +13,15 @@ import { brand, fonts } from '@/constants/brand'
 
 SplashScreen.preventAutoHideAsync().catch(() => {})
 
+// Every screen is drawn in the light brand palette, so navigation uses it too, even when the phone is in dark mode.
+// (A real dark palette would be its own project.)
+const lightTheme = { ...DefaultTheme, colors: { ...DefaultTheme.colors, background: brand.page, card: brand.card, primary: brand.primary, text: brand.ink, border: brand.line } }
+
 export const unstable_settings = {
   anchor: '(tabs)',
 }
 
 function Navigation() {
-  const colorScheme = useColorScheme()
   const { user, loading } = useAuth()
   const segments = useSegments()
   const pathname=usePathname()
@@ -37,7 +39,7 @@ function Navigation() {
   }, [user, loading, segments, pathname, params.eventId])
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={lightTheme}>
       <Stack screenOptions={{headerBackButtonDisplayMode:isDemoMode?'minimal':'default',headerBackTitle:'Back',headerStyle:{backgroundColor:brand.navy},headerTintColor:'#FFFFFF',headerTitleStyle:{fontFamily:fonts.heading,fontSize:17},headerShadowVisible:false}}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="auth/login" options={{ headerShown: false }} />
