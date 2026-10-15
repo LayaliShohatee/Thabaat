@@ -14,6 +14,7 @@ vi.mock('react-native',()=>({
  FlatList:({data,renderItem,ListHeaderComponent,ListEmptyComponent}:any)=>React.createElement('div',null,ListHeaderComponent,data.length?data.map((item:any)=>React.createElement(React.Fragment,{key:item.id},renderItem({item}))):ListEmptyComponent),
  StyleSheet:{create:(styles:any)=>styles},ActivityIndicator:()=>null,
 }))
+vi.mock('../components/PressableScale',()=>({PressableScale:(props:any)=>{state.buttons.push(props);return React.createElement('button',null,props.children)}}))
 vi.mock('expo-router',()=>({router:{push:state.push,replace:vi.fn()},useLocalSearchParams:()=>state.params,Stack:{Screen:()=>null}}))
 vi.mock('../hooks/useFocusResource',()=>({useFocusResource:()=>({...state,reload:state.reload})}))
 vi.mock('../hooks/useAuth',()=>({useAuth:()=>({user:{id:'user'}})}))
