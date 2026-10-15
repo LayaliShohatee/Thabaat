@@ -18,6 +18,7 @@ import EventShareActions from '@/components/events/EventShareActions'
 import { PressableScale } from '@/components/PressableScale'
 import { ManagementButton as Button } from '@/components/ManagementUI'
 import { isDemoMode } from '@/lib/demo-mode'
+import { VolunteerSignupForm } from '@/components/VolunteerSignupForm'
 import { Reveal } from '@/components/Reveal'
 import { SkeletonBlock } from '@/components/Skeleton'
 
@@ -77,6 +78,7 @@ export default function EventDetailScreen() {
         {!!event.description && <><Text style={styles.sectionTitle}>About this event</Text><Text style={styles.description}>{event.description}</Text></>}
         <EventStructuredDetails event={event as Event & EventDetails} />
         {registration && id === paidTestEventId && <Button label="Open paid event access" onPress={() => router.push(`/event/access/${id}`)} />}
+        {user && !isDemoMode && !passed && <View style={{ marginTop: 20 }}><VolunteerSignupForm eventId={event.id} /></View>}
       </View>
     </ScrollView>
 

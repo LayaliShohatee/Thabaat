@@ -1,12 +1,12 @@
 -- Client request: a coupon can apply to one ticket type (e.g. "Women's tickets 21+").
--- NOT YET APPLIED to any hosted database. Needs team approval before running.
+-- Applied to the thabaat-staging test project on 2026-10-14 (user approved test-database changes).
 BEGIN;
 ALTER TABLE public.promo_codes ADD COLUMN IF NOT EXISTS ticket_type_id uuid REFERENCES public.ticket_types(id) ON DELETE SET NULL;
 
 -- Sets or clears which ticket type an event code applies to. The ticket must belong to the code's event.
 CREATE OR REPLACE FUNCTION public.set_promo_code_ticket_type(p_code_id uuid,p_ticket_type_id uuid) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
 DECLARE c public.promo_codes;
-BEGIN
+BEGIN IF auth.uid() IS NOT NULL THEN PERFORM public.assert_active_account(); END IF;
  SELECT * INTO c FROM public.promo_codes WHERE id=p_code_id FOR UPDATE;
  IF NOT FOUND THEN RAISE EXCEPTION 'Discount code not found'; END IF;
  IF c.event_id IS NULL THEN RAISE EXCEPTION 'Site-wide codes cannot be limited to one ticket type'; END IF;
@@ -15,10 +15,10 @@ BEGIN
  UPDATE public.promo_codes SET ticket_type_id=p_ticket_type_id WHERE id=p_code_id;
 END $$;
 
--- Same as 20261012120200, plus the ticket type check.
+-- Same as the live versions (20261012120200 plus the suspended-account guard), plus the ticket type check.
 CREATE OR REPLACE FUNCTION public.quote_ticket_price(p_ticket_id uuid,p_code text) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path='' AS $$
 DECLARE t public.ticket_types; c public.promo_codes; base integer; member_pct integer:=0; member_off integer:=0; code_off integer:=0; code_error text:=null; normalized text:=upper(trim(coalesce(p_code,'')));
-BEGIN
+BEGIN IF auth.uid() IS NOT NULL THEN PERFORM public.assert_active_account(); END IF;
  IF auth.uid() IS NULL THEN RAISE EXCEPTION 'Sign in to see your price'; END IF;
  SELECT * INTO t FROM public.ticket_types WHERE id=p_ticket_id;
  IF NOT FOUND THEN RAISE EXCEPTION 'Ticket not found'; END IF;
@@ -41,7 +41,7 @@ END $$;
 
 CREATE OR REPLACE FUNCTION public.redeem_promo_code(p_code text,p_ticket_id uuid) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
 DECLARE c public.promo_codes; t public.ticket_types;
-BEGIN
+BEGIN IF auth.uid() IS NOT NULL THEN PERFORM public.assert_active_account(); END IF;
  IF auth.uid() IS NULL THEN RAISE EXCEPTION 'Sign in required'; END IF;
  SELECT * INTO t FROM public.ticket_types WHERE id=p_ticket_id;
  SELECT * INTO c FROM public.promo_codes WHERE code=upper(trim(coalesce(p_code,''))) FOR UPDATE;

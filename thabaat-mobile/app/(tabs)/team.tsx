@@ -7,31 +7,38 @@ import { useFocusResource } from '@/hooks/useFocusResource'
 import { getManagementEvents, getPermissions } from '@/services/managementService'
 import { getVolunteerWork } from '@/services/staffService'
 import { appRole } from '@/lib/app-role'
-import EventAttendanceRoster from '@/components/EventAttendanceRoster'
+import { CheckinRoster } from '@/components/CheckinRoster'
+import { cancelMyVolunteerSignup, getMyVolunteerSignups, type MyVolunteerSignup } from '@/services/volunteerCheckinService'
+import { EVENT_TZ, formatEventTime } from '@/lib/event-time'
 import { ManagementButton as Button, managementStyles as styles } from '@/components/ManagementUI'
 import { useStatusBarStyle } from '@/hooks/useStatusBarStyle'
 import { Reveal } from '@/components/Reveal'
 
-type TeamEvent = { id: string; title: string; date: string; location?: string; duty?: string; canSeeRoster: boolean }
+type TeamEvent = { id: string; title: string; date: string; location?: string; duty?: string; isLead?: boolean; roleDescription?: string }
+type TeamData = { events: TeamEvent[]; pending: MyVolunteerSignup[] }
 
 // Team view: the event-day screen for volunteers and admins. Start check-in, see who registered, look back at past events.
-async function loadTeamEvents(): Promise<TeamEvent[]> {
+async function loadTeamEvents(): Promise<TeamData> {
   const permissions = await getPermissions()
+  // Sign-ups waiting for a decision; an older database without the sign-up feature just shows none.
+  const pending = (await getMyVolunteerSignups().catch(() => [])).filter(s => s.status === 'requested')
   if (appRole(permissions) === 'admin') {
     const events = await getManagementEvents()
-    return events
+    return { pending, events: events
       .filter(e => permissions.staff_role === 'admin' || e.created_by === permissions.user_id)
-      .map(e => ({ id: e.id, title: e.title, date: e.event_date, location: e.location, canSeeRoster: true }))
+      .map(e => ({ id: e.id, title: e.title, date: e.event_date, location: e.location })) }
   }
   const work = await getVolunteerWork()
-  return work.assignments
+  return { pending, events: work.assignments
     .filter(s => s.active)
-    .map(s => ({ id: s.event_id, title: s.title || 'Event', date: s.shift_start, duty: s.duty, canSeeRoster: false }))
+    .map(s => ({ id: s.event_id, title: s.title || 'Event', date: s.event_date || s.shift_start, location: s.location, duty: s.duty, isLead: s.is_lead, roleDescription: s.role_description })) }
 }
 
 export default function TeamTab() {
   useStatusBarStyle('dark')
-  const { data, loading, error, reload } = useFocusResource(loadTeamEvents, [] as TeamEvent[])
+  const { data: team, loading, error, reload } = useFocusResource(loadTeamEvents, { events: [], pending: [] } as TeamData)
+  const data = team.events
+  const [cancelling, setCancelling] = useState<string | null>(null), [notice, setNotice] = useState('')
   const [view, setView] = useState<'upcoming' | 'archive'>('upcoming')
   const [rosterEvent, setRosterEvent] = useState<string | null>(null)
   const [now] = useState(Date.now)
@@ -48,18 +55,29 @@ export default function TeamTab() {
         <Text style={{ fontFamily: fonts.label, color: view === value ? '#FFFFFF' : brand.ink }}>{value === 'upcoming' ? 'Upcoming' : 'Archive'}</Text>
       </PressableScale>)}
     </View>
-    {!!error && <Text accessibilityRole="alert" style={styles.alert}>{error}</Text>}
+    {view === 'upcoming' && team.pending.length > 0 && <View style={[styles.card, { borderWidth: 1, borderColor: brand.gold }]}>
+      <Text style={styles.heading}>Waiting for the team to confirm</Text>
+      {team.pending.map(s => <View key={s.event_id} style={{ gap: 2, paddingVertical: 6, borderTopWidth: 1, borderColor: brand.line }}>
+        <Text style={{ fontFamily: fonts.label, color: brand.ink }}>{s.title}</Text>
+        <Text style={styles.text}>{formatEventTime(s.event_date, EVENT_TZ)}{s.preferred_role ? ` · You asked for: ${s.preferred_role}` : ''}</Text>
+        <PressableScale accessibilityRole="button" accessibilityLabel={`Cancel volunteer sign-up for ${s.title}`} disabled={!!cancelling} onPress={() => { setCancelling(s.event_id); setNotice(''); void cancelMyVolunteerSignup(s.event_id).then(reload, e => setNotice(e instanceof Error ? e.message : 'Unable to cancel. Try again.')).finally(() => setCancelling(null)) }}>
+          <Text style={{ color: brand.danger, fontFamily: fonts.label }}>{cancelling === s.event_id ? 'Cancelling…' : 'Cancel sign-up'}</Text>
+        </PressableScale>
+      </View>)}
+    </View>}
+    {!!(error || notice) && <Text accessibilityRole="alert" style={styles.alert}>{error || notice}</Text>}
     {loading && !data.length && <Text style={styles.text}>Loading your events…</Text>}
     {!loading && !error && !shown.length && <Text style={styles.text}>{view === 'upcoming' ? 'No upcoming events assigned to you yet.' : 'No past events yet.'}</Text>}
     {shown.map(event => <View key={event.id} style={styles.card}>
       <Text style={styles.heading}>{event.title}</Text>
-      <Text style={styles.text}>{new Date(event.date).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}{event.location ? ` · ${event.location}` : ''}</Text>
-      {!!event.duty && <Text style={styles.text}>Your role: {event.duty}</Text>}
+      <Text style={styles.text}>{formatEventTime(event.date, EVENT_TZ)}{event.location ? ` · ${event.location}` : ''}</Text>
+      {!!event.duty && <Text style={styles.text}>Your role: {event.duty}{event.isLead ? ' · Volunteer lead' : ''}</Text>}
+      {!!event.roleDescription && <Text style={styles.text}>{event.roleDescription}</Text>}
       {view === 'upcoming' && <Button label="Start check-in" onPress={() => router.push(`/check-in/${event.id}`)} />}
-      {event.canSeeRoster && <PressableScale accessibilityRole="button" onPress={() => setRosterEvent(rosterEvent === event.id ? null : event.id)}>
+      <PressableScale accessibilityRole="button" onPress={() => setRosterEvent(rosterEvent === event.id ? null : event.id)}>
         <Text style={{ color: brand.primary, fontFamily: fonts.label, textAlign: 'center', paddingVertical: 6 }}>{rosterEvent === event.id ? 'Hide registered people' : 'See who’s registered'}</Text>
-      </PressableScale>}
-      {rosterEvent === event.id && <Reveal><EventAttendanceRoster eventId={event.id} /></Reveal>}
+      </PressableScale>
+      {rosterEvent === event.id && <Reveal><CheckinRoster eventId={event.id} readOnly /></Reveal>}
     </View>)}
     <Button label={loading ? 'Refreshing…' : 'Refresh'} disabled={loading} onPress={() => void reload()} />
   </ScrollView>
