@@ -16,6 +16,8 @@ vi.mock('react-native',()=>({
 }))
 vi.mock('../components/PressableScale',()=>({PressableScale:(props:any)=>{state.buttons.push(props);return React.createElement('button',null,props.children)}}))
 vi.mock('../components/Reveal',()=>({Reveal:({children}:any)=>React.createElement('div',null,children)}))
+vi.mock('../components/SuccessMark',()=>({SuccessMark:()=>null}))
+vi.mock('../components/Rise',()=>({Rise:({children}:any)=>React.createElement('div',null,children)}))
 vi.mock('expo-router',()=>({router:{push:state.push,replace:vi.fn()},useLocalSearchParams:()=>state.params,Stack:{Screen:()=>null}}))
 vi.mock('../hooks/useFocusResource',()=>({useFocusResource:()=>({...state,reload:state.reload})}))
 vi.mock('../hooks/useAuth',()=>({useAuth:()=>({user:{id:'user'}})}))
