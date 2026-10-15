@@ -59,12 +59,12 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: brand.page },
-  hero: { backgroundColor: brand.navy, paddingHorizontal: 24, paddingBottom: 56, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
+  hero: { backgroundColor: brand.navy, paddingHorizontal: 24, paddingBottom: 60, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
   wordmark: { color: '#FFFFFF', fontFamily: fonts.heading, fontSize: 30, letterSpacing: 8 },
   tagline: { color: brand.teal, fontFamily: fonts.label, fontSize: 11, letterSpacing: 3, marginTop: 4 },
   greeting: { color: '#FFFFFF', fontFamily: fonts.headingHeavy, fontSize: 24, letterSpacing: -0.4, marginTop: 28 },
   heroText: { color: brand.navySoft, fontSize: 15, lineHeight: 22, marginTop: 6 },
-  nextCard: { marginHorizontal: 16, marginTop: -36, backgroundColor: brand.card, borderRadius: brand.radius, padding: 18, borderLeftWidth: 5, borderLeftColor: brand.gold, ...shadow },
+  nextCard: { marginHorizontal: 16, marginTop: -36, backgroundColor: brand.card, borderRadius: brand.radius, padding: 18, borderLeftWidth: 5, borderLeftColor: brand.gold, ...shadow, shadowOpacity: 0.06, shadowRadius: 18 },
   nextLabel: { color: brand.primary, fontFamily: fonts.label, fontSize: 11, letterSpacing: 1.5 },
   nextTitle: { color: brand.ink, fontFamily: fonts.heading, fontSize: 19, letterSpacing: -0.2, marginTop: 6 },
   nextMeta: { color: brand.inkMuted, fontSize: 14, marginTop: 4 },
