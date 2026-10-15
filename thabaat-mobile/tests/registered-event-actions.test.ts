@@ -7,6 +7,7 @@ import MyEvents from '../components/events/MyTickets'
 import Ticket from '../app/ticket/[id]'
 import Roster from '../components/EventAttendanceRoster'
 const state=vi.hoisted(()=>({params:{} as Record<string,string>,data:null as any,error:'',loading:false,buttons:[] as any[],push:vi.fn(),reload:vi.fn()}))
+vi.mock('../hooks/useStatusBarStyle',()=>({useStatusBarStyle:()=>{}}))
 vi.mock('react-native',()=>({
  View:({children}:any)=>React.createElement('div',null,children),ScrollView:({children}:any)=>React.createElement('div',null,children),Text:({children}:any)=>React.createElement('span',null,children),
  TouchableOpacity:(props:any)=>{state.buttons.push(props);return React.createElement('button',null,props.children)},

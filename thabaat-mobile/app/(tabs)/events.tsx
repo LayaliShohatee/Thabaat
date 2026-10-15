@@ -9,9 +9,11 @@ import { PressableScale } from '@/components/PressableScale'
 
 import { useEvents } from '@/hooks/useEvents'
 import EventCard from '@/components/events/EventCard'
+import { useStatusBarStyle } from '@/hooks/useStatusBarStyle'
 
 // Events: browse and register (Upcoming) or open your bookings (My tickets).
 export default function EventsScreen() {
+  useStatusBarStyle('dark')
   const insets = useSafeAreaInsets()
   const params = useLocalSearchParams<{ view?: string }>()
   const [view, setView] = useState<'upcoming' | 'tickets'>(params.view === 'tickets' ? 'tickets' : 'upcoming')

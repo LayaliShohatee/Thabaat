@@ -9,6 +9,7 @@ import { getVolunteerWork } from '@/services/staffService'
 import { appRole } from '@/lib/app-role'
 import EventAttendanceRoster from '@/components/EventAttendanceRoster'
 import { ManagementButton as Button, managementStyles as styles } from '@/components/ManagementUI'
+import { useStatusBarStyle } from '@/hooks/useStatusBarStyle'
 
 type TeamEvent = { id: string; title: string; date: string; location?: string; duty?: string; canSeeRoster: boolean }
 
@@ -28,6 +29,7 @@ async function loadTeamEvents(): Promise<TeamEvent[]> {
 }
 
 export default function TeamTab() {
+  useStatusBarStyle('dark')
   const { data, loading, error, reload } = useFocusResource(loadTeamEvents, [] as TeamEvent[])
   const [view, setView] = useState<'upcoming' | 'archive'>('upcoming')
   const [rosterEvent, setRosterEvent] = useState<string | null>(null)

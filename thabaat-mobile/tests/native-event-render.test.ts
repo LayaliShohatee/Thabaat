@@ -2,6 +2,7 @@ import React from 'react'
 import {renderToStaticMarkup} from 'react-dom/server'
 import {expect,it,vi} from 'vitest'
 const state=vi.hoisted(()=>({data:null as any,error:'',loading:false}))
+vi.mock('../hooks/useStatusBarStyle',()=>({useStatusBarStyle:()=>{}}))
 vi.mock('react-native',async()=>{const R=await import('react');const box=({children}:any)=>{const inspect=(value:any):void=>{R.Children.forEach(value,child=>{if(typeof child==='string'||typeof child==='number')throw new Error('Raw text outside native Text');if(R.isValidElement(child)&&child.type===R.Fragment)inspect((child.props as any).children)})};inspect(children);return R.createElement('div',null,children)};return {View:box,ScrollView:box,Text:({children}:any)=>R.createElement('span',null,children),TouchableOpacity:box,TextInput:()=>null,Switch:()=>null}})
 vi.mock('expo-router',()=>({router:{push:vi.fn()}}))
 vi.mock('../hooks/useFocusResource',()=>({useFocusResource:()=>({...state,reload:vi.fn()})}))

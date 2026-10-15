@@ -11,8 +11,10 @@ import {
 import { router, useLocalSearchParams } from 'expo-router';
 import {eventReturnPath} from '@/lib/event-sharing';
 import { supabase } from '@/lib/supabase';
+import { useStatusBarStyle } from '@/hooks/useStatusBarStyle'
 
 export default function LoginScreen() {
+  useStatusBarStyle('dark')
   const {eventId}=useLocalSearchParams<{eventId?:string}>();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');

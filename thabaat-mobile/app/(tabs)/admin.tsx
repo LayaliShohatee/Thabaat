@@ -8,11 +8,13 @@ import { getManagementEvents, getPermissions, type ManagedEvent, type Permission
 import { EVENT_TZ, formatEventTime } from '@/lib/event-time'
 import { upcomingFirst } from '@/lib/ticket-order'
 import { ManagementButton as Button, managementStyles as styles } from '@/components/ManagementUI'
+import { useStatusBarStyle } from '@/hooks/useStatusBarStyle'
 
 const SHORTCUTS = [['Roles and access', '/admin/roles'], ['Account suspensions', '/staff-accounts'], ['Analytics', '/staff-analytics'], ['Campaigns and donations', '/staff-campaigns'], ['Membership plans', '/staff-memberships'], ['Send a notification', '/notification-broadcast']] as const
 
 // Admin: shortcuts to admin pages, then the events you manage. Tap an event to manage it.
 export default function AdminTab() {
+  useStatusBarStyle('dark')
  const load = useCallback(async () => {
   const events = await getManagementEvents()
   try { return { events, permissions: await getPermissions(), setupError: '' } }

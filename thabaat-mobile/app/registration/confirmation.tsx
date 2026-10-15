@@ -4,8 +4,10 @@ import { router, useLocalSearchParams } from 'expo-router'
 import RegisteredEventActions from '@/components/events/RegisteredEventActions'
 import { isDemoMode } from '@/lib/demo-mode'
 import SuggestedDonation from '@/components/SuggestedDonation'
+import { useStatusBarStyle } from '@/hooks/useStatusBarStyle'
 
 export default function ConfirmationScreen() {
+  useStatusBarStyle('dark')
   const { eventTitle, notificationSent, freeRegistration, registrationId, eventId, testCharge } = useLocalSearchParams<{ eventTitle: string; notificationSent?: string; freeRegistration?: string; registrationId?: string; eventId?: string; testCharge?: string }>()
 
   return (

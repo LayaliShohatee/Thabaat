@@ -7,9 +7,11 @@ import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
 import { router } from 'expo-router'
 import { isDemoMode } from '@/lib/demo-mode'
+import { useStatusBarStyle } from '@/hooks/useStatusBarStyle'
 
 // Account: who you are, a few account actions, and everything else tucked under More.
 export default function AccountScreen() {
+  useStatusBarStyle('dark')
   const { user } = useAuth()
   const insets = useSafeAreaInsets()
   const [message, setMessage] = useState('')
