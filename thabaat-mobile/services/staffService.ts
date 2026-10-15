@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase'
-export type VolunteerShift = { event_id: string; title?: string; user_id?: string; full_name?: string; duty: string; shift_start: string; shift_end: string; active: boolean; reviewed_hours: number }
+export type VolunteerShift = { event_id: string; title?: string; event_date?: string; location?: string; user_id?: string; full_name?: string; duty: string; shift_start: string; shift_end: string; active: boolean; reviewed_hours: number; is_lead?: boolean; role_description?: string }
 export type VolunteerApplication = { user_id?: string; full_name?: string; motivation: string; status: 'submitted'|'approved'|'declined' }
 export type VolunteerWork = { application: VolunteerApplication|null; assignments: VolunteerShift[] }
 export type StaffReport = { event: {title:string;capacity:number;event_date:string}; volunteer_candidates?: {user_id:string;full_name:string}[]; registrations: {registration_id:string;full_name:string;ticket_name:string;status:string;registered_at:string}[]; volunteers: VolunteerShift[] }

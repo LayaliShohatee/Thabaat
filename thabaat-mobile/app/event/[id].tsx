@@ -11,7 +11,7 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { useLocalSearchParams, router } from 'expo-router'
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { getEventById } from '@/services/eventService'
 import { checkExistingRegistration } from '@/services/registrationService'
 import { useAuth } from '@/hooks/useAuth'
@@ -22,6 +22,7 @@ import { Event } from '@/types'
 import CalendarActions from '@/components/events/CalendarActions'
 import EventShareActions from '@/components/events/EventShareActions'
 import { isDemoMode } from '@/lib/demo-mode'
+import { VolunteerSignupForm } from '@/components/VolunteerSignupForm'
 
 export default function EventDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>()
@@ -31,6 +32,7 @@ export default function EventDetailScreen() {
     return Promise.all([getEventById(id), user ? checkExistingRegistration(user.id, id) : Promise.resolve(false)])
   }, [id, user])
   const { data: [event, alreadyRegistered], loading, error, reload } = useFocusResource(load, [null, false])
+  const [now] = useState(Date.now)
 
   if (loading) {
     return (
@@ -102,6 +104,7 @@ export default function EventDetailScreen() {
           </Text>
         </TouchableOpacity>
       </View>
+      {user && !isDemoMode && new Date(event.event_date).getTime() > now && <View style={{ paddingHorizontal: 20, paddingBottom: 32 }}><VolunteerSignupForm eventId={event.id} /></View>}
     </ScrollView>
   )
 }

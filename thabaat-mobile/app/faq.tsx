@@ -8,10 +8,10 @@ export const faqs: { q: string; a: string }[] = [
  { q: 'What is Thabaat?', a: 'Thabaat is a community for young professionals in Southeast Michigan, helping them grow socially, spiritually and professionally. It is brought to you by Miftaah Institute.' },
  { q: 'Who can attend events?', a: 'Thabaat events are for ages 23 and up. Our monthly Qiyam nights are open to all ages. Each event page lists its own age range.' },
  { q: 'How do I register for an event?', a: 'Open the Events tab, choose an event and tap Register. Your ticket appears under Events → My tickets.' },
- { q: 'How do I check in at the event?', a: 'Open your ticket under Events → My tickets and show the QR code at the door.' },
+ { q: 'How do I check in at the event?', a: 'Just give your name at the door and a volunteer will check you in. You can also show the QR code from Events → My tickets.' },
  { q: 'Can I cancel my registration?', a: 'Yes. Open Events → My tickets and cancel a free registration before the event starts. Paid tickets can request a refund from the same screen.' },
- { q: 'I forgot to register. Can I still come?', a: 'Please register in the app if spots remain. If you arrive without registering, a volunteer at the door can help when space allows.' },
- { q: 'How can I volunteer?', a: 'Go to Account → More → Volunteer with Thabaat and send your application. The team will reach out with event roles.' },
+ { q: 'I forgot to register. Can I still come?', a: 'Please register in the app if spots remain. If you arrive without registering, a volunteer at the door can add you as a walk-in while space allows.' },
+ { q: 'How can I volunteer?', a: 'Open any upcoming event and tap Volunteer for this event. The team will confirm your spot, and your role will show in the Team tab.' },
  { q: 'How do I support Thabaat?', a: 'You can donate from Account → More → Support Thabaat, or on thabaat.org.' },
  { q: 'How do I contact the team?', a: `Email ${links.email}. You can also follow us on social media for updates.` },
 ]
