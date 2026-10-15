@@ -4,12 +4,13 @@ import { useLocalSearchParams } from 'expo-router'
 import MyTickets from '@/components/events/MyTickets'
 import { filterEvents, EventWindow } from '@/lib/event-discovery'
 import { useState } from 'react'
-import { View, Text, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TextInput } from 'react-native'
+import { View, Text, FlatList, StyleSheet, RefreshControl, TextInput } from 'react-native'
 import { PressableScale } from '@/components/PressableScale'
 
 import { useEvents } from '@/hooks/useEvents'
 import EventCard from '@/components/events/EventCard'
 import { useStatusBarStyle } from '@/hooks/useStatusBarStyle'
+import { EventCardSkeleton } from '@/components/Skeleton'
 
 // Events: browse and register (Upcoming) or open your bookings (My tickets).
 export default function EventsScreen() {
@@ -38,14 +39,7 @@ export default function EventsScreen() {
   if (view === 'tickets') return <View style={styles.container}><View style={styles.ticketsHeader}>{switcher}</View><MyTickets /></View>
 
   if (loading && events.length === 0) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={brand.primary} />
-        <Text style={styles.loadingText}>
-          Loading events...
-        </Text>
-      </View>
-    )
+    return <View style={styles.container}><View style={styles.ticketsHeader}>{switcher}</View><EventCardSkeleton /><EventCardSkeleton /></View>
   }
 
   if (error && events.length === 0) {

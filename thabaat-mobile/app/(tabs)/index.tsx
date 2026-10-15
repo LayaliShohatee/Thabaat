@@ -10,6 +10,7 @@ import { useFocusResource } from '@/hooks/useFocusResource'
 import { getUserRegistrations } from '@/services/registrationService'
 import EventCard from '@/components/events/EventCard'
 import type { Registration } from '@/types'
+import { EventCardSkeleton } from '@/components/Skeleton'
 
 // Home: a welcome, the member's next booked event, and what's coming up. Browsing and registering live in Events.
 export default function HomeScreen() {
@@ -50,6 +51,7 @@ export default function HomeScreen() {
       <PressableScale accessibilityRole="button" onPress={() => router.push('/(tabs)/events')}><Text style={styles.seeAll}>See all</Text></PressableScale>
     </View>
     {!!error && !events.length && <Text accessibilityRole="alert" style={styles.muted}>Unable to load events. Pull down to try again.</Text>}
+    {loading && !events.length && <><EventCardSkeleton /><EventCardSkeleton /></>}
     {!loading && !error && !events.length && <Text style={styles.muted}>No upcoming events yet. Check back soon.</Text>}
     {events.slice(0, 3).map(event => <EventCard key={event.id} event={event} />)}
   </ScrollView>

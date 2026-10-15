@@ -1,7 +1,7 @@
 import { useFocusResource } from '@/hooks/useFocusResource'
 import { brand, fonts, shadow } from '@/constants/brand'
 import { Alert } from '@/lib/alert'
-import { View, Text, Image, ScrollView, StyleSheet, ActivityIndicator } from 'react-native'
+import { View, Text, Image, ScrollView, StyleSheet } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useLocalSearchParams, router } from 'expo-router'
 import { useCallback, useState } from 'react'
@@ -19,6 +19,7 @@ import { PressableScale } from '@/components/PressableScale'
 import { ManagementButton as Button } from '@/components/ManagementUI'
 import { isDemoMode } from '@/lib/demo-mode'
 import { Reveal } from '@/components/Reveal'
+import { SkeletonBlock } from '@/components/Skeleton'
 
 type Registration = { id: string; status: string } | null
 
@@ -35,7 +36,7 @@ export default function EventDetailScreen() {
   }, [id, user])
   const { data: [event, registration], loading, error, reload } = useFocusResource(load, [null, null] as [Event | null, Registration])
 
-  if (loading) return <View style={styles.centered}><ActivityIndicator size="large" color={brand.primary} /></View>
+  if (loading) return <View style={styles.container} accessibilityLabel="Loading event"><SkeletonBlock style={{ height: 150, borderRadius: 0 }} /><View style={[styles.content, { gap: 12 }]}><SkeletonBlock style={{ height: 26, width: '75%' }} /><SkeletonBlock style={{ height: 16, width: '55%' }} /><SkeletonBlock style={{ height: 16, width: '40%' }} /></View></View>
   if (error) return <View style={[styles.centered, { padding: 24, gap: 16 }]}><Text style={styles.errorText} accessibilityRole="alert">{error}</Text><Button label="Try again" onPress={() => void reload()} /></View>
   if (!event) return <View style={styles.centered}><Text style={styles.errorText}>Event not found</Text></View>
 
