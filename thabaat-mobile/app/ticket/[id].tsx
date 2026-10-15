@@ -22,7 +22,7 @@ export default function TicketScreen(){
   {!!error&&<Text accessibilityRole="alert" style={styles.alert}>{error}</Text>}
   {ticket&&!error&&<View style={[styles.card,{gap:14,padding:20}]}>
    <View style={{gap:4}}>
-    <Text style={{fontFamily:fonts.headingHeavy,fontSize:22,color:brand.ink}}>{ticket.title}</Text>
+    <Text style={{fontFamily:fonts.headingHeavy,fontSize:22,letterSpacing:-0.4,color:brand.ink}}>{ticket.title}</Text>
     <Text style={{fontFamily:fonts.label,fontSize:15,color:brand.primary}}>{formatEventTime(ticket.event_date)}</Text>
     <Text style={styles.text}>{ticket.location} · {ticket.ticket_name}</Text>
    </View>

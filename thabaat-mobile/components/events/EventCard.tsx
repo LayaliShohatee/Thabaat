@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   dateBadgeMonth: { color: brand.navy, fontSize: 11, fontFamily: fonts.heading, letterSpacing: 1 },
   dateBadgeDay: { color: brand.navy, fontSize: 20, fontFamily: fonts.headingHeavy, lineHeight: 24 },
   content: { padding: 16, paddingTop: 30 },
-  title: { color: brand.ink, fontSize: 19, fontFamily: fonts.heading, marginBottom: 8 },
+  title: { color: brand.ink, fontSize: 19, fontFamily: fonts.heading, letterSpacing: -0.2, marginBottom: 8 },
   date: { color: brand.primary, fontSize: 14, fontFamily: fonts.label, marginBottom: 4 },
   location: { color: brand.inkMuted, fontSize: 14, marginBottom: 4 },
   speaker: { color: brand.inkMuted, fontSize: 14, marginBottom: 8 },

@@ -53,11 +53,11 @@ export default function AccountScreen() {
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: brand.page },
   container: { padding: 20, gap: 16, paddingBottom: 48 },
-  title: { fontSize: 28, fontFamily: fonts.headingHeavy, color: brand.ink },
+  title: { fontSize: 28, fontFamily: fonts.headingHeavy, letterSpacing: -0.4, color: brand.ink },
   identity: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: brand.card, borderRadius: brand.radius, padding: 18, ...shadow },
   avatar: { width: 52, height: 52, borderRadius: 26, backgroundColor: brand.navy, alignItems: 'center', justifyContent: 'center' },
   avatarText: { color: brand.gold, fontFamily: fonts.heading, fontSize: 18 },
-  name: { fontSize: 18, fontFamily: fonts.heading, color: brand.ink },
+  name: { fontSize: 18, fontFamily: fonts.heading, letterSpacing: -0.2, color: brand.ink },
   detail: { color: brand.inkMuted, marginTop: 2 },
   group: { backgroundColor: brand.card, borderRadius: brand.radius, paddingHorizontal: 18, borderWidth: 1, borderColor: brand.line },
   row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, borderBottomWidth: StyleSheet.hairlineWidth, borderColor: brand.line },
