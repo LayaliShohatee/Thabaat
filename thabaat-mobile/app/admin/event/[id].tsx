@@ -12,7 +12,7 @@ import { ManagementButton as Button, managementStyles as styles } from '@/compon
 // Says whether attendees will see a field on the event page.
 function Visibility({ shown }: { shown: boolean }) {
  return <Text style={{ alignSelf: 'flex-start', flexShrink: 0, fontSize: 11, fontFamily: fonts.label, overflow: 'hidden', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 999,
-  color: shown ? brand.primaryDark : '#6B4A0F', backgroundColor: shown ? brand.primarySoft : brand.goldSoft }}>{shown ? 'Shown on event page' : 'Only staff see this'}</Text>
+  color: shown ? brand.primaryDark : brand.zaytDeep, backgroundColor: shown ? brand.primarySoft : brand.zaytSoft }}>{shown ? 'Shown on event page' : 'Only staff see this'}</Text>
 }
 
 function Field({ label, shown, children }: { label: string; shown: boolean; children: React.ReactNode }) {
@@ -67,7 +67,7 @@ export default function EventEditor() {
     </TouchableOpacity>)}
    </View>
 
-   <View style={[styles.card, { borderWidth: 2, borderColor: brand.gold, backgroundColor: '#FFFDF7', gap: 16 }]}>
+   <View style={[styles.card, { borderWidth: 2, borderColor: brand.zayt, backgroundColor: brand.page, gap: 16 }]}>
     <Text style={styles.heading}>Required to create the event</Text>
     <Field label="Title" shown><TextInput accessibilityLabel="Event title" style={styles.input} value={form.title} onChangeText={title => update({ title })} placeholder="e.g. Pop-Up @ Kitab" /></Field>
     <Field label="Starts" shown><DateTimeField label="" value={form.start} onChange={start => update({ start })} /></Field>

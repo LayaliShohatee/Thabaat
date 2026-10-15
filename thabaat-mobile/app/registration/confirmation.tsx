@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
     marginBottom: 12
   },
   buttonText: {
-    color: '#FFFFFF',
+    color: brand.page,
     fontSize: 16,
     fontWeight: 'bold'
   },

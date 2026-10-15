@@ -34,6 +34,8 @@ The optional backend runs from `thabaat-backend`: configure its private `.env`, 
 
 ## Current member and staff flow
 
+The app's look follows the client's 2026 brand refresh; tokens, logo files and the rules are documented in [docs/BRAND.md](docs/BRAND.md).
+
 - Home discovers upcoming events; My Events shows the caller's bookings.
 - Successful check-in is saved on the server. My Events and tickets display attendance separately from booking status and refresh while active.
 - Events → Check in an event → View attendee check-ins (event manager) shows an authorized roster with names and check-in times.

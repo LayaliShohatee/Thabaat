@@ -1,5 +1,6 @@
 import { Alert } from '@/lib/alert'
 import { brand, fonts } from '@/constants/brand'
+import { BrandLogo } from '@/components/BrandLogo'
 import { useState } from 'react';
 import {
   StyleSheet,
@@ -50,10 +51,10 @@ export default function LoginScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.logo}>THABAAT</Text>
+      <BrandLogo height={36} style={styles.logo} />
 
       <Text style={styles.title}>Welcome back</Text>
-      {eventReturnPath(eventId)?<Text style={{color:'#bbb',marginBottom:12}}>Sign in to open the shared event.</Text>:null}
+      {eventReturnPath(eventId)?<Text style={{color: brand.inkMuted,marginBottom:12}}>Sign in to open the shared event.</Text>:null}
 
       <Text style={styles.subtitle}>
         Log in to your account
@@ -62,7 +63,7 @@ export default function LoginScreen() {
       <TextInput
         style={styles.input}
         placeholder="Email"
-        placeholderTextColor="#888"
+        placeholderTextColor={brand.sage}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -72,7 +73,7 @@ export default function LoginScreen() {
       <TextInput
         style={styles.input}
         placeholder="Password"
-        placeholderTextColor="#888"
+        placeholderTextColor={brand.sage}
         value={password}
         onChangeText={setPassword}
         autoCapitalize="none"
@@ -108,18 +109,14 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: brand.card,
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
 
   logo: {
-    fontSize: 26,
-    fontFamily: fonts.heading,
-    letterSpacing: 7,
-    color: brand.teal,
-    textAlign: 'center',
-    marginBottom: 25,
+    alignSelf: 'center',
+    marginBottom: 24,
   },
 
   title: {
@@ -166,7 +163,7 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: '#FFFFFF',
+    color: brand.page,
     fontSize: 16,
     fontWeight: '600',
   },

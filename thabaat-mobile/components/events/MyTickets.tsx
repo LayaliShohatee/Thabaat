@@ -122,7 +122,7 @@ export default function MyTickets() {
 const styles = StyleSheet.create({
   actionButton: { padding: 16, borderTopWidth: 1, borderColor: brand.line },
   primaryAction: { backgroundColor: brand.primary, borderTopWidth: 0 },
-  primaryActionText: { color: '#FFFFFF', fontWeight: '700' },
+  primaryActionText: { color: brand.page, fontWeight: '700' },
   actionText: { color: brand.ink, fontWeight: '600' },
   list: {
     backgroundColor: brand.page,
@@ -153,7 +153,7 @@ const styles = StyleSheet.create({
     borderRadius: 8
   },
   browseButtonText: {
-    color: '#FFFFFF',
+    color: brand.page,
     fontWeight: 'bold'
   },
   card: {

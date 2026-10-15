@@ -20,6 +20,6 @@ export const managementStyles=StyleSheet.create({
  card:{padding:18,backgroundColor:brand.card,borderRadius:brand.radius,gap:12,borderWidth:1,borderColor:brand.line,...shadow},
  input:{backgroundColor:brand.card,borderWidth:1,borderColor:brand.line,paddingVertical:13,paddingHorizontal:14,borderRadius:brand.radiusSmall,fontSize:16,color:brand.ink},
  button:{backgroundColor:brand.primary,paddingVertical:14,paddingHorizontal:18,borderRadius:999,alignItems:'center'},
- buttonText:{color:'#FFFFFF',fontFamily:fonts.label,fontSize:15,textAlign:'center'},
- alert:{padding:14,backgroundColor:brand.goldSoft,color:'#6B4A0F',lineHeight:21,borderRadius:brand.radiusSmall,overflow:'hidden'},
+ buttonText:{color: brand.page,fontFamily:fonts.label,fontSize:15,textAlign:'center'},
+ alert:{padding:14,backgroundColor:brand.zaytSoft,color: brand.zaytDeep,lineHeight:21,borderRadius:brand.radiusSmall,overflow:'hidden'},
 })

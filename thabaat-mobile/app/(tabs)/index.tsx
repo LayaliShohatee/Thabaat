@@ -3,6 +3,7 @@ import { Linking, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity
 import { router } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { brand, fonts, links, shadow } from '@/constants/brand'
+import { BrandLogo } from '@/components/BrandLogo'
 import { useAuth } from '@/hooks/useAuth'
 import { useEvents } from '@/hooks/useEvents'
 import { useFocusResource } from '@/hooks/useFocusResource'
@@ -26,7 +27,7 @@ export default function HomeScreen() {
   return <ScrollView style={styles.page} contentContainerStyle={{ paddingBottom: 40 }}
     refreshControl={<RefreshControl refreshing={loading} onRefresh={() => { void refetch(); void reload() }} tintColor={brand.primary} />}>
     <View style={[styles.hero, { paddingTop: insets.top + 28 }]}>
-      <Text style={styles.wordmark}>THABAAT</Text>
+      <BrandLogo ink="reverse" height={32} />
       <Text style={styles.tagline}>HEARTS FIRM TOGETHER</Text>
       <Text style={styles.greeting}>{firstName ? `Salaam, ${firstName}` : 'Salaam'}</Text>
       <Text style={styles.heroText}>A community for young professionals in Southeast Michigan to grow socially, spiritually and professionally.</Text>
@@ -56,12 +57,11 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   page: { flex: 1, backgroundColor: brand.page },
-  hero: { backgroundColor: brand.navy, paddingHorizontal: 24, paddingBottom: 56, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
-  wordmark: { color: '#FFFFFF', fontFamily: fonts.heading, fontSize: 30, letterSpacing: 8 },
-  tagline: { color: brand.teal, fontFamily: fonts.label, fontSize: 11, letterSpacing: 3, marginTop: 4 },
-  greeting: { color: '#FFFFFF', fontFamily: fonts.headingHeavy, fontSize: 24, marginTop: 28 },
-  heroText: { color: brand.navySoft, fontSize: 15, lineHeight: 22, marginTop: 6 },
-  nextCard: { marginHorizontal: 16, marginTop: -36, backgroundColor: brand.card, borderRadius: brand.radius, padding: 18, borderLeftWidth: 5, borderLeftColor: brand.gold, ...shadow },
+  hero: { backgroundColor: brand.forest, paddingHorizontal: 24, paddingBottom: 56, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
+  tagline: { color: brand.forestSoft, fontFamily: fonts.label, fontSize: 11, letterSpacing: 3, marginTop: 12 },
+  greeting: { color: brand.page, fontFamily: fonts.headingHeavy, fontSize: 24, marginTop: 28 },
+  heroText: { color: brand.forestSoft, fontSize: 15, lineHeight: 22, marginTop: 6 },
+  nextCard: { marginHorizontal: 16, marginTop: -36, backgroundColor: brand.card, borderRadius: brand.radius, padding: 18, borderLeftWidth: 5, borderLeftColor: brand.zayt, ...shadow },
   nextLabel: { color: brand.primary, fontFamily: fonts.label, fontSize: 11, letterSpacing: 1.5 },
   nextTitle: { color: brand.ink, fontFamily: fonts.heading, fontSize: 19, marginTop: 6 },
   nextMeta: { color: brand.inkMuted, fontSize: 14, marginTop: 4 },

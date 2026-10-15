@@ -3,6 +3,7 @@ import { ScrollView, Text, TouchableOpacity, View, StyleSheet } from 'react-nati
 import { router } from 'expo-router'
 import { initialMembershipDemo, membershipSummary, reduceMembershipDemo, type DemoAction, type DemoPeriod } from '@/lib/membership-state'
 import { practiceEvents, registerPracticeEvent, type PracticeRegistration } from '@/lib/membership-events'
+import { brand } from '@/constants/brand'
 
 export default function MembershipPreview() {
  const [state, setState] = useState(initialMembershipDemo)
@@ -70,4 +71,4 @@ export default function MembershipPreview() {
   {button('Back to real membership', () => router.replace('/membership'))}
  </ScrollView>
 }
-const styles=StyleSheet.create({page:{flex:1,backgroundColor:'#F5F8F7'},content:{padding:24,gap:16,paddingBottom:48,maxWidth:700,width:'100%',alignSelf:'center'},badge:{color:'#62470C',backgroundColor:'#FFF2CD',padding:14,fontWeight:'700'},title:{fontSize:28,fontWeight:'700',color:'#172B28'},heading:{fontSize:20,fontWeight:'600',color:'#172B28'},copy:{fontSize:16,lineHeight:24,color:'#425550'},card:{backgroundColor:'#fff',borderRadius:16,padding:20,gap:14},button:{backgroundColor:'#0E7C7A',padding:16,borderRadius:10},buttonText:{color:'#fff',fontWeight:'600',textAlign:'center'},choice:{padding:14,borderWidth:1,borderColor:'#ddd',borderRadius:10},selected:{borderColor:'#0E7C7A',backgroundColor:'#E0F2EA'}})
+const styles=StyleSheet.create({page:{flex:1,backgroundColor: brand.page},content:{padding:24,gap:16,paddingBottom:48,maxWidth:700,width:'100%',alignSelf:'center'},badge:{color: brand.zaytDeep,backgroundColor: brand.zaytSoft,padding:14,fontWeight:'700'},title:{fontSize:28,fontWeight:'700',color: brand.ink},heading:{fontSize:20,fontWeight:'600',color: brand.ink},copy:{fontSize:16,lineHeight:24,color: brand.inkMuted},card:{backgroundColor: brand.card,borderRadius:16,padding:20,gap:14},button:{backgroundColor: brand.primary,padding:16,borderRadius:10},buttonText:{color: brand.page,fontWeight:'600',textAlign:'center'},choice:{padding:14,borderWidth:1,borderColor:'#ddd',borderRadius:10},selected:{borderColor: brand.primary,backgroundColor: brand.oliveSoft}})

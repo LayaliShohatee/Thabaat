@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
     backgroundColor: brand.primarySoft
   },
   registerButtonText: {
-    color: '#FFFFFF',
+    color: brand.page,
     fontSize: 16,
     fontWeight: 'bold'
   },

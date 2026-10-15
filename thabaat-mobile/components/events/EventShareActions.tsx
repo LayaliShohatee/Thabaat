@@ -2,6 +2,7 @@ import {useRef,useState} from 'react'
 import {Text,TouchableOpacity,View,StyleSheet} from 'react-native'
 import {eventShareLink} from '@/lib/event-sharing'
 import {shareEventLink} from '@/services/eventShareService'
+import { brand } from '@/constants/brand'
 export default function EventShareActions({eventId}:{eventId:string}){
  const [busy,setBusy]=useState(false),[message,setMessage]=useState('')
  const inFlight=useRef(false)
@@ -13,4 +14,4 @@ export default function EventShareActions({eventId}:{eventId:string}){
  {error?<Text style={styles.note}>{error}</Text>:<><Text selectable style={styles.link}>{link?.url}</Text><TouchableOpacity accessibilityRole="button" accessibilityState={{disabled:busy}} disabled={busy} style={styles.button} onPress={()=>void share()}><Text style={styles.label}>{busy?'Please wait…':'Share event link'}</Text></TouchableOpacity></>}
  {message?<Text accessibilityRole="alert" style={styles.note}>{message}</Text>:null}</View>
 }
-const styles=StyleSheet.create({container:{gap:8,marginBottom:20},heading:{color:'#fff',fontSize:18,fontWeight:'600'},note:{color:'#bbb',lineHeight:20},link:{color:'#9fcbb3'},button:{padding:13,borderWidth:1,borderColor:'#666',borderRadius:8},label:{color:'#fff',textAlign:'center'}})
+const styles=StyleSheet.create({container:{gap:8,marginBottom:20},heading:{color: brand.page,fontSize:18,fontWeight:'600'},note:{color: brand.inkMuted,lineHeight:20},link:{color:'#9fcbb3'},button:{padding:13,borderWidth:1,borderColor:'#666',borderRadius:8},label:{color: brand.page,textAlign:'center'}})

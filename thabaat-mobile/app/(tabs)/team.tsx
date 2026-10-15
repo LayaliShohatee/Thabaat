@@ -47,11 +47,11 @@ export default function TeamTab() {
     <Text style={styles.text}>Your events for check-in and event day.</Text>
     <View style={{ flexDirection: 'row', gap: 8 }}>
       {(['upcoming', 'archive'] as const).map(value => <TouchableOpacity key={value} accessibilityRole="tab" accessibilityState={{ selected: view === value }} onPress={() => setView(value)}
-        style={{ flex: 1, paddingVertical: 10, borderRadius: 999, alignItems: 'center', backgroundColor: view === value ? brand.navy : brand.card, borderWidth: 1, borderColor: view === value ? brand.navy : brand.line }}>
-        <Text style={{ fontFamily: fonts.label, color: view === value ? '#FFFFFF' : brand.ink }}>{value === 'upcoming' ? 'Upcoming' : 'Archive'}</Text>
+        style={{ flex: 1, paddingVertical: 10, borderRadius: 999, alignItems: 'center', backgroundColor: view === value ? brand.forest : brand.card, borderWidth: 1, borderColor: view === value ? brand.forest : brand.line }}>
+        <Text style={{ fontFamily: fonts.label, color: view === value ? brand.page : brand.ink }}>{value === 'upcoming' ? 'Upcoming' : 'Archive'}</Text>
       </TouchableOpacity>)}
     </View>
-    {view === 'upcoming' && team.pending.length > 0 && <View style={[styles.card, { borderWidth: 1, borderColor: brand.gold }]}>
+    {view === 'upcoming' && team.pending.length > 0 && <View style={[styles.card, { borderWidth: 1, borderColor: brand.zayt }]}>
       <Text style={styles.heading}>Waiting for the team to confirm</Text>
       {team.pending.map(s => <View key={s.event_id} style={{ gap: 2, paddingVertical: 6, borderTopWidth: 1, borderColor: brand.line }}>
         <Text style={{ fontFamily: fonts.label, color: brand.ink }}>{s.title}</Text>

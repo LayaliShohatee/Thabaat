@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, Text, View, Button } from 'react-native'
 import * as Linking from 'expo-linking';
 import { router } from 'expo-router';
 import { consumeAuthLink } from '@/lib/auth-links';
+import { brand } from '@/constants/brand'
 
 export default function AuthCallbackScreen() {
   const url = Linking.useLinkingURL();
@@ -23,7 +24,7 @@ export default function AuthCallbackScreen() {
     return () => { active = false; };
   }, [url]);
   return <View style={styles.container}>
-    {error ? <><Text style={styles.text} accessibilityRole="alert">{error}</Text><Button title="Back to login" onPress={() => router.replace('/auth/login')} /></> : <><ActivityIndicator color="#159A8C" /><Text style={styles.text}>Verifying your account...</Text></>}
+    {error ? <><Text style={styles.text} accessibilityRole="alert">{error}</Text><Button title="Back to login" onPress={() => router.replace('/auth/login')} /></> : <><ActivityIndicator color={brand.tealText} /><Text style={styles.text}>Verifying your account...</Text></>}
   </View>;
 }
 const styles = StyleSheet.create({ container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }, text: { marginVertical: 16, textAlign: 'center' } });

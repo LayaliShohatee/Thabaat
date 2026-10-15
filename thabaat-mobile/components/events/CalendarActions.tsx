@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { Linking, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { calendarProviderUrl, type CalendarEvent } from '@/lib/event-calendar'
 import { openDeviceCalendar } from '@/services/eventCalendarService'
+import { brand } from '@/constants/brand'
 
 export default function CalendarActions({ event }: { event: CalendarEvent }) {
   const inFlight = useRef(false)
@@ -27,4 +28,4 @@ export default function CalendarActions({ event }: { event: CalendarEvent }) {
     {!!message && <Text accessibilityLiveRegion="polite" style={styles.note}>{message}</Text>}
   </View>
 }
-const styles = StyleSheet.create({ container: { marginBottom: 20, gap: 12, backgroundColor: '#fff', padding: 18, borderRadius: 14 }, heading: { color: '#172B28', fontSize: 18, fontWeight: '600' }, note: { color: '#425550', lineHeight: 23 }, button: { backgroundColor: '#0E7C7A', borderRadius: 9, padding: 15 }, label: { color: '#fff', textAlign: 'center', fontWeight: '600' } })
+const styles = StyleSheet.create({ container: { marginBottom: 20, gap: 12, backgroundColor: brand.card, padding: 18, borderRadius: 14 }, heading: { color: brand.ink, fontSize: 18, fontWeight: '600' }, note: { color: brand.inkMuted, lineHeight: 23 }, button: { backgroundColor: brand.primary, borderRadius: 9, padding: 15 }, label: { color: brand.page, textAlign: 'center', fontWeight: '600' } })

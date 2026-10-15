@@ -2,7 +2,9 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router/react-naviga
 import { Stack, router, useSegments, usePathname, useGlobalSearchParams } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { useEffect } from 'react'
-import { useFonts, Montserrat_600SemiBold, Montserrat_700Bold, Montserrat_800ExtraBold } from '@expo-google-fonts/montserrat'
+import { useFonts } from 'expo-font'
+import { Fraunces_600SemiBold, Fraunces_700Bold } from '@expo-google-fonts/fraunces'
+import { InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600SemiBold } from '@expo-google-fonts/instrument-sans'
 import * as SplashScreen from 'expo-splash-screen'
 import 'react-native-reanimated'
 import { useColorScheme } from '@/hooks/use-color-scheme'
@@ -38,7 +40,7 @@ function Navigation() {
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack screenOptions={{headerBackButtonDisplayMode:isDemoMode?'minimal':'default',headerBackTitle:'Back',headerStyle:{backgroundColor:brand.navy},headerTintColor:'#FFFFFF',headerTitleStyle:{fontFamily:fonts.heading,fontSize:17},headerShadowVisible:false}}>
+      <Stack screenOptions={{headerBackButtonDisplayMode:isDemoMode?'minimal':'default',headerBackTitle:'Back',headerStyle:{backgroundColor:brand.forest},headerTintColor:brand.page,headerTitleStyle:{fontFamily:fonts.heading,fontSize:17},headerShadowVisible:false}}>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="auth/login" options={{ headerShown: false }} />
         <Stack.Screen name="auth/register" options={{ headerShown: false }} />
@@ -69,8 +71,8 @@ function Navigation() {
 }
 
 export default function RootLayout() {
-  // Montserrat matches thabaat.org. If loading fails the app still renders with the system font.
-  const [fontsLoaded, fontError] = useFonts({ Montserrat_600SemiBold, Montserrat_700Bold, Montserrat_800ExtraBold })
+  // Brand type: Fraunces for headlines, Instrument Sans for body and labels. If loading fails the app still renders with the system font.
+  const [fontsLoaded, fontError] = useFonts({ Fraunces_600SemiBold, Fraunces_700Bold, InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600SemiBold })
   useEffect(() => { if (fontsLoaded || fontError) SplashScreen.hideAsync().catch(() => {}) }, [fontsLoaded, fontError])
   if (!fontsLoaded && !fontError) return null
   return <AuthProvider><Navigation /></AuthProvider>

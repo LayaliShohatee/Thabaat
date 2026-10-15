@@ -139,7 +139,7 @@ export default function RegistrationScreen() {
           </Text>
           {selectedTicket.price > 0 && (
             <>
-              <TextInput accessibilityLabel="Discount code" style={styles.codeInput} value={code} onChangeText={value => { setCode(value.toUpperCase()); setQuote(null) }} placeholder="Discount code (optional)" placeholderTextColor="#888" autoCapitalize="characters" />
+              <TextInput accessibilityLabel="Discount code" style={styles.codeInput} value={code} onChangeText={value => { setCode(value.toUpperCase()); setQuote(null) }} placeholder="Discount code (optional)" placeholderTextColor={brand.sage} autoCapitalize="characters" />
               <TouchableOpacity accessibilityRole="button" style={styles.codeButton} onPress={() => void applyQuote()} disabled={quoting}>
                 <Text style={styles.codeButtonText}>{quoting ? 'Checking…' : 'Check my price'}</Text>
               </TouchableOpacity>
@@ -254,8 +254,8 @@ const styles = StyleSheet.create({
     marginBottom: 6
   },
   codeInput: { borderWidth: 1, borderColor: brand.line, borderRadius: 10, color: brand.ink, paddingHorizontal: 12, paddingVertical: 10, marginTop: 8, marginBottom: 8 },
-  codeButton: { alignSelf: 'flex-start', backgroundColor: '#0E7C7A', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 8 },
-  codeButtonText: { color: '#FFFFFF', fontWeight: '600' },
+  codeButton: { alignSelf: 'flex-start', backgroundColor: brand.primary, borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 8 },
+  codeButtonText: { color: brand.page, fontWeight: '600' },
   footer: {
     padding: 20,
     paddingBottom: 40
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
     backgroundColor: brand.primarySoft
   },
   confirmButtonText: {
-    color: '#FFFFFF',
+    color: brand.page,
     fontSize: 16,
     fontWeight: 'bold'
   },
