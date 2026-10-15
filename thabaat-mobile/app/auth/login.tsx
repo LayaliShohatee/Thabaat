@@ -1,13 +1,8 @@
 import { Alert } from '@/lib/alert'
 import { brand, fonts } from '@/constants/brand'
 import { useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { PressableScale } from '@/components/PressableScale';
 import { router, useLocalSearchParams } from 'expo-router';
 import {eventReturnPath} from '@/lib/event-sharing';
 import { supabase } from '@/lib/supabase';
@@ -81,11 +76,11 @@ export default function LoginScreen() {
         secureTextEntry
       />
 
-      <TouchableOpacity onPress={() => router.push('/auth/forgot-password')}>
+      <PressableScale onPress={() => router.push('/auth/forgot-password')}>
         <Text style={styles.forgot}>Forgot your password?</Text>
-      </TouchableOpacity>
+      </PressableScale>
 
-      <TouchableOpacity
+      <PressableScale
         style={styles.button}
         onPress={handleLogin}
         disabled={loading}
@@ -93,16 +88,16 @@ export default function LoginScreen() {
         <Text style={styles.buttonText}>
           {loading ? 'Logging in...' : 'Log In'}
         </Text>
-      </TouchableOpacity>
+      </PressableScale>
 
-      <TouchableOpacity onPress={() => router.push(eventReturnPath(eventId)?{pathname:'/auth/register',params:{eventId}}:'/auth/register')}>
+      <PressableScale onPress={() => router.push(eventReturnPath(eventId)?{pathname:'/auth/register',params:{eventId}}:'/auth/register')}>
         <Text style={styles.link}>
           Don&apos;t have an account? Create one
         </Text>
-      </TouchableOpacity>
-      <TouchableOpacity accessibilityRole="button" onPress={() => router.push('/public')}>
+      </PressableScale>
+      <PressableScale accessibilityRole="button" onPress={() => router.push('/public')}>
         <Text style={styles.link}>Browse public events without signing in</Text>
-      </TouchableOpacity>
+      </PressableScale>
     </View>
   );
 }
@@ -170,7 +165,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.heading,
   },
 
   link: {

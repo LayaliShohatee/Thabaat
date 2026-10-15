@@ -2,17 +2,9 @@ import * as Linking from 'expo-linking';
 import { consumeAuthLink } from '@/lib/auth-links';
 import { Alert } from '@/lib/alert'
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { PressableScale } from '@/components/PressableScale';
+import { fonts } from '@/constants/brand';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
@@ -101,9 +93,9 @@ export default function ResetPasswordScreen() {
       </View> : null}
       {linkError ? <View style={styles.status}>
         <Text style={styles.error} accessibilityRole="alert">{linkError}</Text>
-        <TouchableOpacity accessibilityRole="button" onPress={() => setAttempt(value => value + 1)}>
+        <PressableScale accessibilityRole="button" onPress={() => setAttempt(value => value + 1)}>
           <Text style={styles.retry}>Try verifying again</Text>
-        </TouchableOpacity>
+        </PressableScale>
       </View> : null}
       <TextInput
         style={styles.input}
@@ -127,7 +119,7 @@ export default function ResetPasswordScreen() {
         secureTextEntry
       />
 
-      <TouchableOpacity
+      <PressableScale
         accessibilityRole="button"
         accessibilityState={{ disabled: loading || !ready, busy: loading }}
         style={[styles.button, (loading || !ready) && styles.disabledButton]}
@@ -137,7 +129,7 @@ export default function ResetPasswordScreen() {
         <Text style={styles.buttonText}>
           {loading ? 'Updating...' : !ready && !linkError ? 'Verifying link...' : 'Update Password'}
         </Text>
-      </TouchableOpacity>
+      </PressableScale>
     </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -155,7 +147,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 26,
-    fontWeight: '700',
+    fontFamily: fonts.heading,
     color: '#222222',
     textAlign: 'center',
   },
@@ -197,6 +189,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.heading,
   },
 });

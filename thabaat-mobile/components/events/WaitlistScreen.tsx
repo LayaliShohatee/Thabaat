@@ -1,5 +1,7 @@
 import { useCallback, useState } from 'react'
-import { View, Text, ScrollView, TouchableOpacity, TextInput, StyleSheet } from 'react-native'
+import { View, Text, ScrollView, TextInput, StyleSheet } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
+import { fonts } from '@/constants/brand'
 import { useLocalSearchParams, router } from 'expo-router'
 import { useAuth } from '@/hooks/useAuth'
 import { useFocusResource } from '@/hooks/useFocusResource'
@@ -17,7 +19,7 @@ export default function WaitlistScreen({manage=false}:{manage?:boolean}) {
  const {data,loading,error,reload}=useFocusResource(load,null)
  const tickets=data?.event?.ticket_types.filter(t=>Number(t.price)===0)??[]
  const selected=tickets.find(t=>t.id===ticketId)??tickets[0]
- const button=(label:string,onPress:()=>void,disabled=false)=><TouchableOpacity key={label} accessibilityRole="button" disabled={disabled||busy} onPress={onPress} style={[styles.button,(disabled||busy)&&{opacity:.5}]}><Text style={styles.buttonText}>{label}</Text></TouchableOpacity>
+ const button=(label:string,onPress:()=>void,disabled=false)=><PressableScale key={label} accessibilityRole="button" disabled={disabled||busy} onPress={onPress} style={[styles.button,(disabled||busy)&&{opacity:.5}]}><Text style={styles.buttonText}>{label}</Text></PressableScale>
  async function run(action:()=>Promise<unknown>,message:string){if(busy)return;setBusy(true);setNotice('');try{await action();setNotice(message);await reload()}catch(e){setNotice(e instanceof Error?e.message:typeof e==='object'&&e&&'message'in e?String(e.message):'Request failed. Refresh and retry.')}finally{setBusy(false)}}
  const own=data?.own
  const offered=own?.status==='offered'&&Date.parse(own.offer_expires_at||'')>(data?.now??0)
@@ -44,4 +46,4 @@ export default function WaitlistScreen({manage=false}:{manage?:boolean}) {
   {button(busy?'Please wait…':'Refresh waitlist',()=>void reload(),loading)}
  </ScrollView>
 }
-const styles=StyleSheet.create({page:{flex:1,backgroundColor:'#101412'},content:{padding:24,gap:12},title:{color:'#fff',fontSize:24,fontWeight:'bold'},text:{color:'#ddd',lineHeight:22},card:{backgroundColor:'#202720',padding:16,gap:8,borderRadius:8},button:{backgroundColor:'#d8eada',padding:12,borderRadius:8},buttonText:{color:'#152019',fontWeight:'600'},input:{color:'#fff',borderWidth:1,borderColor:'#666',padding:12,borderRadius:8}})
+const styles=StyleSheet.create({page:{flex:1,backgroundColor:'#101412'},content:{padding:24,gap:12},title:{color:'#fff',fontSize:24,fontFamily: fonts.heading},text:{color:'#ddd',lineHeight:22},card:{backgroundColor:'#202720',padding:16,gap:8,borderRadius:8},button:{backgroundColor:'#d8eada',padding:12,borderRadius:8},buttonText:{color:'#152019',fontWeight:'600'},input:{color:'#fff',borderWidth:1,borderColor:'#666',padding:12,borderRadius:8}})

@@ -1,5 +1,7 @@
 import { useRef, useState } from 'react'
-import { ActivityIndicator, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
+import { fonts } from '@/constants/brand'
 import { router } from 'expo-router'
 import { useFocusResource } from '@/hooks/useFocusResource'
 import { emptyBilling, membershipIsActive, money, periodLabel } from '@/lib/billing'
@@ -9,7 +11,7 @@ import MembershipChangeCard from '@/components/MembershipChangeCard'
 import { cancelMonthlyDonation, getMonthlyDonations, getPaymentsMode, sandboxDonate, sandboxPurchaseMembership, startMonthlyDonation, type MonthlyGift, type PaymentsMode } from '@/services/sandboxPaymentService'
 
 function BillingButton({ label, onPress, disabled = false }: { label: string; onPress: () => void; disabled?: boolean }) {
- return <TouchableOpacity accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[styles.button, disabled && styles.disabled]}><Text style={styles.buttonText}>{label}</Text></TouchableOpacity>
+ return <PressableScale accessibilityRole="button" accessibilityState={{ disabled }} disabled={disabled} onPress={onPress} style={[styles.button, disabled && styles.disabled]}><Text style={styles.buttonText}>{label}</Text></PressableScale>
 }
 
 export function BillingScreen({ section }: { section: 'membership' | 'donations' | 'history' }) {
@@ -75,7 +77,7 @@ export function BillingScreen({ section }: { section: 'membership' | 'donations'
 }
 const styles = StyleSheet.create({
  page: { flex: 1, backgroundColor: '#F5F8F7' }, content: { padding: 24, paddingBottom: 48, gap: 16, width: '100%', maxWidth: 700, alignSelf: 'center' },
- title: { fontSize: 30, fontWeight: '700', color: '#172B28' }, heading: { fontSize: 20, fontWeight: '600', color: '#172B28' },
+ title: { fontSize: 30, fontFamily: fonts.heading, color: '#172B28' }, heading: { fontSize: 20, fontFamily: fonts.heading, color: '#172B28' },
  copy: { fontSize: 15, lineHeight: 23, color: '#425550' }, card: { padding: 20, backgroundColor: '#FFF', borderRadius: 16, gap: 10, borderWidth: 1, borderColor: '#DFE8E4' },
  feature: { padding: 22, backgroundColor: '#E0F2EA', borderRadius: 16, gap: 10 }, eyebrow: { fontSize: 12, color: '#256E5C', fontWeight: '700', letterSpacing: 1 },
  price: { color: '#256E5C', fontSize: 18, fontWeight: '600' }, button: { padding: 16, backgroundColor: '#0E7C7A', borderRadius: 10, alignItems: 'center' }, buttonText: { color: '#FFF', fontWeight: '600', fontSize: 15 }, disabled: { opacity: 0.55 }, notice: { fontSize: 15, lineHeight: 23, color: '#62470C', backgroundColor: '#FFF2CD', padding: 16, borderRadius: 10 },

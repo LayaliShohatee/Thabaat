@@ -1,13 +1,8 @@
 import { authRedirectUrl } from '@/lib/auth-links'
 import { brand, fonts } from '@/constants/brand'
 import { useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { PressableScale } from '@/components/PressableScale';
 import { router, useLocalSearchParams } from 'expo-router';
 import {eventReturnPath} from '@/lib/event-sharing';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
@@ -117,7 +112,7 @@ export default function RegisterScreen() {
         <Text style={styles.feedback} accessibilityLiveRegion="polite">{successMessage}</Text>
       ) : null}
 
-      <TouchableOpacity
+      <PressableScale
         accessibilityRole="button"
         style={styles.button}
         onPress={handleRegister}
@@ -126,11 +121,11 @@ export default function RegisterScreen() {
         <Text style={styles.buttonText}>
           {loading ? 'Creating account...' : 'Create Account'}
         </Text>
-      </TouchableOpacity>
+      </PressableScale>
 
-      <TouchableOpacity onPress={() => router.push(eventReturnPath(eventId)?{pathname:'/auth/login',params:{eventId}}:'/auth/login')}>
+      <PressableScale onPress={() => router.push(eventReturnPath(eventId)?{pathname:'/auth/login',params:{eventId}}:'/auth/login')}>
         <Text style={styles.link}>Already have an account? Log in</Text>
-      </TouchableOpacity>
+      </PressableScale>
     </View>
   );
 }
@@ -204,7 +199,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.heading,
   },
 
   link: {

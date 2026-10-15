@@ -1,13 +1,7 @@
 import { useFocusResource } from '@/hooks/useFocusResource'
-import { brand } from '@/constants/brand'
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator
-} from 'react-native'
+import { brand, fonts } from '@/constants/brand'
+import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
 import { router } from 'expo-router'
 import { useCallback, useRef, useState } from 'react'
 import { cancelFreeRegistration, getUserRegistrations } from '@/services/registrationService'
@@ -52,7 +46,7 @@ export default function MyTickets() {
     )
   }
 
-  if (error) return <View style={styles.centered}><Text style={styles.emptyText} accessibilityRole="alert">{error}</Text><TouchableOpacity accessibilityRole="button" style={styles.browseButton} onPress={reload}><Text>Try Again</Text></TouchableOpacity></View>
+  if (error) return <View style={styles.centered}><Text style={styles.emptyText} accessibilityRole="alert">{error}</Text><PressableScale accessibilityRole="button" style={styles.browseButton} onPress={reload}><Text>Try Again</Text></PressableScale></View>
 
   return (
     <FlatList
@@ -65,16 +59,16 @@ export default function MyTickets() {
       ListEmptyComponent={
         <View style={styles.empty}>
           <Text style={styles.emptyText}>You haven’t registered for any events yet</Text>
-          <TouchableOpacity
+          <PressableScale
             style={styles.browseButton}
             onPress={() => router.push('/(tabs)/events')}
           >
             <Text style={styles.browseButtonText}>Browse Events</Text>
-          </TouchableOpacity>
+          </PressableScale>
         </View>
       }
       renderItem={({ item }) => (
-        <View style={styles.card}><TouchableOpacity
+        <View style={styles.card}><PressableScale
           onPress={() => router.push(item.status === 'confirmed' ? `/ticket/${item.id}` : `/event/${item.event_id}`)}
         >
           <View style={styles.cardContent}>
@@ -103,16 +97,16 @@ export default function MyTickets() {
             </View>
             {item.status === 'confirmed' && item.checked_in_at !== undefined && <Text accessibilityLiveRegion="polite" style={styles.actionText}>{item.checked_in_at ? `Checked in · ${new Date(item.checked_in_at).toLocaleString()}` : 'Not checked in'}</Text>}
           </View>
-        </TouchableOpacity>
-          {item.status === 'confirmed' && <TouchableOpacity accessibilityRole="button" style={[styles.actionButton,styles.primaryAction]} onPress={() => router.push(`/ticket/${item.id}`)}><Text style={styles.primaryActionText}>Open ticket</Text></TouchableOpacity>}
-          {item.status === 'confirmed' && !item.checked_in_at && Number(item.ticket_type?.price) === 0 && item.event && new Date(item.event.event_date).getTime() > now && <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => setCancelId(item.id)}><Text style={styles.actionText}>{busy === item.id ? 'Cancelling…' : 'Cancel free registration'}</Text></TouchableOpacity>}
+        </PressableScale>
+          {item.status === 'confirmed' && <PressableScale accessibilityRole="button" style={[styles.actionButton,styles.primaryAction]} onPress={() => router.push(`/ticket/${item.id}`)}><Text style={styles.primaryActionText}>Open ticket</Text></PressableScale>}
+          {item.status === 'confirmed' && !item.checked_in_at && Number(item.ticket_type?.price) === 0 && item.event && new Date(item.event.event_date).getTime() > now && <PressableScale accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => setCancelId(item.id)}><Text style={styles.actionText}>{busy === item.id ? 'Cancelling…' : 'Cancel free registration'}</Text></PressableScale>}
           {cancelId === item.id && item.status === 'confirmed' && <View style={styles.cardContent}>
             <Text style={styles.actionText}>Cancel this free registration? Your place will be released. Re-registering depends on remaining availability.</Text>
-            <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => setCancelId(null)}><Text style={styles.actionText}>Keep registration</Text></TouchableOpacity>
-            <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => void cancel(item)}><Text style={styles.actionText}>{busy === item.id ? 'Cancelling…' : 'Confirm cancellation'}</Text></TouchableOpacity>
+            <PressableScale accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => setCancelId(null)}><Text style={styles.actionText}>Keep registration</Text></PressableScale>
+            <PressableScale accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => void cancel(item)}><Text style={styles.actionText}>{busy === item.id ? 'Cancelling…' : 'Confirm cancellation'}</Text></PressableScale>
           </View>}
-          {item.status === 'confirmed' && !item.checked_in_at && Number(item.ticket_type?.price) > 0 && item.event && new Date(item.event.event_date).getTime() > now && <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => void refund(item)}><Text style={styles.actionText}>{busy === item.id ? 'Sending…' : 'Cancel and request refund'}</Text></TouchableOpacity>}
-          {item.status === 'cancelled' && item.event && new Date(item.event.event_date).getTime() > now && <TouchableOpacity accessibilityRole="button" style={styles.actionButton} onPress={() => router.push(`/registration/${item.event_id}`)}><Text style={styles.actionText}>Register again</Text></TouchableOpacity>}
+          {item.status === 'confirmed' && !item.checked_in_at && Number(item.ticket_type?.price) > 0 && item.event && new Date(item.event.event_date).getTime() > now && <PressableScale accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => void refund(item)}><Text style={styles.actionText}>{busy === item.id ? 'Sending…' : 'Cancel and request refund'}</Text></PressableScale>}
+          {item.status === 'cancelled' && item.event && new Date(item.event.event_date).getTime() > now && <PressableScale accessibilityRole="button" style={styles.actionButton} onPress={() => router.push(`/registration/${item.event_id}`)}><Text style={styles.actionText}>Register again</Text></PressableScale>}
         </View>
       )}
     />
@@ -168,7 +162,7 @@ const styles = StyleSheet.create({
   },
   eventTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: fonts.heading,
     color: brand.ink,
     marginBottom: 4
   },
