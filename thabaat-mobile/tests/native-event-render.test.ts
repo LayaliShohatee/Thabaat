@@ -10,6 +10,7 @@ vi.mock('../components/FreeTicketInventory',()=>({FreeTicketInventory:()=>null})
 vi.mock('../services/eventImageService',()=>({uploadEventFlyer:vi.fn()}))
 vi.mock('../components/EventRefundsAndCodes',()=>({EventRefundsAndCodes:()=>null}))
 vi.mock('../components/PublicEventPublisher',()=>({PublicEventPublisher:()=>null}))
+vi.mock('../components/PressableScale',async()=>{const R=await import('react');return {PressableScale:({children}:any)=>R.createElement('div',null,children)}})
 vi.mock('../components/ManagementUI',()=>({ManagementButton:()=>null,ManagementChip:()=>null,ManagementLink:()=>null,managementStyles:{}}))
 import {EventAttendees} from '../components/EventAttendees'
 import AdminTab from '../app/(tabs)/admin'

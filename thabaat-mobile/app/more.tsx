@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { ScrollView, Text, View } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
 import { router, type Href } from 'expo-router'
 import { brand, fonts } from '@/constants/brand'
 import { useAuth } from '@/hooks/useAuth'
@@ -30,9 +31,9 @@ export default function MoreScreen() {
   catch (error) { setMessage(error instanceof Error ? error.message : 'Unable to enable notifications.') }
   finally { setBusy(false) }
  }
- const row = (label: string, onPress: () => void, key = label) => <TouchableOpacity key={key} accessibilityRole="button" disabled={busy} onPress={onPress} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, borderBottomWidth: 1, borderColor: brand.line }}>
+ const row = (label: string, onPress: () => void, key = label) => <PressableScale key={key} accessibilityRole="button" disabled={busy} onPress={onPress} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 15, borderBottomWidth: 1, borderColor: brand.line }}>
   <Text style={{ color: brand.ink, fontSize: 16, fontFamily: fonts.label }}>{label}</Text><Text style={{ color: brand.inkMuted, fontSize: 16 }}>›</Text>
- </TouchableOpacity>
+ </PressableScale>
  return <ScrollView style={styles.page} contentContainerStyle={[styles.content, { paddingTop: 20 }]}>
   <View style={[styles.card, { gap: 0, paddingVertical: 4 }]}>
    {rows.map(([label, href]) => row(label, () => router.push(href)))}

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { ScrollView, Text, View } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
 import { router } from 'expo-router'
 import { brand, fonts } from '@/constants/brand'
 import { useFocusResource } from '@/hooks/useFocusResource'
@@ -39,10 +40,10 @@ export default function TeamTab() {
     <Text style={styles.title}>Team view</Text>
     <Text style={styles.text}>Your events for check-in and event day.</Text>
     <View style={{ flexDirection: 'row', gap: 8 }}>
-      {(['upcoming', 'archive'] as const).map(value => <TouchableOpacity key={value} accessibilityRole="tab" accessibilityState={{ selected: view === value }} onPress={() => setView(value)}
+      {(['upcoming', 'archive'] as const).map(value => <PressableScale key={value} accessibilityRole="tab" accessibilityState={{ selected: view === value }} onPress={() => setView(value)}
         style={{ flex: 1, paddingVertical: 10, borderRadius: 999, alignItems: 'center', backgroundColor: view === value ? brand.navy : brand.card, borderWidth: 1, borderColor: view === value ? brand.navy : brand.line }}>
         <Text style={{ fontFamily: fonts.label, color: view === value ? '#FFFFFF' : brand.ink }}>{value === 'upcoming' ? 'Upcoming' : 'Archive'}</Text>
-      </TouchableOpacity>)}
+      </PressableScale>)}
     </View>
     {!!error && <Text accessibilityRole="alert" style={styles.alert}>{error}</Text>}
     {loading && !data.length && <Text style={styles.text}>Loading your events…</Text>}
@@ -52,9 +53,9 @@ export default function TeamTab() {
       <Text style={styles.text}>{new Date(event.date).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}{event.location ? ` · ${event.location}` : ''}</Text>
       {!!event.duty && <Text style={styles.text}>Your role: {event.duty}</Text>}
       {view === 'upcoming' && <Button label="Start check-in" onPress={() => router.push(`/check-in/${event.id}`)} />}
-      {event.canSeeRoster && <TouchableOpacity accessibilityRole="button" onPress={() => setRosterEvent(rosterEvent === event.id ? null : event.id)}>
+      {event.canSeeRoster && <PressableScale accessibilityRole="button" onPress={() => setRosterEvent(rosterEvent === event.id ? null : event.id)}>
         <Text style={{ color: brand.primary, fontFamily: fonts.label, textAlign: 'center', paddingVertical: 6 }}>{rosterEvent === event.id ? 'Hide registered people' : 'See who’s registered'}</Text>
-      </TouchableOpacity>}
+      </PressableScale>}
       {rosterEvent === event.id && <EventAttendanceRoster eventId={event.id} />}
     </View>)}
     <Button label={loading ? 'Refreshing…' : 'Refresh'} disabled={loading} onPress={() => void reload()} />

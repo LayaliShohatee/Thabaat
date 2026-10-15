@@ -1,4 +1,5 @@
-import { View, Text, Pressable, Image, StyleSheet } from 'react-native'
+import { View, Text, Image, StyleSheet } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
 import { brand, fonts, shadow } from '@/constants/brand'
 import { router } from 'expo-router'
 import { Event } from '@/types'
@@ -27,11 +28,10 @@ export default function EventCard({ event }: Props) {
   })
 
   return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.card,
-        pressed && styles.cardPressed,
-      ]}
+    <PressableScale
+      accessibilityRole="button"
+      accessibilityLabel={`${event.title}, ${formattedDate} at ${formattedTime}`}
+      style={styles.card}
       onPress={handlePress}
     >
       <View>
@@ -78,7 +78,7 @@ export default function EventCard({ event }: Props) {
           View and register →
         </Text>
       </View>
-    </Pressable>
+    </PressableScale>
   )
 }
 
@@ -90,7 +90,6 @@ const styles = StyleSheet.create({
     borderRadius: brand.radius,
     overflow: 'hidden',
   },
-  cardPressed: { opacity: 0.8 },
   image: { width: '100%', height: 180 },
   imagePlaceholder: {
     width: '100%',

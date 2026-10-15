@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { Linking, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { Linking, ScrollView, Text, View } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
 import { brand, fonts, links } from '@/constants/brand'
 import { managementStyles as styles } from '@/components/ManagementUI'
 
@@ -21,12 +22,12 @@ export default function FaqScreen() {
  return <ScrollView style={styles.page} contentContainerStyle={[styles.content, { paddingTop: 20 }]}>
   <Text style={styles.title}>Questions? We’ve got you.</Text>
   {faqs.map((item, index) => <View key={item.q} style={[styles.card, { gap: 8, paddingVertical: 14 }]}>
-   <TouchableOpacity accessibilityRole="button" accessibilityState={{ expanded: open === index }} onPress={() => setOpen(open === index ? null : index)} style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
+   <PressableScale accessibilityRole="button" accessibilityState={{ expanded: open === index }} onPress={() => setOpen(open === index ? null : index)} style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
     <Text style={[styles.heading, { flex: 1, fontSize: 16 }]}>{item.q}</Text>
     <Text style={{ color: brand.primary, fontFamily: fonts.heading, fontSize: 18 }}>{open === index ? '−' : '+'}</Text>
-   </TouchableOpacity>
+   </PressableScale>
    {open === index && <Text style={styles.text}>{item.a}</Text>}
   </View>)}
-  <TouchableOpacity accessibilityRole="button" onPress={() => void Linking.openURL(`mailto:${links.email}`)}><Text style={{ color: brand.primary, fontFamily: fonts.label, textAlign: 'center', fontSize: 15 }}>Still stuck? Email {links.email}</Text></TouchableOpacity>
+  <PressableScale accessibilityRole="button" onPress={() => void Linking.openURL(`mailto:${links.email}`)}><Text style={{ color: brand.primary, fontFamily: fonts.label, textAlign: 'center', fontSize: 15 }}>Still stuck? Email {links.email}</Text></PressableScale>
  </ScrollView>
 }

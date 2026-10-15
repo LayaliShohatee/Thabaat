@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { ScrollView, Text, TextInput, View } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
 import { router } from 'expo-router'
 import { brand, fonts } from '@/constants/brand'
 import { useFocusResource } from '@/hooks/useFocusResource'
@@ -27,23 +28,23 @@ export default function AdminTab() {
  return <ScrollView style={styles.page} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
   <Text style={styles.title}>Admin</Text>
   {data.permissions?.can_manage_roles && <View style={[styles.card, { gap: 0, paddingVertical: 4 }]}>
-   {SHORTCUTS.map(([label, href]) => <TouchableOpacity key={href} accessibilityRole="button" onPress={() => router.push(href)} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 13, borderBottomWidth: 1, borderColor: brand.line }}>
+   {SHORTCUTS.map(([label, href]) => <PressableScale key={href} accessibilityRole="button" onPress={() => router.push(href)} style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 13, borderBottomWidth: 1, borderColor: brand.line }}>
     <Text style={{ color: brand.ink, fontSize: 15, fontFamily: fonts.label }}>{label}</Text><Text style={{ color: brand.inkMuted }}>›</Text>
-   </TouchableOpacity>)}
+   </PressableScale>)}
   </View>}
   <Text style={[styles.heading, { marginTop: 6 }]}>Events</Text>
   {!!(error || data.setupError) && <Text accessibilityRole="alert" style={styles.alert}>{error || data.setupError}</Text>}
   {data.permissions?.can_manage_events && <Button label="+ Create event" onPress={() => router.push('/admin/event/new')} />}
   <TextInput accessibilityLabel="Search events" placeholder="Search title or location" placeholderTextColor={brand.inkMuted} value={search} onChangeText={setSearch} style={styles.input} />
-  {events.map(event => <TouchableOpacity key={event.id} accessibilityRole="button" accessibilityLabel={`Manage ${event.title}`} onPress={() => router.push(`/admin/manage/${event.id}`)}
+  {events.map(event => <PressableScale key={event.id} accessibilityRole="button" accessibilityLabel={`Manage ${event.title}`} onPress={() => router.push(`/admin/manage/${event.id}`)}
    style={[styles.card, { flexDirection: 'row', alignItems: 'center', gap: 12 }]}>
    <View style={{ flex: 1, gap: 4 }}>
     <Text style={styles.heading}>{event.title}</Text>
     <Text style={styles.text}>{formatEventTime(event.event_date, event.timezone || EVENT_TZ)} · {event.location}{time(event) < now ? ' · Past' : ''}</Text>
    </View>
    <Text style={{ color: brand.primary, fontFamily: fonts.label }}>Manage ›</Text>
-  </TouchableOpacity>)}
+  </PressableScale>)}
   {!loading && !events.length && <Text style={styles.text}>{search ? 'No matching events.' : 'No events to manage yet.'}</Text>}
-  <TouchableOpacity accessibilityRole="button" disabled={loading} onPress={() => void reload()}><Text style={{ color: brand.primary, fontFamily: fonts.label, textAlign: 'center' }}>{loading ? 'Refreshing…' : 'Refresh'}</Text></TouchableOpacity>
+  <PressableScale accessibilityRole="button" disabled={loading} onPress={() => void reload()}><Text style={{ color: brand.primary, fontFamily: fonts.label, textAlign: 'center' }}>{loading ? 'Refreshing…' : 'Refresh'}</Text></PressableScale>
  </ScrollView>
 }

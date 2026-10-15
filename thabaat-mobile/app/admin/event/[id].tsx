@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
-import { ScrollView, Switch, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { ScrollView, Switch, Text, TextInput, View } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
 import { Stack, router, useLocalSearchParams } from 'expo-router'
 import { brand, fonts } from '@/constants/brand'
 import { useFocusResource } from '@/hooks/useFocusResource'
@@ -61,10 +62,10 @@ export default function EventEditor() {
  return <><Stack.Screen options={{ title }} />
   <ScrollView style={styles.page} contentContainerStyle={[styles.content, { paddingTop: 20 }]} keyboardShouldPersistTaps="handled">
    <View style={{ flexDirection: 'row', gap: 10 }}>
-    {EVENT_TYPES.map(t => <TouchableOpacity key={t.id} accessibilityRole="radio" accessibilityState={{ selected: form.type === t.id }} onPress={() => setForm(withEventType(form, t.id))}
+    {EVENT_TYPES.map(t => <PressableScale key={t.id} accessibilityRole="radio" accessibilityState={{ selected: form.type === t.id }} onPress={() => setForm(withEventType(form, t.id))}
      style={{ flex: 1, padding: 14, borderRadius: brand.radiusSmall, borderWidth: 2, borderColor: form.type === t.id ? brand.primary : brand.line, backgroundColor: form.type === t.id ? brand.primarySoft : brand.card }}>
      <Text style={{ fontFamily: fonts.heading, color: brand.ink, fontSize: 16 }}>{t.label}</Text><Text style={styles.text}>{t.note}</Text>
-    </TouchableOpacity>)}
+    </PressableScale>)}
    </View>
 
    <View style={[styles.card, { borderWidth: 2, borderColor: brand.gold, backgroundColor: '#FFFDF7', gap: 16 }]}>
@@ -91,6 +92,6 @@ export default function EventEditor() {
    {!!message && <Text accessibilityRole="alert" style={styles.alert}>{message}</Text>}
    {missing.length > 0 && <Text style={styles.text}>Still needed: {missing.join(', ')}.</Text>}
    <Button label={busy ? 'Saving…' : isNew ? 'Create event' : 'Save changes'} disabled={busy || missing.length > 0} onPress={save} />
-   <TouchableOpacity accessibilityRole="button" disabled={busy} onPress={() => router.back()}><Text style={{ color: brand.inkMuted, fontFamily: fonts.label, textAlign: 'center', paddingVertical: 8 }}>Cancel</Text></TouchableOpacity>
+   <PressableScale accessibilityRole="button" disabled={busy} onPress={() => router.back()}><Text style={{ color: brand.inkMuted, fontFamily: fonts.label, textAlign: 'center', paddingVertical: 8 }}>Cancel</Text></PressableScale>
   </ScrollView></>
 }

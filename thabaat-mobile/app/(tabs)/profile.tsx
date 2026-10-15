@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { brand, fonts, links, shadow } from '@/constants/brand'
-import { Linking, ScrollView, Text, TouchableOpacity, StyleSheet, View } from 'react-native'
+import { Linking, ScrollView, Text, StyleSheet, View } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { supabase } from '@/lib/supabase'
 import { useAuth } from '@/hooks/useAuth'
@@ -25,9 +26,9 @@ export default function AccountScreen() {
   }
   const name = user?.user_metadata?.full_name || 'Thabaat member'
   const initials = String(name).split(/\s+/).map((part: string) => part[0]).join('').slice(0, 2).toUpperCase()
-  const row = (label: string, onPress: () => void) => <TouchableOpacity key={label} accessibilityRole="button" disabled={busy} style={styles.row} onPress={onPress}>
+  const row = (label: string, onPress: () => void) => <PressableScale key={label} accessibilityRole="button" disabled={busy} style={styles.row} onPress={onPress}>
     <Text style={styles.rowText}>{label}</Text><Text style={styles.chevron}>›</Text>
-  </TouchableOpacity>
+  </PressableScale>
   return <ScrollView style={styles.screen} contentContainerStyle={[styles.container, { paddingTop: insets.top + 24 }]}>
     <Text style={styles.title}>Account</Text>
     <View style={styles.identity}>
@@ -43,7 +44,7 @@ export default function AccountScreen() {
       {row('FAQ', () => router.push('/faq'))}
       {row('Follow Thabaat', () => void Linking.openURL(links.social))}
     </View>
-    <TouchableOpacity accessibilityRole="button" style={styles.logout} disabled={busy} onPress={logout}><Text style={styles.logoutText}>{busy ? 'Please wait…' : 'Log out'}</Text></TouchableOpacity>
+    <PressableScale accessibilityRole="button" style={styles.logout} disabled={busy} onPress={logout}><Text style={styles.logoutText}>{busy ? 'Please wait…' : 'Log out'}</Text></PressableScale>
     {message ? <Text style={styles.detail} accessibilityRole="alert">{message}</Text> : null}
   </ScrollView>
 }

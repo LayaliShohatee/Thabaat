@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
-import { Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Text, TextInput, View } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
 import { brand, fonts } from '@/constants/brand'
 import { useFocusResource } from '@/hooks/useFocusResource'
 import { getStaffReport, saveVolunteerAssignment, type StaffReport } from '@/services/staffService'
@@ -45,8 +46,8 @@ export function EventVolunteers({ eventId }: { eventId: string }) {
     <Text style={{ fontFamily: fonts.label, color: brand.ink, fontSize: 15 }}>{v.full_name}{v.active ? '' : ' · removed'}</Text>
     <Text style={styles.text}>{v.duty} · {formatEventTime(v.shift_start, undefined, { hour: 'numeric', minute: '2-digit' })}–{formatEventTime(v.shift_end, undefined, { hour: 'numeric', minute: '2-digit' })} · {v.reviewed_hours} hrs</Text>
     <View style={{ flexDirection: 'row', gap: 16 }}>
-     <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Edit shift for ${v.full_name}`} disabled={busy} onPress={() => setDraft({ userId: v.user_id!, name: v.full_name || 'Volunteer', duty: v.duty, start: isoToWallTime(v.shift_start), end: isoToWallTime(v.shift_end), hours: String(v.reviewed_hours) })}><Text style={{ color: brand.primary, fontFamily: fonts.label }}>Edit</Text></TouchableOpacity>
-     {v.active && <TouchableOpacity accessibilityRole="button" accessibilityLabel={`Remove ${v.full_name}`} disabled={busy} onPress={() => void run(() => saveVolunteerAssignment({ eventId, userId: v.user_id!, duty: v.duty, start: v.shift_start, end: v.shift_end, active: false, hours: Number(v.reviewed_hours) }), `${v.full_name} removed from this event.`)}><Text style={{ color: brand.danger, fontFamily: fonts.label }}>Remove</Text></TouchableOpacity>}
+     <PressableScale accessibilityRole="button" accessibilityLabel={`Edit shift for ${v.full_name}`} disabled={busy} onPress={() => setDraft({ userId: v.user_id!, name: v.full_name || 'Volunteer', duty: v.duty, start: isoToWallTime(v.shift_start), end: isoToWallTime(v.shift_end), hours: String(v.reviewed_hours) })}><Text style={{ color: brand.primary, fontFamily: fonts.label }}>Edit</Text></PressableScale>
+     {v.active && <PressableScale accessibilityRole="button" accessibilityLabel={`Remove ${v.full_name}`} disabled={busy} onPress={() => void run(() => saveVolunteerAssignment({ eventId, userId: v.user_id!, duty: v.duty, start: v.shift_start, end: v.shift_end, active: false, hours: Number(v.reviewed_hours) }), `${v.full_name} removed from this event.`)}><Text style={{ color: brand.danger, fontFamily: fonts.label }}>Remove</Text></PressableScale>}
     </View>
    </View>)}
   </View>
@@ -60,18 +61,18 @@ export function EventVolunteers({ eventId }: { eventId: string }) {
    <Text style={[styles.text, { color: brand.ink }]}>Hours to credit (after the shift)</Text>
    <TextInput accessibilityLabel="Reviewed hours" style={styles.input} value={draft.hours} onChangeText={hours => setDraft({ ...draft, hours })} keyboardType="decimal-pad" />
    <Button label={busy ? 'Saving…' : 'Save shift'} disabled={busy} onPress={save} />
-   <TouchableOpacity accessibilityRole="button" onPress={() => setDraft(null)}><Text style={{ color: brand.inkMuted, fontFamily: fonts.label, textAlign: 'center' }}>Cancel</Text></TouchableOpacity>
+   <PressableScale accessibilityRole="button" onPress={() => setDraft(null)}><Text style={{ color: brand.inkMuted, fontFamily: fonts.label, textAlign: 'center' }}>Cancel</Text></PressableScale>
   </View> : <View style={styles.card}>
    <Text style={styles.heading}>Add a volunteer</Text>
    {!available.length && <Text style={styles.text}>No more approved volunteers to add. Give someone the volunteer role under Admin → Roles and access.</Text>}
    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-    {available.map(v => <TouchableOpacity key={v.user_id} accessibilityRole="button" accessibilityLabel={`Assign ${v.full_name}`} disabled={busy} onPress={() => startDraft(v.user_id, v.full_name)}
-     style={{ paddingVertical: 9, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1, borderColor: brand.primary }}><Text style={{ color: brand.primary, fontFamily: fonts.label }}>+ {v.full_name}</Text></TouchableOpacity>)}
+    {available.map(v => <PressableScale key={v.user_id} accessibilityRole="button" accessibilityLabel={`Assign ${v.full_name}`} disabled={busy} onPress={() => startDraft(v.user_id, v.full_name)}
+     style={{ paddingVertical: 9, paddingHorizontal: 14, borderRadius: 999, borderWidth: 1, borderColor: brand.primary }}><Text style={{ color: brand.primary, fontFamily: fonts.label }}>+ {v.full_name}</Text></PressableScale>)}
    </View>
   </View>}
 
-  {report.volunteers.length > 0 && <TouchableOpacity accessibilityRole="button" disabled={busy} onPress={() => void run(async () => { const fresh = await getStaffReport(eventId); await exportCsvFile(volunteerHoursCsv(fresh), 'thabaat-volunteers.csv', 'Thabaat volunteer hours') }, 'Volunteer hours exported.')}>
+  {report.volunteers.length > 0 && <PressableScale accessibilityRole="button" disabled={busy} onPress={() => void run(async () => { const fresh = await getStaffReport(eventId); await exportCsvFile(volunteerHoursCsv(fresh), 'thabaat-volunteers.csv', 'Thabaat volunteer hours') }, 'Volunteer hours exported.')}>
    <Text style={{ color: brand.primary, fontFamily: fonts.label, textAlign: 'center' }}>Export volunteer hours (CSV)</Text>
-  </TouchableOpacity>}
+  </PressableScale>}
  </View>
 }

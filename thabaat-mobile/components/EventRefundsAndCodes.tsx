@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
-import { Switch, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Switch, Text, TextInput, View } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
 import { brand, fonts } from '@/constants/brand'
 import { useFocusResource } from '@/hooks/useFocusResource'
 import { listPromoCodes, listRefundRequests, reviewRefundRequest, savePromoCode, setPromoCodeTicketType, setRefundDeadline, type PromoCode, type RefundRequest } from '@/services/refundDiscountService'
@@ -27,7 +28,7 @@ export function EventRefundsAndCodes({eventId,refundDeadline}:{eventId:string;re
    setForm(null)
   },'Coupon saved.')
  }
- const pill=(label:string,selected:boolean,onPress:()=>void)=><TouchableOpacity key={label} accessibilityRole="radio" accessibilityState={{selected}} onPress={onPress} style={{paddingVertical:8,paddingHorizontal:12,borderRadius:999,borderWidth:1,borderColor:selected?brand.primary:brand.line,backgroundColor:selected?brand.primarySoft:brand.card}}><Text style={{color:brand.ink,fontFamily:fonts.label,fontSize:14}}>{label}</Text></TouchableOpacity>
+ const pill=(label:string,selected:boolean,onPress:()=>void)=><PressableScale key={label} accessibilityRole="radio" accessibilityState={{selected}} onPress={onPress} style={{paddingVertical:8,paddingHorizontal:12,borderRadius:999,borderWidth:1,borderColor:selected?brand.primary:brand.line,backgroundColor:selected?brand.primarySoft:brand.card}}><Text style={{color:brand.ink,fontFamily:fonts.label,fontSize:14}}>{label}</Text></PressableScale>
  return <>
  {!!(error||message)&&<Text accessibilityRole="alert" style={styles.alert}>{error||message}</Text>}
  <View style={styles.card}>
@@ -37,7 +38,7 @@ export function EventRefundsAndCodes({eventId,refundDeadline}:{eventId:string;re
    <View style={{flexDirection:'row',justifyContent:'space-between'}}><Text style={{fontFamily:fonts.heading,color:brand.ink,fontSize:15}}>{c.code}</Text><Text style={{fontFamily:fonts.label,color:brand.primary}}>{c.percent_off?`${c.percent_off}% off`:`${money(c.amount_off_cents||0)} off`}</Text></View>
    <Text style={styles.text}>Applies to: {couponTicketLabel(c,data.tickets)}</Text>
    <Text style={styles.text}>Used {c.uses}{c.max_uses?` of ${c.max_uses}`:''}{c.expires_at?` · ends ${formatEventTime(c.expires_at)}`:''}{c.active?'':' · paused'}</Text>
-   {c.event_id&&<TouchableOpacity accessibilityRole="button" accessibilityLabel={`Edit coupon ${c.code}`} disabled={busy} onPress={()=>setForm({id:c.id,code:c.code,kind:c.percent_off?'percent':'amount',value:String(c.percent_off??(c.amount_off_cents||0)/100),max_uses:c.max_uses?String(c.max_uses):'',expires:c.expires_at?isoToWallTime(c.expires_at):null,active:c.active,ticket_type_id:c.ticket_type_id??null,saved_ticket_type_id:c.ticket_type_id??null})}><Text style={{color:brand.primary,fontFamily:fonts.label}}>Edit</Text></TouchableOpacity>}
+   {c.event_id&&<PressableScale accessibilityRole="button" accessibilityLabel={`Edit coupon ${c.code}`} disabled={busy} onPress={()=>setForm({id:c.id,code:c.code,kind:c.percent_off?'percent':'amount',value:String(c.percent_off??(c.amount_off_cents||0)/100),max_uses:c.max_uses?String(c.max_uses):'',expires:c.expires_at?isoToWallTime(c.expires_at):null,active:c.active,ticket_type_id:c.ticket_type_id??null,saved_ticket_type_id:c.ticket_type_id??null})}><Text style={{color:brand.primary,fontFamily:fonts.label}}>Edit</Text></PressableScale>}
   </View>)}
   {!form&&<Button label="+ Add coupon" disabled={busy} onPress={()=>setForm({...blank})}/>}
   {form&&<View style={{gap:10}}>
@@ -50,7 +51,7 @@ export function EventRefundsAndCodes({eventId,refundDeadline}:{eventId:string;re
    <DateTimeField label="Coupon ends (optional)" value={form.expires} onChange={expires=>setForm({...form,expires})} optional/>
    <View style={{flexDirection:'row',alignItems:'center',justifyContent:'space-between'}}><Text style={styles.text}>Active</Text><Switch accessibilityLabel="Coupon active" value={form.active} onValueChange={active=>setForm({...form,active})}/></View>
    <Button label={busy?'Saving…':'Save coupon'} disabled={busy} onPress={saveCode}/>
-   <TouchableOpacity accessibilityRole="button" onPress={()=>setForm(null)}><Text style={{color:brand.inkMuted,fontFamily:fonts.label,textAlign:'center'}}>Cancel</Text></TouchableOpacity>
+   <PressableScale accessibilityRole="button" onPress={()=>setForm(null)}><Text style={{color:brand.inkMuted,fontFamily:fonts.label,textAlign:'center'}}>Cancel</Text></PressableScale>
   </View>}
  </View>
  <View style={styles.card}>

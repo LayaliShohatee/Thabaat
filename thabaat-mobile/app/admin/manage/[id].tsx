@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { ScrollView, Text, View } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
 import { Stack, router, useLocalSearchParams } from 'expo-router'
 import { brand, fonts } from '@/constants/brand'
 import { useFocusResource } from '@/hooks/useFocusResource'
@@ -36,9 +37,9 @@ export default function ManageEvent() {
   locked.current = true; setBusy(true); setMessage('')
   try { await action() } catch (e) { setMessage(e instanceof Error ? e.message : 'Request failed') } finally { locked.current = false; setBusy(false) }
  }
- const link = (label: string, onPress: () => void, color: string = brand.primary) => <TouchableOpacity accessibilityRole="button" disabled={busy} onPress={onPress} style={{ paddingVertical: 13, borderTopWidth: 1, borderColor: brand.line, flexDirection: 'row', justifyContent: 'space-between' }}>
+ const link = (label: string, onPress: () => void, color: string = brand.primary) => <PressableScale accessibilityRole="button" disabled={busy} onPress={onPress} style={{ paddingVertical: 13, borderTopWidth: 1, borderColor: brand.line, flexDirection: 'row', justifyContent: 'space-between' }}>
   <Text style={{ color, fontFamily: fonts.label, fontSize: 15 }}>{label}</Text><Text style={{ color: brand.inkMuted }}>›</Text>
- </TouchableOpacity>
+ </PressableScale>
 
  if (!data) return <><Stack.Screen options={{ title: 'Manage event' }} /><View style={[styles.page, styles.content, { paddingTop: 20 }]}>{error ? <Text accessibilityRole="alert" style={styles.alert}>{error}</Text> : <Text style={styles.text}>{loading ? 'Loading event…' : ''}</Text>}</View></>
  const { event, isAdmin } = data
@@ -51,10 +52,10 @@ export default function ManageEvent() {
     <Text style={styles.text}>{formatEventTime(event.event_date, tz, { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })} · {event.location}</Text>
    </View>
    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-    {SECTIONS.map(([value, label]) => <TouchableOpacity key={value} accessibilityRole="tab" accessibilityState={{ selected: section === value }} onPress={() => setSection(value)}
+    {SECTIONS.map(([value, label]) => <PressableScale key={value} accessibilityRole="tab" accessibilityState={{ selected: section === value }} onPress={() => setSection(value)}
      style={{ paddingVertical: 9, paddingHorizontal: 14, borderRadius: 999, backgroundColor: section === value ? brand.navy : brand.card, borderWidth: 1, borderColor: section === value ? brand.navy : brand.line }}>
      <Text style={{ color: section === value ? '#FFFFFF' : brand.ink, fontFamily: fonts.label }}>{label}</Text>
-    </TouchableOpacity>)}
+    </PressableScale>)}
    </View>
    {!!message && <Text accessibilityRole="alert" style={styles.alert}>{message}</Text>}
 
@@ -73,7 +74,7 @@ export default function ManageEvent() {
     {confirmArchive && <View style={styles.card}>
      <Text style={styles.text}>Archive this event? It disappears from listings and registration closes. Existing bookings must be resolved first.</Text>
      <Button label={busy ? 'Archiving…' : 'Yes, archive'} disabled={busy} onPress={() => void run(async () => { await archiveEvent(event.id); router.back() })} />
-     <TouchableOpacity accessibilityRole="button" onPress={() => setConfirmArchive(false)}><Text style={{ color: brand.inkMuted, fontFamily: fonts.label, textAlign: 'center' }}>Keep event</Text></TouchableOpacity>
+     <PressableScale accessibilityRole="button" onPress={() => setConfirmArchive(false)}><Text style={{ color: brand.inkMuted, fontFamily: fonts.label, textAlign: 'center' }}>Keep event</Text></PressableScale>
     </View>}
     {isAdmin && showPublic && <PublicEventPublisher event={event} />}
    </>}
@@ -82,9 +83,9 @@ export default function ManageEvent() {
    {section === 'attendees' && <>
     <Button label="Start check-in" onPress={() => router.push(`/check-in/${event.id}`)} />
     <EventAttendees eventId={event.id} />
-    <TouchableOpacity accessibilityRole="button" disabled={busy} onPress={() => void run(async () => { await exportCsvFile(eventRegistrationCsv(await getStaffReport(event.id)), 'thabaat-registrations.csv', 'Thabaat registrations'); setMessage('Registrations exported. Contact details are left out.') })}>
+    <PressableScale accessibilityRole="button" disabled={busy} onPress={() => void run(async () => { await exportCsvFile(eventRegistrationCsv(await getStaffReport(event.id)), 'thabaat-registrations.csv', 'Thabaat registrations'); setMessage('Registrations exported. Contact details are left out.') })}>
      <Text style={{ color: brand.primary, fontFamily: fonts.label, textAlign: 'center' }}>Export registrations (CSV)</Text>
-    </TouchableOpacity>
+    </PressableScale>
    </>}
   </ScrollView></>
 }

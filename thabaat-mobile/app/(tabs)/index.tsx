@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
-import { Linking, RefreshControl, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Linking, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
 import { router } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { brand, fonts, links, shadow } from '@/constants/brand'
@@ -32,21 +33,21 @@ export default function HomeScreen() {
       <Text style={styles.heroText}>A community for young professionals in Southeast Michigan to grow socially, spiritually and professionally.</Text>
     </View>
 
-    {next && <TouchableOpacity accessibilityRole="button" style={styles.nextCard} onPress={() => router.push(`/ticket/${next.id}`)}>
+    {next && <PressableScale accessibilityRole="button" style={styles.nextCard} onPress={() => router.push(`/ticket/${next.id}`)}>
       <Text style={styles.nextLabel}>YOUR NEXT EVENT</Text>
       <Text style={styles.nextTitle}>{next.event?.title}</Text>
       <Text style={styles.nextMeta}>{new Date(next.event!.event_date).toLocaleString('en-US', { weekday: 'long', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</Text>
       <Text style={styles.nextAction}>Open ticket →</Text>
-    </TouchableOpacity>}
+    </PressableScale>}
 
     <View style={styles.quickRow}>
       {([['Events', () => router.push('/(tabs)/events')], ['FAQ', () => router.push('/faq')], ['Follow us', () => void Linking.openURL(links.social)]] as const).map(([label, onPress]) =>
-        <TouchableOpacity key={label} accessibilityRole="button" style={styles.quick} onPress={onPress}><Text style={styles.quickText}>{label}</Text></TouchableOpacity>)}
+        <PressableScale key={label} accessibilityRole="button" style={styles.quick} onPress={onPress}><Text style={styles.quickText}>{label}</Text></PressableScale>)}
     </View>
 
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionTitle}>Coming up</Text>
-      <TouchableOpacity accessibilityRole="button" onPress={() => router.push('/(tabs)/events')}><Text style={styles.seeAll}>See all</Text></TouchableOpacity>
+      <PressableScale accessibilityRole="button" onPress={() => router.push('/(tabs)/events')}><Text style={styles.seeAll}>See all</Text></PressableScale>
     </View>
     {!!error && !events.length && <Text accessibilityRole="alert" style={styles.muted}>Unable to load events. Pull down to try again.</Text>}
     {!loading && !error && !events.length && <Text style={styles.muted}>No upcoming events yet. Check back soon.</Text>}

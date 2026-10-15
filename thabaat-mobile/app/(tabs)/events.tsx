@@ -4,16 +4,8 @@ import { useLocalSearchParams } from 'expo-router'
 import MyTickets from '@/components/events/MyTickets'
 import { filterEvents, EventWindow } from '@/lib/event-discovery'
 import { useState } from 'react'
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  ActivityIndicator,
-  RefreshControl,
-  TextInput,
-  TouchableOpacity,
-} from 'react-native'
+import { View, Text, FlatList, StyleSheet, ActivityIndicator, RefreshControl, TextInput } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
 
 import { useEvents } from '@/hooks/useEvents'
 import EventCard from '@/components/events/EventCard'
@@ -27,9 +19,9 @@ export default function EventsScreen() {
   const [linkedView, setLinkedView] = useState(params.view)
   if (params.view !== linkedView) { setLinkedView(params.view); if (params.view === 'tickets' || params.view === 'upcoming') setView(params.view) }
   const switcher = <View style={[styles.segment, { marginTop: insets.top + 16 }]}>
-    {(['upcoming', 'tickets'] as const).map(value => <TouchableOpacity key={value} accessibilityRole="tab" accessibilityState={{ selected: view === value }} onPress={() => setView(value)} style={[styles.segmentItem, view === value && styles.segmentSelected]}>
+    {(['upcoming', 'tickets'] as const).map(value => <PressableScale key={value} accessibilityRole="tab" accessibilityState={{ selected: view === value }} onPress={() => setView(value)} style={[styles.segmentItem, view === value && styles.segmentSelected]}>
       <Text style={[styles.segmentText, view === value && styles.segmentSelectedText]}>{value === 'upcoming' ? 'Upcoming' : 'My tickets'}</Text>
-    </TouchableOpacity>)}
+    </PressableScale>)}
   </View>
   const [search, setSearch] = useState('')
   const [window, setWindow] = useState<EventWindow>('all')
@@ -64,7 +56,7 @@ export default function EventsScreen() {
         <Text style={styles.errorText}>
           {error}
         </Text>
-        <TouchableOpacity accessibilityRole="button" onPress={refetch}><Text style={styles.retry}>Try again</Text></TouchableOpacity>
+        <PressableScale accessibilityRole="button" onPress={refetch}><Text style={styles.retry}>Try again</Text></PressableScale>
       </View>
     )
   }
@@ -94,13 +86,13 @@ export default function EventsScreen() {
         <View style={styles.header}>
           <Text style={styles.filterLabel}>When</Text>
           <View style={styles.filters}>
-            {([['all', 'All upcoming'], ['week', 'Next 7 days'], ['month', 'Next month']] as const).map(([value, label]) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: window === value }} style={[styles.filter, window === value && styles.selectedFilter]} onPress={() => setWindow(value)}><Text style={[styles.filterText, window === value && styles.selectedFilterText]}>{label}</Text></TouchableOpacity>)}
+            {([['all', 'All upcoming'], ['week', 'Next 7 days'], ['month', 'Next month']] as const).map(([value, label]) => <PressableScale key={value} accessibilityRole="button" accessibilityState={{ selected: window === value }} style={[styles.filter, window === value && styles.selectedFilter]} onPress={() => setWindow(value)}><Text style={[styles.filterText, window === value && styles.selectedFilterText]}>{label}</Text></PressableScale>)}
           </View>
           <Text style={styles.filterLabel}>Venue</Text>
           <View style={styles.filters}>
-            {['', ...Array.from(new Set(events.map(event => event.location).filter(Boolean))).sort()].map(value => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: location === value }} style={[styles.filter, location === value && styles.selectedFilter]} onPress={() => setLocation(value)}><Text style={[styles.filterText, location === value && styles.selectedFilterText]}>{value || 'All venues'}</Text></TouchableOpacity>)}
+            {['', ...Array.from(new Set(events.map(event => event.location).filter(Boolean))).sort()].map(value => <PressableScale key={value} accessibilityRole="button" accessibilityState={{ selected: location === value }} style={[styles.filter, location === value && styles.selectedFilter]} onPress={() => setLocation(value)}><Text style={[styles.filterText, location === value && styles.selectedFilterText]}>{value || 'All venues'}</Text></PressableScale>)}
           </View>
-          {Boolean(search || window !== 'all' || location) && <TouchableOpacity accessibilityRole="button" onPress={() => { setSearch(''); setWindow('all'); setLocation('') }}><Text style={styles.filterLabel}>Clear filters</Text></TouchableOpacity>}
+          {Boolean(search || window !== 'all' || location) && <PressableScale accessibilityRole="button" onPress={() => { setSearch(''); setWindow('all'); setLocation('') }}><Text style={styles.filterLabel}>Clear filters</Text></PressableScale>}
           {Boolean(error) && <Text accessibilityRole="alert" style={styles.errorText}>Refresh failed: {error}</Text>}
 
         </View>
