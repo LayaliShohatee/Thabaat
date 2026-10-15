@@ -52,7 +52,7 @@ export default function ManageEvent() {
     <Text style={styles.text}>{formatEventTime(event.event_date, tz, { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' })} · {event.location}</Text>
    </View>
    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-    {SECTIONS.map(([value, label]) => <PressableScale key={value} accessibilityRole="tab" accessibilityState={{ selected: section === value }} onPress={() => setSection(value)} hitSlop={4}
+    {SECTIONS.map(([value, label]) => <PressableScale key={value} accessibilityRole="tab" accessibilityState={{ selected: section === value }} onPress={() => setSection(value)} haptic="selection" hitSlop={4}
      style={{ paddingVertical: 9, paddingHorizontal: 14, borderRadius: 999, backgroundColor: section === value ? brand.navy : brand.card, borderWidth: 1, borderColor: section === value ? brand.navy : brand.line }}>
      <Text style={{ color: section === value ? '#FFFFFF' : brand.ink, fontFamily: fonts.label }}>{label}</Text>
     </PressableScale>)}

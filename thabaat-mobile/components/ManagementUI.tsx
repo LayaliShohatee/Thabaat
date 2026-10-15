@@ -3,7 +3,7 @@ import { PressableScale } from './PressableScale'
 import { brand, fonts, shadow } from '@/constants/brand'
 // A light selectable pill for filters and choices, so only real actions use the solid button style.
 export function ManagementChip({label,selected,onPress,disabled=false}:{label:string;selected:boolean;onPress:()=>void;disabled?:boolean}) {
- return <PressableScale accessibilityRole="radio" accessibilityLabel={label} accessibilityState={{selected,disabled}} disabled={disabled} onPress={onPress} hitSlop={{top:6,bottom:6,left:2,right:2}} style={{paddingVertical:8,paddingHorizontal:12,borderRadius:999,borderWidth:1,borderColor:selected?brand.primary:brand.line,backgroundColor:selected?brand.primarySoft:brand.card}}><Text style={{color:brand.ink,fontFamily:fonts.label,fontSize:14}}>{label}</Text></PressableScale>
+ return <PressableScale accessibilityRole="radio" accessibilityLabel={label} accessibilityState={{selected,disabled}} disabled={disabled} onPress={onPress} haptic="selection" hitSlop={{top:6,bottom:6,left:2,right:2}} style={{paddingVertical:8,paddingHorizontal:12,borderRadius:999,borderWidth:1,borderColor:selected?brand.primary:brand.line,backgroundColor:selected?brand.primarySoft:brand.card}}><Text style={{color:brand.ink,fontFamily:fonts.label,fontSize:14}}>{label}</Text></PressableScale>
 }
 // A quiet text action, for secondary things like Edit, Cancel and Refresh.
 export function ManagementLink({label,onPress,disabled=false,color=brand.primary,center=false}:{label:string;onPress:()=>void;disabled?:boolean;color?:string;center?:boolean}) {
