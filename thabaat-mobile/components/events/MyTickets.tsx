@@ -1,21 +1,17 @@
 import { useFocusResource } from '@/hooks/useFocusResource'
-import { brand } from '@/constants/brand'
-import {
-  View,
-  Text,
-  FlatList,
-  TouchableOpacity,
-  StyleSheet,
-  ActivityIndicator
-} from 'react-native'
+import { brand, fonts } from '@/constants/brand'
+import { View, Text, FlatList, StyleSheet, ActivityIndicator } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
 import { router } from 'expo-router'
 import { useCallback, useRef, useState } from 'react'
 import { cancelFreeRegistration, getUserRegistrations } from '@/services/registrationService'
 import { useAuth } from '@/hooks/useAuth'
 import { requestRefund } from '@/services/refundDiscountService'
 import { Registration } from '@/types'
+import { sortTickets } from '@/lib/ticket-order'
 
-export default function MyEventsScreen() {
+// The caller's bookings, shown under Events → My tickets.
+export default function MyTickets() {
   const { user } = useAuth()
   const [now] = useState(Date.now)
   const [busy, setBusy] = useState<string | null>(null)
@@ -45,34 +41,34 @@ export default function MyEventsScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={brand.green} />
+        <ActivityIndicator size="large" color={brand.primary} />
       </View>
     )
   }
 
-  if (error) return <View style={styles.centered}><Text style={styles.emptyText} accessibilityRole="alert">{error}</Text><TouchableOpacity accessibilityRole="button" style={styles.browseButton} onPress={reload}><Text>Try Again</Text></TouchableOpacity></View>
+  if (error) return <View style={styles.centered}><Text style={styles.emptyText} accessibilityRole="alert">{error}</Text><PressableScale accessibilityRole="button" style={styles.browseButton} onPress={reload}><Text>Try Again</Text></PressableScale></View>
 
   return (
     <FlatList
-      data={registrations}
+      data={sortTickets(registrations, now)}
       keyExtractor={(item) => item.id}
       contentContainerStyle={styles.list}
       ListHeaderComponent={
-        <View><Text style={styles.header}>My Events</Text>{Boolean(notice) && <Text accessibilityRole="alert" style={styles.emptyText}>{notice}</Text>}</View>
+        <View>{Boolean(notice) && <Text accessibilityRole="alert" style={styles.emptyText}>{notice}</Text>}</View>
       }
       ListEmptyComponent={
         <View style={styles.empty}>
-          <Text style={styles.emptyText}>No registered events yet</Text>
-          <TouchableOpacity
+          <Text style={styles.emptyText}>You haven’t registered for any events yet</Text>
+          <PressableScale
             style={styles.browseButton}
-            onPress={() => router.push('/(tabs)')}
+            onPress={() => router.push('/(tabs)/events')}
           >
             <Text style={styles.browseButtonText}>Browse Events</Text>
-          </TouchableOpacity>
+          </PressableScale>
         </View>
       }
       renderItem={({ item }) => (
-        <View style={styles.card}><TouchableOpacity
+        <View style={styles.card}><PressableScale
           onPress={() => router.push(item.status === 'confirmed' ? `/ticket/${item.id}` : `/event/${item.event_id}`)}
         >
           <View style={styles.cardContent}>
@@ -101,16 +97,16 @@ export default function MyEventsScreen() {
             </View>
             {item.status === 'confirmed' && item.checked_in_at !== undefined && <Text accessibilityLiveRegion="polite" style={styles.actionText}>{item.checked_in_at ? `Checked in · ${new Date(item.checked_in_at).toLocaleString()}` : 'Not checked in'}</Text>}
           </View>
-        </TouchableOpacity>
-          {item.status === 'confirmed' && <TouchableOpacity accessibilityRole="button" style={[styles.actionButton,styles.primaryAction]} onPress={() => router.push(`/ticket/${item.id}`)}><Text style={styles.actionText}>Open ticket</Text></TouchableOpacity>}
-          {item.status === 'confirmed' && !item.checked_in_at && Number(item.ticket_type?.price) === 0 && item.event && new Date(item.event.event_date).getTime() > now && <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => setCancelId(item.id)}><Text style={styles.actionText}>{busy === item.id ? 'Cancelling…' : 'Cancel free registration'}</Text></TouchableOpacity>}
+        </PressableScale>
+          {item.status === 'confirmed' && <PressableScale accessibilityRole="button" style={[styles.actionButton,styles.primaryAction]} onPress={() => router.push(`/ticket/${item.id}`)}><Text style={styles.primaryActionText}>Open ticket</Text></PressableScale>}
+          {item.status === 'confirmed' && !item.checked_in_at && Number(item.ticket_type?.price) === 0 && item.event && new Date(item.event.event_date).getTime() > now && <PressableScale accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => setCancelId(item.id)}><Text style={styles.actionText}>{busy === item.id ? 'Cancelling…' : 'Cancel free registration'}</Text></PressableScale>}
           {cancelId === item.id && item.status === 'confirmed' && <View style={styles.cardContent}>
             <Text style={styles.actionText}>Cancel this free registration? Your place will be released. Re-registering depends on remaining availability.</Text>
-            <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => setCancelId(null)}><Text style={styles.actionText}>Keep registration</Text></TouchableOpacity>
-            <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => void cancel(item)}><Text style={styles.actionText}>{busy === item.id ? 'Cancelling…' : 'Confirm cancellation'}</Text></TouchableOpacity>
+            <PressableScale accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => setCancelId(null)}><Text style={styles.actionText}>Keep registration</Text></PressableScale>
+            <PressableScale accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => void cancel(item)}><Text style={styles.actionText}>{busy === item.id ? 'Cancelling…' : 'Confirm cancellation'}</Text></PressableScale>
           </View>}
-          {item.status === 'confirmed' && !item.checked_in_at && Number(item.ticket_type?.price) > 0 && item.event && new Date(item.event.event_date).getTime() > now && <TouchableOpacity accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => void refund(item)}><Text style={styles.actionText}>{busy === item.id ? 'Sending…' : 'Cancel and request refund'}</Text></TouchableOpacity>}
-          {item.status === 'cancelled' && item.event && new Date(item.event.event_date).getTime() > now && <TouchableOpacity accessibilityRole="button" style={styles.actionButton} onPress={() => router.push(`/registration/${item.event_id}`)}><Text style={styles.actionText}>Register again</Text></TouchableOpacity>}
+          {item.status === 'confirmed' && !item.checked_in_at && Number(item.ticket_type?.price) > 0 && item.event && new Date(item.event.event_date).getTime() > now && <PressableScale accessibilityRole="button" disabled={busy !== null} style={styles.actionButton} onPress={() => void refund(item)}><Text style={styles.actionText}>{busy === item.id ? 'Sending…' : 'Cancel and request refund'}</Text></PressableScale>}
+          {item.status === 'cancelled' && item.event && new Date(item.event.event_date).getTime() > now && <PressableScale accessibilityRole="button" style={styles.actionButton} onPress={() => router.push(`/registration/${item.event_id}`)}><Text style={styles.actionText}>Register again</Text></PressableScale>}
         </View>
       )}
     />
@@ -119,11 +115,13 @@ export default function MyEventsScreen() {
 
 const styles = StyleSheet.create({
   actionButton: { padding: 16, borderTopWidth: 1, borderColor: brand.line },
-  primaryAction: { backgroundColor:'#146B59',borderTopWidth:0 },
+  primaryAction: { backgroundColor: brand.primary, borderTopWidth: 0 },
+  primaryActionText: { color: '#FFFFFF', fontWeight: '700' },
   actionText: { color: brand.ink, fontWeight: '600' },
   list: {
     backgroundColor: brand.page,
     flexGrow: 1,
+    paddingTop: 8,
     paddingBottom: 40
   },
   centered: {
@@ -131,13 +129,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: brand.page
-  },
-  header: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: brand.ink,
-    padding: 20,
-    paddingTop: 72
   },
   empty: {
     flex: 1,
@@ -150,7 +141,7 @@ const styles = StyleSheet.create({
     marginBottom: 20
   },
   browseButton: {
-    backgroundColor: brand.green,
+    backgroundColor: brand.primary,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8
@@ -171,7 +162,7 @@ const styles = StyleSheet.create({
   },
   eventTitle: {
     fontSize: 18,
-    fontWeight: '600',
+    fontFamily: fonts.heading,
     color: brand.ink,
     marginBottom: 4
   },
@@ -190,10 +181,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 12,
-    backgroundColor: brand.greenSoft
+    backgroundColor: brand.primarySoft
   },
   statusConfirmed: {
-    backgroundColor: brand.greenSoft
+    backgroundColor: brand.primarySoft
   },
   statusText: {
     color: brand.ink,

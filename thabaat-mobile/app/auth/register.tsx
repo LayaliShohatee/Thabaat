@@ -1,18 +1,15 @@
 import { authRedirectUrl } from '@/lib/auth-links'
-import { brand } from '@/constants/brand'
+import { brand, fonts } from '@/constants/brand'
 import { useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { PressableScale } from '@/components/PressableScale';
 import { router, useLocalSearchParams } from 'expo-router';
 import {eventReturnPath} from '@/lib/event-sharing';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { useStatusBarStyle } from '@/hooks/useStatusBarStyle'
 
 export default function RegisterScreen() {
+  useStatusBarStyle('dark')
   const {eventId}=useLocalSearchParams<{eventId?:string}>();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -67,7 +64,7 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.logo}>Thabaat</Text>
+      <Text style={styles.logo}>THABAAT</Text>
 
       <Text style={styles.title}>Create your account</Text>
 
@@ -115,7 +112,7 @@ export default function RegisterScreen() {
         <Text style={styles.feedback} accessibilityLiveRegion="polite">{successMessage}</Text>
       ) : null}
 
-      <TouchableOpacity
+      <PressableScale
         accessibilityRole="button"
         style={styles.button}
         onPress={handleRegister}
@@ -124,11 +121,11 @@ export default function RegisterScreen() {
         <Text style={styles.buttonText}>
           {loading ? 'Creating account...' : 'Create Account'}
         </Text>
-      </TouchableOpacity>
+      </PressableScale>
 
-      <TouchableOpacity onPress={() => router.push(eventReturnPath(eventId)?{pathname:'/auth/login',params:{eventId}}:'/auth/login')}>
+      <PressableScale onPress={() => router.push(eventReturnPath(eventId)?{pathname:'/auth/login',params:{eventId}}:'/auth/login')}>
         <Text style={styles.link}>Already have an account? Log in</Text>
-      </TouchableOpacity>
+      </PressableScale>
     </View>
   );
 }
@@ -142,16 +139,17 @@ const styles = StyleSheet.create({
   },
 
   logo: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: brand.green,
+    fontSize: 26,
+    fontFamily: fonts.heading,
+    letterSpacing: 7,
+    color: brand.teal,
     textAlign: 'center',
     marginBottom: 25,
   },
 
   title: {
     fontSize: 26,
-    fontWeight: '700',
+    fontFamily: fonts.headingHeavy,
     color: brand.ink,
     textAlign: 'center',
   },
@@ -190,7 +188,7 @@ const styles = StyleSheet.create({
 
   button: {
     height: 50,
-    backgroundColor: brand.green,
+    backgroundColor: brand.primary,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -201,11 +199,11 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.heading,
   },
 
   link: {
-    color: brand.green,
+    color: brand.primary,
     textAlign: 'center',
     fontSize: 14,
     fontWeight: '500',

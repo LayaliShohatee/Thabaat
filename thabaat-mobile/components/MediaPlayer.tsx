@@ -62,8 +62,8 @@ export default function MediaPlayer({ item }: { item: MediaItem }) {
  return <View>
   <VideoView player={player} style={{width:'100%',height:240}} nativeControls fullscreenOptions={{enable:true}} allowsPictureInPicture startsPictureInPictureAutomatically/>
   <View style={{flexDirection:'row',alignItems:'center',gap:12}}>
-   {Platform.OS==='ios'&&<VideoAirPlayButton accessibilityLabel="Choose AirPlay device" tint="#0F4C3A" activeTint="#D9A441" style={{width:44,height:44}}/>}
-   <CastButton accessibilityLabel="Choose Chromecast device" style={{width:44,height:44,tintColor:'#0F4C3A'}}/>
+   {Platform.OS==='ios'&&<VideoAirPlayButton accessibilityLabel="Choose AirPlay device" tint="#0E7C7A" activeTint="#D9A441" style={{width:44,height:44}}/>}
+   <CastButton accessibilityLabel="Choose Chromecast device" style={{width:44,height:44,tintColor:'#0E7C7A'}}/>
    <Text style={{color:'#53635E',flex:1}}>Watch on a TV with AirPlay or Chromecast. Playback continues in the background and in picture-in-picture.</Text>
   </View>
   {!!message&&<Text accessibilityLiveRegion="polite" style={{color:'#ddd',padding:12}}>{message}</Text>}

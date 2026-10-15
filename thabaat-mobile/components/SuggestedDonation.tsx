@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
-import { Text, TouchableOpacity, View } from 'react-native'
+import { Text, View } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
 import { router } from 'expo-router'
 import { useFocusResource } from '@/hooks/useFocusResource'
 import { getCampaignData, openHostedCheckout } from '@/services/billingService'
@@ -13,8 +14,8 @@ export default function SuggestedDonation({styles}:{styles:{subtitle:object;seco
   <Text style={styles.subtitle}>This event is free. A suggested donation helps keep Thabaat events running.</Text>
   {campaign&&<>
    <Text style={styles.subtitle}>Suggested: support “{campaign.name}”{campaign.goal_cents?` (goal ${money(campaign.goal_cents)})`:''}</Text>
-   <TouchableOpacity accessibilityRole="button" style={styles.secondaryButton} onPress={()=>void openHostedCheckout(campaign.checkout_url!)}><Text style={styles.secondaryButtonText}>Donate to {campaign.name}</Text></TouchableOpacity>
+   <PressableScale accessibilityRole="button" style={styles.secondaryButton} onPress={()=>void openHostedCheckout(campaign.checkout_url!)}><Text style={styles.secondaryButtonText}>Donate to {campaign.name}</Text></PressableScale>
   </>}
-  <TouchableOpacity accessibilityRole="button" style={styles.secondaryButton} onPress={() => router.push('/donations')}><Text style={styles.secondaryButtonText}>See all ways to give</Text></TouchableOpacity>
+  <PressableScale accessibilityRole="button" style={styles.secondaryButton} onPress={() => router.push('/donations')}><Text style={styles.secondaryButtonText}>See all ways to give</Text></PressableScale>
  </View>
 }

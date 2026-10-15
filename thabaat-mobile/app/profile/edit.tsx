@@ -1,13 +1,8 @@
 import { Alert } from '@/lib/alert'
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, TextInput, View } from 'react-native';
+import { PressableScale } from '@/components/PressableScale';
+import { fonts } from '@/constants/brand';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
@@ -105,9 +100,9 @@ export default function EditProfileScreen() {
       <Text style={styles.label}>Gender (optional)</Text>
       <View style={{ flexDirection: 'row', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
         {GENDERS.map(([value, label]) => (
-          <TouchableOpacity key={label} accessibilityRole="button" accessibilityState={{ selected: gender === value }} onPress={() => setGender(value)} style={[styles.choice, gender === value && styles.choiceSelected]}>
+          <PressableScale key={label} accessibilityRole="button" accessibilityState={{ selected: gender === value }} onPress={() => setGender(value)} style={[styles.choice, gender === value && styles.choiceSelected]}>
             <Text style={[styles.choiceText, gender === value && styles.choiceTextSelected]}>{label}</Text>
-          </TouchableOpacity>
+          </PressableScale>
         ))}
       </View>
 
@@ -115,7 +110,7 @@ export default function EditProfileScreen() {
       <TextInput style={styles.input} value={birthYear} onChangeText={setBirthYear} placeholder="e.g. 1998" placeholderTextColor="#888" keyboardType="number-pad" maxLength={4} />
       <Text style={styles.emailNote}>Used only so event organizers can see attendee age groups and gender totals.</Text>
 
-      <TouchableOpacity
+      <PressableScale
         style={styles.button}
         onPress={handleSave}
         disabled={saving}
@@ -123,7 +118,7 @@ export default function EditProfileScreen() {
         <Text style={styles.buttonText}>
           {saving ? 'Saving...' : 'Save Changes'}
         </Text>
-      </TouchableOpacity>
+      </PressableScale>
     </View>
   );
 }
@@ -145,7 +140,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 28,
-    fontWeight: '700',
+    fontFamily: fonts.heading,
     color: '#222222',
     marginBottom: 35,
   },
@@ -196,6 +191,6 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.heading,
   },
 });

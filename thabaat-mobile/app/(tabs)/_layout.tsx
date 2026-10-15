@@ -3,57 +3,32 @@ import React from 'react';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Colors } from '@/constants/theme';
-import { brand } from '@/constants/brand';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { brand, fonts } from '@/constants/brand';
+import { useRole } from '@/hooks/useRole';
+import { showsAdminTab, showsTeamTab } from '@/lib/app-role';
 import { isDemoMode } from '@/lib/demo-mode';
 
+// Everyone sees Home, Events and Account. Volunteers add Team; admins and organizers add Team and Admin.
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const { role } = useRole();
+  const hidden = (show: boolean) => (show && !isDemoMode ? undefined : null);
 
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: colorScheme === 'dark' ? Colors.dark.tint : brand.green,
+        tabBarActiveTintColor: brand.primary,
         tabBarInactiveTintColor: brand.inkMuted,
         tabBarStyle: { backgroundColor: brand.card, borderTopColor: brand.line, height: 84, paddingTop: 8 },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+        tabBarLabelStyle: { fontSize: 11, fontFamily: fonts.label },
         headerShown: false,
         tabBarButton: HapticTab,
       }}
     >
-      <Tabs.Screen
-        name="index"
-        options={{
-          title: isDemoMode ? 'Events' : 'Home',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="house.fill" color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen
-        name="my-events"
-        options={{
-          title: 'My Events',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="calendar" color={color} />
-          ),
-        }}
-      />
-
-      <Tabs.Screen name="events" options={{ title: 'Events', href: isDemoMode ? null : undefined, tabBarIcon: ({ color }) => <IconSymbol size={28} name="calendar" color={color} /> }} />
-      <Tabs.Screen name="permissions" options={{ title: 'Permissions', href: isDemoMode ? null : undefined, tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.fill" color={color} /> }} />
-
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'Profile',
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="person.fill" color={color} />
-          ),
-        }}
-      />
+      <Tabs.Screen name="index" options={{ title: 'Home', tabBarIcon: ({ color }) => <IconSymbol size={26} name="house.fill" color={color} /> }} />
+      <Tabs.Screen name="events" options={{ title: 'Events', tabBarIcon: ({ color }) => <IconSymbol size={26} name="ticket.fill" color={color} /> }} />
+      <Tabs.Screen name="team" options={{ title: 'Team', href: hidden(showsTeamTab(role)), tabBarIcon: ({ color }) => <IconSymbol size={26} name="person.3.fill" color={color} /> }} />
+      <Tabs.Screen name="admin" options={{ title: 'Admin', href: hidden(showsAdminTab(role)), tabBarIcon: ({ color }) => <IconSymbol size={26} name="gearshape.fill" color={color} /> }} />
+      <Tabs.Screen name="profile" options={{ title: 'Account', tabBarIcon: ({ color }) => <IconSymbol size={26} name="person.crop.circle" color={color} /> }} />
     </Tabs>
   );
 }

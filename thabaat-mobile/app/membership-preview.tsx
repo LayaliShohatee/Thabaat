@@ -1,5 +1,7 @@
 import { useState } from 'react'
-import { ScrollView, Text, TouchableOpacity, View, StyleSheet } from 'react-native'
+import { ScrollView, Text, View, StyleSheet } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
+import { fonts } from '@/constants/brand'
 import { router } from 'expo-router'
 import { initialMembershipDemo, membershipSummary, reduceMembershipDemo, type DemoAction, type DemoPeriod } from '@/lib/membership-state'
 import { practiceEvents, registerPracticeEvent, type PracticeRegistration } from '@/lib/membership-events'
@@ -14,7 +16,7 @@ export default function MembershipPreview() {
  if (!__DEV__) return <View style={styles.page}><Text>Membership practice is available in development builds only.</Text></View>
  const summary = membershipSummary(state.membership, state.now)
  const apply = (action: DemoAction) => { setState(current => reduceMembershipDemo(current, action)); setNotice('') }
- const button = (label: string, onPress: () => void) => <TouchableOpacity key={label} accessibilityRole="button" onPress={onPress} style={styles.button}><Text style={styles.buttonText}>{label}</Text></TouchableOpacity>
+ const button = (label: string, onPress: () => void) => <PressableScale key={label} accessibilityRole="button" onPress={onPress} style={styles.button}><Text style={styles.buttonText}>{label}</Text></PressableScale>
  return <ScrollView style={styles.page} contentContainerStyle={styles.content}>
   <Text style={styles.badge}>PRACTICE ONLY · NO CHARGES</Text>
   <Text style={styles.title}>Try membership flows</Text>
@@ -45,7 +47,7 @@ export default function MembershipPreview() {
   {!state.pending ? <View style={styles.card}>
    <Text style={styles.heading}>{summary.active ? 'Renew or change billing (practice)' : 'Choose paid membership (practice)'}</Text>
    <Text style={styles.copy}>Prices and benefits require team approval. The one-time example lasts 30 days; these are sample terms only.</Text>
-   {(['one_time','monthly','annually'] as const).map(period => <TouchableOpacity key={period} accessibilityRole="radio" accessibilityState={{checked:selected===period}} onPress={() => setSelected(period)} style={[styles.choice, selected===period && styles.selected]}><Text style={styles.copy}>{selected===period ? '● ' : '○ '}{period==='one_time' ? 'One-time · no automatic renewal' : period==='monthly' ? 'Monthly subscription' : 'Annual subscription'}</Text></TouchableOpacity>)}
+   {(['one_time','monthly','annually'] as const).map(period => <PressableScale key={period} accessibilityRole="radio" accessibilityState={{checked:selected===period}} onPress={() => setSelected(period)} style={[styles.choice, selected===period && styles.selected]}><Text style={styles.copy}>{selected===period ? '● ' : '○ '}{period==='one_time' ? 'One-time · no automatic renewal' : period==='monthly' ? 'Monthly subscription' : 'Annual subscription'}</Text></PressableScale>)}
    {button('Review practice checkout', () => apply({type:'checkout',period:selected}))}
   </View> : <View style={styles.card}>
    <Text style={styles.heading}>Awaiting payment verification (practice)</Text>
@@ -70,4 +72,4 @@ export default function MembershipPreview() {
   {button('Back to real membership', () => router.replace('/membership'))}
  </ScrollView>
 }
-const styles=StyleSheet.create({page:{flex:1,backgroundColor:'#F5F8F7'},content:{padding:24,gap:16,paddingBottom:48,maxWidth:700,width:'100%',alignSelf:'center'},badge:{color:'#62470C',backgroundColor:'#FFF2CD',padding:14,fontWeight:'700'},title:{fontSize:28,fontWeight:'700',color:'#172B28'},heading:{fontSize:20,fontWeight:'600',color:'#172B28'},copy:{fontSize:16,lineHeight:24,color:'#425550'},card:{backgroundColor:'#fff',borderRadius:16,padding:20,gap:14},button:{backgroundColor:'#146B59',padding:16,borderRadius:10},buttonText:{color:'#fff',fontWeight:'600',textAlign:'center'},choice:{padding:14,borderWidth:1,borderColor:'#ddd',borderRadius:10},selected:{borderColor:'#146B59',backgroundColor:'#E0F2EA'}})
+const styles=StyleSheet.create({page:{flex:1,backgroundColor:'#F5F8F7'},content:{padding:24,gap:16,paddingBottom:48,maxWidth:700,width:'100%',alignSelf:'center'},badge:{color:'#62470C',backgroundColor:'#FFF2CD',padding:14,fontWeight:'700'},title:{fontSize:28,fontFamily: fonts.heading,color:'#172B28'},heading:{fontSize:20,fontFamily: fonts.heading,color:'#172B28'},copy:{fontSize:16,lineHeight:24,color:'#425550'},card:{backgroundColor:'#fff',borderRadius:16,padding:20,gap:14},button:{backgroundColor:'#0E7C7A',padding:16,borderRadius:10},buttonText:{color:'#fff',fontWeight:'600',textAlign:'center'},choice:{padding:14,borderWidth:1,borderColor:'#ddd',borderRadius:10},selected:{borderColor:'#0E7C7A',backgroundColor:'#E0F2EA'}})

@@ -1,9 +1,12 @@
 import { useRef, useState } from 'react'
-import { Linking, Platform, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { Linking, Platform, StyleSheet, Text, View } from 'react-native'
+import { brand, fonts } from '@/constants/brand'
+import { PressableScale } from '@/components/PressableScale'
 import { calendarProviderUrl, type CalendarEvent } from '@/lib/event-calendar'
 import { openDeviceCalendar } from '@/services/eventCalendarService'
 
-export default function CalendarActions({ event }: { event: CalendarEvent }) {
+// showHeading is off on the event page, where the "Add to calendar" pill already names the panel.
+export default function CalendarActions({ event, showHeading = true }: { event: CalendarEvent; showHeading?: boolean }) {
   const inFlight = useRef(false)
   const [busy, setBusy] = useState(false)
   const [message, setMessage] = useState('')
@@ -20,11 +23,11 @@ export default function CalendarActions({ event }: { event: CalendarEvent }) {
     finally { inFlight.current = false; setBusy(false) }
   }
   return <View style={styles.container}>
-    <Text style={styles.heading}>Add to calendar</Text>
-    <Text style={styles.note}>Review before saving. {event.end_at || event.end_date ? '' : 'The end time is provisional (one hour).'}</Text>
+    {showHeading && <Text style={styles.heading}>Add to calendar</Text>}
+    <Text style={styles.note}>Review the details before saving.{event.end_at || event.end_date ? '' : ' The end time is set to one hour.'}</Text>
     {([['device', Platform.OS === 'web' ? 'Apple Calendar / calendar file' : 'Device Calendar'], ['google', 'Google Calendar'], ['outlook', 'Outlook']] as const).map(([provider, label]) =>
-      <TouchableOpacity key={provider} accessibilityRole="button" accessibilityState={{ disabled: busy }} disabled={busy} style={styles.button} onPress={() => run(provider)}><Text style={styles.label}>{label}</Text></TouchableOpacity>)}
+      <PressableScale key={provider} accessibilityRole="button" accessibilityState={{ disabled: busy }} disabled={busy} style={styles.row} onPress={() => run(provider)}><Text style={styles.label}>{label}</Text><Text style={styles.chevron}>›</Text></PressableScale>)}
     {!!message && <Text accessibilityLiveRegion="polite" style={styles.note}>{message}</Text>}
   </View>
 }
-const styles = StyleSheet.create({ container: { marginBottom: 20, gap: 12, backgroundColor: '#fff', padding: 18, borderRadius: 14 }, heading: { color: '#172B28', fontSize: 18, fontWeight: '600' }, note: { color: '#425550', lineHeight: 23 }, button: { backgroundColor: '#146B59', borderRadius: 9, padding: 15 }, label: { color: '#fff', textAlign: 'center', fontWeight: '600' } })
+const styles = StyleSheet.create({ container: { marginVertical: 8, backgroundColor: brand.card, paddingHorizontal: 16, paddingVertical: 10, borderRadius: brand.radius, borderWidth: 1, borderColor: brand.line }, heading: { color: brand.ink, fontFamily: fonts.heading, fontSize: 16, paddingTop: 6 }, note: { color: brand.inkMuted, lineHeight: 21, paddingVertical: 4 }, row: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 13, borderTopWidth: StyleSheet.hairlineWidth, borderColor: brand.line }, label: { color: brand.ink, fontFamily: fonts.label, fontSize: 15 }, chevron: { color: brand.inkMuted, fontSize: 16 } })

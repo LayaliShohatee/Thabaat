@@ -1,13 +1,9 @@
 import { authRedirectUrl } from '@/lib/auth-links'
 import { Alert } from '@/lib/alert'
 import { useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { PressableScale } from '@/components/PressableScale';
+import { fonts } from '@/constants/brand';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
@@ -65,7 +61,7 @@ export default function ForgotPasswordScreen() {
         autoCapitalize="none"
       />
 
-      <TouchableOpacity
+      <PressableScale
         style={styles.button}
         onPress={handleResetRequest}
         disabled={loading}
@@ -73,11 +69,11 @@ export default function ForgotPasswordScreen() {
         <Text style={styles.buttonText}>
           {loading ? 'Sending...' : 'Send Reset Link'}
         </Text>
-      </TouchableOpacity>
+      </PressableScale>
 
-      <TouchableOpacity onPress={() => router.push('/auth/login')}>
+      <PressableScale onPress={() => router.push('/auth/login')}>
         <Text style={styles.link}>Back to Login</Text>
-      </TouchableOpacity>
+      </PressableScale>
     </View>
   );
 }
@@ -92,7 +88,7 @@ const styles = StyleSheet.create({
 
   title: {
     fontSize: 26,
-    fontWeight: '700',
+    fontFamily: fonts.heading,
     color: '#222222',
     textAlign: 'center',
   },
@@ -130,7 +126,7 @@ const styles = StyleSheet.create({
   buttonText: {
     color: '#FFFFFF',
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.heading,
   },
 
   link: {

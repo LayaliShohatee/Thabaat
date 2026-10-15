@@ -1,6 +1,6 @@
 import { supabase } from '@/lib/supabase'
 export type RefundRequest={id:string;event_id:string;event_title:string;full_name:string;ticket_name:string;price:number;reason:string;status:'requested'|'approved'|'declined';requested_at:string;reviewed_at:string|null;review_note:string|null}
-export type PromoCode={id:string;event_id:string|null;code:string;percent_off:number|null;amount_off_cents:number|null;max_uses:number|null;uses:number;expires_at:string|null;active:boolean}
+export type PromoCode={id:string;event_id:string|null;code:string;percent_off:number|null;amount_off_cents:number|null;max_uses:number|null;uses:number;expires_at:string|null;active:boolean;ticket_type_id?:string|null}
 export type PriceQuote={base_cents:number;member_discount_percent:number;member_discount_cents:number;code_discount_cents:number;final_cents:number;code_applied:boolean;code_error:string|null}
 async function rpc<T>(name:string,args:Record<string,unknown>):Promise<T>{
  const {data,error}=await supabase.rpc(name,args)
@@ -15,3 +15,8 @@ export const listPromoCodes=(eventId:string)=>rpc<PromoCode[]>('list_promo_codes
 export const savePromoCode=(eventId:string|null,input:{id:string|null;code:string;percent_off:number|null;amount_off_cents:number|null;max_uses:number|null;expires_at:string|null;active:boolean})=>
  rpc<string>('save_promo_code',{p_id:input.id,p_event_id:eventId,p_code:input.code,p_percent_off:input.percent_off,p_amount_off_cents:input.amount_off_cents,p_max_uses:input.max_uses,p_expires_at:input.expires_at,p_active:input.active})
 export const quoteTicketPrice=(ticketId:string,code:string)=>rpc<PriceQuote>('quote_ticket_price',{p_ticket_id:ticketId,p_code:code})
+// Limits an event code to one ticket type (null = all tickets). Needs migration 20261014120000_promo_code_ticket_type.
+export async function setPromoCodeTicketType(codeId:string,ticketTypeId:string|null){
+ const {error}=await supabase.rpc('set_promo_code_ticket_type',{p_code_id:codeId,p_ticket_type_id:ticketTypeId})
+ if(error)throw new Error(error.code==='PGRST202'?'Limiting a code to one ticket type needs a database update that isn’t installed yet. Save it for all tickets for now.':error.message)
+}

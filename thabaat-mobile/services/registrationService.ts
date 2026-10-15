@@ -36,6 +36,21 @@ export async function createRegistration(
   return data
 }
 
+// The caller's active booking for an event, so the event page can open the ticket directly.
+export async function getMyEventRegistration(userId: string, eventId: string): Promise<{ id: string; status: string } | null> {
+  const { data, error } = await supabase
+    .from('registrations')
+    .select('id,status')
+    .eq('user_id', userId)
+    .eq('event_id', eventId)
+    .neq('status', 'cancelled')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (error) throw error
+  return data
+}
+
 export async function checkExistingRegistration(
   userId: string,
   eventId: string
