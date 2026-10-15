@@ -1,0 +1,14 @@
+# Netlify: serve the pre-rendered page for routes with a variable part (e.g. /event/123 -> /event/[id].html).
+# More specific paths come first. Existing files are always served as they are.
+/admin/event/*            /admin/event/[id].html            200
+/admin/manage/*           /admin/manage/[id].html           200
+/check-in/*               /check-in/[eventId].html          200
+/event/access/*           /event/access/[id].html           200
+/event/*                  /event/[id].html                  200
+/media/*                  /media/[id].html                  200
+/payments/event/*         /payments/event/[eventId].html    200
+/public/event/*           /public/event/[id].html           200
+/registration/*           /registration/[eventId].html      200
+/ticket/*                 /ticket/[id].html                 200
+/waitlist/manage/*        /waitlist/manage/[eventId].html   200
+/waitlist/*               /waitlist/[eventId].html          200
