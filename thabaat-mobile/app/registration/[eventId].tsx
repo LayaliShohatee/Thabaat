@@ -1,11 +1,11 @@
 import { useFocusResource } from '@/hooks/useFocusResource'
-import { brand } from '@/constants/brand'
+import { brand, fonts } from '@/constants/brand'
+import { PressableScale } from '@/components/PressableScale'
 import { Alert } from '@/lib/alert'
 import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
   TextInput,
@@ -80,12 +80,12 @@ export default function RegistrationScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator size="large" color={brand.green} />
+        <ActivityIndicator size="large" color={brand.primary} />
       </View>
     )
   }
 
-  if (error) return <View style={styles.centered}><Text style={styles.errorText} accessibilityRole="alert">{error}</Text><TouchableOpacity accessibilityRole="button" style={styles.confirmButton} onPress={reload}><Text>Try Again</Text></TouchableOpacity></View>
+  if (error) return <View style={styles.centered}><Text style={styles.errorText} accessibilityRole="alert">{error}</Text><PressableScale accessibilityRole="button" style={[styles.confirmButton, { alignSelf: 'stretch', marginHorizontal: 24, marginTop: 16 }]} onPress={reload}><Text style={styles.confirmButtonText}>Try again</Text></PressableScale></View>
 
   if (!event) {
     return (
@@ -95,28 +95,36 @@ export default function RegistrationScreen() {
     )
   }
 
+  // Same rule as before, named so the button can look disabled when it is.
+  const confirmDisabled = submitting || !selectedTicket || (selectedTicket.price > 0 && !sandbox && !(isPaymentCheckEnabled && selectedTicket.id === paidTestTicketId))
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Register for Event</Text>
+        <Text style={styles.title}>REGISTERING FOR</Text>
         <Text style={styles.eventName}>{event.title}</Text>
       </View>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Select Ticket Type</Text>
+        <Text style={styles.sectionTitle}>Choose a ticket</Text>
         {ticketTypes.length === 0 ? (
           <Text style={styles.noTickets}>No tickets available</Text>
         ) : (
           ticketTypes.map((ticket) => (
-            <TouchableOpacity
+            <PressableScale
               key={ticket.id}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: selectedTicket?.id === ticket.id }}
               style={[
                 styles.ticketOption,
                 selectedTicket?.id === ticket.id && styles.ticketOptionSelected
               ]}
               onPress={() => setSelectedTicketId(ticket.id)}
             >
-              <Text style={styles.ticketName}>{ticket.name}</Text>
+              <View style={styles.ticketHeader}>
+                <Text style={styles.ticketName}>{ticket.name}</Text>
+                <View style={[styles.radio, selectedTicket?.id === ticket.id && styles.radioSelected]}>{selectedTicket?.id === ticket.id && <Text style={styles.radioCheck}>✓</Text>}</View>
+              </View>
               {!!ticket.category && ticket.category !== 'general' && <Text style={styles.ticketDescription}>{categoryLabel(ticket.category)}{ticket.sale_ends_at ? ` · on sale until ${new Date(ticket.sale_ends_at).toLocaleString()}` : ''}</Text>}
               <Text style={styles.ticketPrice}>
                 {ticket.price === 0 ? 'Free' : `$${ticket.price}`}
@@ -124,14 +132,14 @@ export default function RegistrationScreen() {
               {ticket.description && (
                 <Text style={styles.ticketDescription}>{ticket.description}</Text>
               )}
-            </TouchableOpacity>
+            </PressableScale>
           ))
         )}
       </View>
 
       {selectedTicket && (
         <View style={styles.summary}>
-          <Text style={styles.sectionTitle}>Registration Summary</Text>
+          <Text style={styles.sectionTitle}>Summary</Text>
           <Text style={styles.summaryText}>Event: {event.title}</Text>
           <Text style={styles.summaryText}>Ticket: {selectedTicket.name}</Text>
           <Text style={styles.summaryText}>
@@ -139,10 +147,10 @@ export default function RegistrationScreen() {
           </Text>
           {selectedTicket.price > 0 && (
             <>
-              <TextInput accessibilityLabel="Discount code" style={styles.codeInput} value={code} onChangeText={value => { setCode(value.toUpperCase()); setQuote(null) }} placeholder="Discount code (optional)" placeholderTextColor="#888" autoCapitalize="characters" />
-              <TouchableOpacity accessibilityRole="button" style={styles.codeButton} onPress={() => void applyQuote()} disabled={quoting}>
+              <TextInput accessibilityLabel="Discount code" style={styles.codeInput} value={code} onChangeText={value => { setCode(value.toUpperCase()); setQuote(null) }} placeholder="Discount code (optional)" placeholderTextColor={brand.sage} autoCapitalize="characters" />
+              <PressableScale accessibilityRole="button" style={styles.codeButton} onPress={() => void applyQuote()} disabled={quoting}>
                 <Text style={styles.codeButtonText}>{quoting ? 'Checking…' : 'Check my price'}</Text>
-              </TouchableOpacity>
+              </PressableScale>
               {quote && (
                 <>
                   {quote.member_discount_cents > 0 && <Text style={styles.summaryText}>Member discount ({quote.member_discount_percent}%): −{money(quote.member_discount_cents)}</Text>}
@@ -157,134 +165,57 @@ export default function RegistrationScreen() {
       )}
 
       <View style={styles.footer}>
-        <TouchableOpacity
-          style={[styles.confirmButton, submitting && styles.confirmButtonDisabled]}
+        <PressableScale
+          accessibilityRole="button"
+          style={[styles.confirmButton, confirmDisabled && styles.confirmButtonDisabled]}
           onPress={handleConfirmRegistration}
-          disabled={submitting || !selectedTicket || (selectedTicket.price > 0 && !sandbox && !(isPaymentCheckEnabled && selectedTicket.id === paidTestTicketId))}
+          disabled={confirmDisabled}
         >
-          <Text style={styles.confirmButtonText}>
+          <Text style={[styles.confirmButtonText, confirmDisabled && { color: brand.primaryDark }]}>
             {submitting ? 'Confirming...' : selectedTicket && selectedTicket.price > 0 && sandbox ? `Pay ${quote ? money(quote.final_cents) : `$${selectedTicket.price}`} (test payment)` : selectedTicket?.id === paidTestTicketId && isPaymentCheckEnabled ? 'Continue to $1 paid test' : selectedTicket && selectedTicket.price > 0 ? 'Paid checkout not available' : 'Confirm Registration'}
           </Text>
-        </TouchableOpacity>
+        </PressableScale>
 
-        <TouchableOpacity
+        <PressableScale
+          accessibilityRole="button"
           style={styles.cancelButton}
           onPress={() => router.back()}
         >
           <Text style={styles.cancelButtonText}>Cancel</Text>
-        </TouchableOpacity>
+        </PressableScale>
       </View>
     </ScrollView>
   )
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: brand.page
-  },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: brand.page
-  },
-  header: {
-    padding: 20,
-    paddingTop: 40
-  },
-  title: {
-    fontSize: 14,
-    color: brand.inkMuted,
-    marginBottom: 4
-  },
-  eventName: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: brand.ink
-  },
-  section: {
-    padding: 20
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: brand.ink,
-    marginBottom: 12
-  },
-  ticketOption: {
-    borderWidth: 1,
-    borderColor: brand.line,
-    borderRadius: 8,
-    padding: 16,
-    marginBottom: 10
-  },
-  ticketOptionSelected: {
-    borderColor: brand.green,
-    backgroundColor: brand.card
-  },
-  ticketName: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: brand.ink
-  },
-  ticketPrice: {
-    fontSize: 15,
-    color: brand.inkMuted,
-    marginTop: 4
-  },
-  ticketDescription: {
-    fontSize: 13,
-    color: brand.inkMuted,
-    marginTop: 4
-  },
-  noTickets: {
-    color: brand.inkMuted,
-    fontSize: 15
-  },
-  summary: {
-    margin: 20,
-    padding: 16,
-    backgroundColor: brand.card,
-    borderRadius: 8
-  },
-  summaryText: {
-    color: brand.inkMuted,
-    fontSize: 15,
-    marginBottom: 6
-  },
-  codeInput: { borderWidth: 1, borderColor: brand.line, borderRadius: 10, color: brand.ink, paddingHorizontal: 12, paddingVertical: 10, marginTop: 8, marginBottom: 8 },
-  codeButton: { alignSelf: 'flex-start', backgroundColor: '#1F7A5C', borderRadius: 10, paddingHorizontal: 14, paddingVertical: 10, marginBottom: 8 },
-  codeButtonText: { color: '#FFFFFF', fontWeight: '600' },
-  footer: {
-    padding: 20,
-    paddingBottom: 40
-  },
-  confirmButton: {
-    backgroundColor: brand.green,
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 12
-  },
-  confirmButtonDisabled: {
-    backgroundColor: brand.greenSoft
-  },
-  confirmButtonText: {
-    color: '#FFFFFF',
-    fontSize: 16,
-    fontWeight: 'bold'
-  },
-  cancelButton: {
-    padding: 16,
-    alignItems: 'center'
-  },
-    cancelButtonText: {
-    color: brand.inkMuted,
-    fontSize: 16
-  },
-  errorText: {
-    color: brand.ink,
-    fontSize: 16
-  }
+  container: { flex: 1, backgroundColor: brand.page },
+  centered: { flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: brand.page },
+  header: { paddingHorizontal: 20, paddingTop: 24, paddingBottom: 4 },
+  title: { fontSize: 11, fontFamily: fonts.label, letterSpacing: 1.5, color: brand.primary, marginBottom: 6 },
+  eventName: { fontSize: 24, fontFamily: fonts.headingHeavy, letterSpacing: -0.4, color: brand.ink },
+  section: { padding: 20, gap: 10 },
+  sectionTitle: { fontSize: 17, fontFamily: fonts.heading, color: brand.ink, marginBottom: 2 },
+  ticketOption: { borderWidth: 1.5, borderColor: brand.line, borderRadius: brand.radiusSmall, padding: 16, backgroundColor: brand.card },
+  ticketOptionSelected: { borderColor: brand.primary, backgroundColor: brand.primarySoft },
+  ticketHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
+  ticketName: { fontSize: 16, fontFamily: fonts.heading, color: brand.ink, flexShrink: 1 },
+  radio: { width: 24, height: 24, borderRadius: 12, borderWidth: 1.5, borderColor: brand.line, alignItems: 'center', justifyContent: 'center', backgroundColor: brand.card },
+  radioSelected: { borderColor: brand.primary, backgroundColor: brand.primary },
+  radioCheck: { color: brand.page, fontSize: 13, fontFamily: fonts.heading },
+  ticketPrice: { fontSize: 15, fontFamily: fonts.label, color: brand.primary, marginTop: 4 },
+  ticketDescription: { fontSize: 13, color: brand.inkMuted, marginTop: 4, lineHeight: 18 },
+  noTickets: { color: brand.inkMuted, fontSize: 15 },
+  summary: { marginHorizontal: 20, padding: 16, backgroundColor: brand.card, borderRadius: brand.radius, borderWidth: 1, borderColor: brand.line, gap: 2 },
+  summaryText: { color: brand.inkMuted, fontSize: 15, marginBottom: 4 },
+  codeInput: { borderWidth: 1, borderColor: brand.line, borderRadius: brand.radiusSmall, color: brand.ink, paddingHorizontal: 14, paddingVertical: 12, marginTop: 8, marginBottom: 8, fontSize: 16 },
+  codeButton: { alignSelf: 'flex-start', borderWidth: 1, borderColor: brand.primary, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10, marginBottom: 8 },
+  codeButtonText: { color: brand.primary, fontFamily: fonts.label },
+  footer: { padding: 20, paddingBottom: 40, gap: 4 },
+  confirmButton: { backgroundColor: brand.primary, height: 52, borderRadius: 999, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
+  confirmButtonDisabled: { backgroundColor: brand.primarySoft },
+  confirmButtonText: { color: brand.page, fontSize: 16, fontFamily: fonts.heading },
+  cancelButton: { paddingVertical: 14, alignItems: 'center' },
+  cancelButtonText: { color: brand.inkMuted, fontSize: 15, fontFamily: fonts.label },
+  errorText: { color: brand.ink, fontSize: 16, textAlign: 'center', paddingHorizontal: 24 },
 })

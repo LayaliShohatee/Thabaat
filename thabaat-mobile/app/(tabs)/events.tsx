@@ -1,68 +1,185 @@
-import { useCallback, useRef, useState } from 'react'
-import { ScrollView, Text, TextInput, View, Switch, TouchableOpacity } from 'react-native'
-import { router } from 'expo-router'
-import { useFocusResource } from '@/hooks/useFocusResource'
-import { getPermissions,getManagementEvents,saveEvent,archiveEvent,type ManagedEvent,type Permissions } from '@/services/managementService'
-import { ManagementButton as Button,managementStyles as styles } from '@/components/ManagementUI'
-import { FreeTicketInventory } from '@/components/FreeTicketInventory'
-import { EventAttendees } from '@/components/EventAttendees'
-import { EventRefundsAndCodes } from '@/components/EventRefundsAndCodes'
-import { PublicEventPublisher } from '@/components/PublicEventPublisher'
-import { emptyEventDetails,validateEventDetails } from '@/lib/event-details'
-import { uploadEventFlyer } from '@/services/eventImageService'
-const blank={...emptyEventDetails,id:null as string|null,title:'',description:'',date:'',location:'',capacity:'50'}
-export default function EventsTab() {
- const load=useCallback(async()=>{const events=await getManagementEvents();try{return {events,permissions:await getPermissions(),setupError:''}}catch(e){return {events,permissions:null,setupError:e instanceof Error?e.message:'Unable to load permissions'}}},[])
- const {data,loading,error,reload}=useFocusResource(load,{events:[] as ManagedEvent[],permissions:null as Permissions|null,setupError:''})
- const [search,setSearch]=useState(''),[form,setForm]=useState<typeof blank|null>(null),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[archiveId,setArchiveId]=useState<string|null>(null)
- const locked=useRef(false)
- const scroll=useRef<ScrollView>(null)
- const [ticketEvent,setTicketEvent]=useState<string|null>(null)
- const [attendeeEvent,setAttendeeEvent]=useState<string|null>(null)
- // One event's controls open at a time so the list stays scannable.
- const [openEvent,setOpenEvent]=useState<string|null>(null)
- const [paymentsEvent,setPaymentsEvent]=useState<string|null>(null)
- const [publicEvent,setPublicEvent]=useState<string|null>(null)
- const canEdit=(event:ManagedEvent)=>data.permissions?.can_manage_events && (data.permissions.staff_role==='admin'||event.created_by===data.permissions.user_id)
- async function mutate(action:()=>Promise<unknown>,success:string) {if(locked.current)return;locked.current=true;setBusy(true);setMessage('');try{await action();setMessage(success);setForm(null);setArchiveId(null);await reload()}catch(e){setMessage(e instanceof Error?e.message:'Unable to save')}finally{locked.current=false;setBusy(false)}}
- async function uploadFlyer() {
-  if(!form||locked.current)return;locked.current=true;setBusy(true);setMessage('')
-  try{const url=await uploadEventFlyer();if(url){setForm(current=>current&&{...current,image_url:url});setMessage('Flyer uploaded. Save the event to keep it.')}}catch(e){setMessage(e instanceof Error?e.message:'Unable to upload flyer')}finally{locked.current=false;setBusy(false)}
- }
- function save() {
-  if(!form)return
-  const date=new Date(form.date),capacity=Number(form.capacity)
-  if(!Number.isFinite(date.getTime())||date.getTime()<=Date.now()||!Number.isInteger(capacity)||capacity<1||capacity>10000){setMessage('Enter a future date/time and whole-number capacity from 1 to 10000.');return}
-  try { const details=validateEventDetails(form,date.toISOString()); void mutate(()=>saveEvent({...form,date:date.toISOString(),capacity,details}),'Event saved.') } catch(e) { setMessage(e instanceof Error?e.message:'Check event details.') }
- }
- return <ScrollView ref={scroll} style={styles.page} contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-  <Text style={styles.title}>Events</Text><Text style={styles.text}>Browse events. Organizers manage events they create; administrators manage all events.</Text>
-  <TextInput accessibilityLabel="Search events" placeholder="Search title or location" value={search} onChangeText={setSearch} style={styles.input}/>
-  {!!(error||data.setupError)&&<Text accessibilityRole="alert" style={styles.alert}>{error||data.setupError}</Text>}
-  {!!message&&<Text accessibilityRole="alert" style={styles.alert}>{message}</Text>}
-  {data.permissions?.can_manage_events&&!form&&<Button label="Create free event" disabled={busy} onPress={()=>{setForm({...blank});setMessage('')}}/>}
-  {form&&<View style={styles.card}><Text style={styles.heading}>{form.id?'Edit event':'New free event'}</Text><Text style={styles.text}>New events include a free General admission ticket. Enter only approved eligibility restrictions. Dates with no UTC offset use your device timezone; event timezone is used for scheduled reminders. Existing ticket prices and quantities are unchanged when editing event capacity.</Text>
-   {(['title','description','date','location','capacity','image_url','age_min','age_max','audience_gender','address','speaker_name','speaker_bio','logistics','eligibility','faqs','timezone','end_at'] as const).map(field=><View key={field}><Text style={styles.text}>{field==='date'?'Date and time (example: 2026-10-20T18:30, your local time)':field==='end_at'?'End date/time (optional, your local time)':field==='timezone'?'Event timezone (IANA name)':field==='image_url'?'Image public HTTPS URL (optional)':field.replace(/_/g,' ')}</Text><TextInput accessibilityLabel={`Event ${field}`} value={form[field] || ''} onChangeText={value=>setForm({...form,[field]:value})} style={styles.input} multiline={['description','speaker_bio','logistics','eligibility','faqs'].includes(field)} keyboardType={field==='capacity'?'number-pad':'default'} autoCapitalize={field==='date'?'none':'sentences'}/></View>)}
-   <Button label={busy?'Uploading…':form.image_url?'Replace flyer image':'Upload flyer image'} disabled={busy} onPress={()=>void uploadFlyer()}/>
-   <View><Text style={styles.text}>Require active verified membership</Text><Switch accessibilityLabel="Members only event" value={form.members_only} onValueChange={members_only=>setForm({...form,members_only})}/></View><Button label={busy?'Saving…':'Save event'} disabled={busy} onPress={save}/><Button label="Discard edits" disabled={busy} onPress={()=>setForm(null)}/>
-  </View>}
-  {data.events.filter(e=>`${e.title} ${e.location}`.toLowerCase().includes(search.toLowerCase())).map(event=><View key={event.id} style={styles.card}>
-   <TouchableOpacity accessibilityRole="button" accessibilityLabel={`${openEvent===event.id?'Collapse':'Expand'} ${event.title}`} accessibilityState={{expanded:openEvent===event.id}} onPress={()=>setOpenEvent(openEvent===event.id?null:event.id)} style={{flexDirection:'row',alignItems:'center',gap:12}}>
-    <View style={{flex:1,gap:4}}><Text style={styles.heading}>{event.title}</Text><Text style={styles.text}>{new Date(event.event_date).toLocaleString()} · {event.location}</Text><Text style={styles.text}>Capacity: {event.capacity}</Text></View>
-    <Text style={[styles.heading,{color:'#1F7A5C'}]}>{openEvent===event.id?'▾':'▸'}</Text>
-   </TouchableOpacity>
-   {openEvent===event.id&&<>
-   <Button label={`View ${event.title}`} onPress={()=>router.push(`/event/${event.id}`)}/>
-   {canEdit(event)&&<><Button label={`Edit ${event.title}`} disabled={busy} onPress={()=>{setForm({...emptyEventDetails,...event,timezone:event.timezone||'',image_url:event.image_url||'',age_min:event.age_min||'',age_max:event.age_max||'',speaker_name:event.speaker_name||'',end_at:event.end_at||'',id:event.id,title:event.title,description:event.description||'',date:event.event_date,location:event.location,capacity:String(event.capacity||50)});setMessage('');scroll.current?.scrollTo({y:0,animated:true})}}/>
-   <Button label={`${ticketEvent===event.id?'Hide':'Manage'} ticket types for ${event.title}`} onPress={()=>setTicketEvent(ticketEvent===event.id?null:event.id)}/>{ticketEvent===event.id&&<FreeTicketInventory key={event.id} eventId={event.id}/> }
-   {data.permissions?.staff_role==='admin'&&<><Button label={`${publicEvent===event.id?'Hide':'Manage'} public page for ${event.title}`} onPress={()=>setPublicEvent(publicEvent===event.id?null:event.id)}/>{publicEvent===event.id&&<PublicEventPublisher key={event.id} event={event}/>}</>}
-   <Button label={`${paymentsEvent===event.id?'Hide':'Manage'} refunds and discount codes for ${event.title}`} onPress={()=>setPaymentsEvent(paymentsEvent===event.id?null:event.id)}/>{paymentsEvent===event.id&&<EventRefundsAndCodes key={event.id} eventId={event.id} refundDeadline={(event as {refund_deadline?:string|null}).refund_deadline}/>}
-   <Button label={`${attendeeEvent===event.id?'Hide':'Show'} attendees for ${event.title}`} onPress={()=>setAttendeeEvent(attendeeEvent===event.id?null:event.id)}/>
-   {attendeeEvent===event.id&&<EventAttendees key={event.id} eventId={event.id}/>}
-   <Button label={`Manage waitlist ${event.title}`} onPress={()=>router.push(`/waitlist/manage/${event.id}`)}/><Button label={`Check in ${event.title}`} onPress={()=>router.push(`/check-in/${event.id}`)}/><Button label={`Archive ${event.title}`} disabled={busy} onPress={()=>setArchiveId(event.id)}/>
-   {archiveId===event.id&&<><Text style={styles.text}>Archive this event? It will disappear from event listings and close registration. Existing bookings must be resolved first.</Text><Button label="Confirm archive" disabled={busy} onPress={()=>void mutate(()=>archiveEvent(event.id),'Event archived.')}/><Button label="Keep event" disabled={busy} onPress={()=>setArchiveId(null)}/></>}</>}</>}
-  </View>)}
-  {!loading&&!data.events.length&&<Text style={styles.text}>No events available.</Text>}
-  <Button label={loading?'Refreshing…':'Refresh events'} disabled={loading||busy} onPress={()=>void reload()}/>
- </ScrollView>
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
+import { brand, fonts } from '@/constants/brand'
+import { useLocalSearchParams } from 'expo-router'
+import MyTickets from '@/components/events/MyTickets'
+import { filterEvents, EventWindow } from '@/lib/event-discovery'
+import { useState } from 'react'
+import { View, Text, FlatList, StyleSheet, RefreshControl, TextInput } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
+
+import { useEvents } from '@/hooks/useEvents'
+import EventCard from '@/components/events/EventCard'
+import { useStatusBarStyle } from '@/hooks/useStatusBarStyle'
+import { EventCardSkeleton } from '@/components/Skeleton'
+
+// Events: browse and register (Upcoming) or open your bookings (My tickets).
+export default function EventsScreen() {
+  useStatusBarStyle('dark')
+  const insets = useSafeAreaInsets()
+  const params = useLocalSearchParams<{ view?: string }>()
+  const [view, setView] = useState<'upcoming' | 'tickets'>(params.view === 'tickets' ? 'tickets' : 'upcoming')
+  // A link like /events?view=tickets switches the view even when the tab is already open.
+  const [linkedView, setLinkedView] = useState(params.view)
+  if (params.view !== linkedView) { setLinkedView(params.view); if (params.view === 'tickets' || params.view === 'upcoming') setView(params.view) }
+  const switcher = <View style={[styles.segment, { marginTop: insets.top + 16 }]}>
+    {(['upcoming', 'tickets'] as const).map(value => <PressableScale key={value} accessibilityRole="tab" accessibilityState={{ selected: view === value }} onPress={() => setView(value)} haptic="selection" hitSlop={4} style={[styles.segmentItem, view === value && styles.segmentSelected]}>
+      <Text style={[styles.segmentText, view === value && styles.segmentSelectedText]}>{value === 'upcoming' ? 'Upcoming' : 'My tickets'}</Text>
+    </PressableScale>)}
+  </View>
+  const [search, setSearch] = useState('')
+  const [window, setWindow] = useState<EventWindow>('all')
+  const [location, setLocation] = useState('')
+  const {
+    events,
+    loading,
+    error,
+    refetch,
+  } = useEvents()
+
+  if (view === 'tickets') return <View style={styles.container}><View style={styles.ticketsHeader}>{switcher}</View><MyTickets /></View>
+
+  if (loading && events.length === 0) {
+    return <View style={styles.container}><View style={styles.ticketsHeader}>{switcher}</View><EventCardSkeleton /><EventCardSkeleton /></View>
+  }
+
+  if (error && events.length === 0) {
+    return (
+      <View style={styles.centered}>
+        <Text style={styles.errorTitle}>
+          Unable to load events
+        </Text>
+
+        <Text style={styles.errorText}>
+          {error}
+        </Text>
+        <PressableScale accessibilityRole="button" onPress={refetch}><Text style={styles.retry}>Try again</Text></PressableScale>
+      </View>
+    )
+  }
+
+  return (
+    <FlatList
+      data={filterEvents(events, { search, window, location })}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => (
+        <EventCard event={item} />
+      )}
+      style={styles.container}
+      contentContainerStyle={styles.list}
+      refreshControl={
+        <RefreshControl
+          refreshing={loading}
+          onRefresh={refetch}
+          tintColor={brand.primary}
+        />
+      }
+      ListHeaderComponent={
+        <View>
+        <View style={styles.ticketsHeader}>
+          {switcher}
+          <TextInput accessibilityLabel="Search events" placeholder="Search title, location or speaker" placeholderTextColor={brand.inkMuted} style={styles.search} value={search} onChangeText={setSearch} />
+        </View>
+        <View style={styles.header}>
+          <Text style={styles.filterLabel}>When</Text>
+          <View style={styles.filters}>
+            {([['all', 'All upcoming'], ['week', 'Next 7 days'], ['month', 'Next month']] as const).map(([value, label]) => <PressableScale key={value} accessibilityRole="button" accessibilityState={{ selected: window === value }} style={[styles.filter, window === value && styles.selectedFilter]} onPress={() => setWindow(value)}><Text style={[styles.filterText, window === value && styles.selectedFilterText]}>{label}</Text></PressableScale>)}
+          </View>
+          <Text style={styles.filterLabel}>Venue</Text>
+          <View style={styles.filters}>
+            {['', ...Array.from(new Set(events.map(event => event.location).filter(Boolean))).sort()].map(value => <PressableScale key={value} accessibilityRole="button" accessibilityState={{ selected: location === value }} style={[styles.filter, location === value && styles.selectedFilter]} onPress={() => setLocation(value)}><Text style={[styles.filterText, location === value && styles.selectedFilterText]}>{value || 'All venues'}</Text></PressableScale>)}
+          </View>
+          {Boolean(search || window !== 'all' || location) && <PressableScale accessibilityRole="button" onPress={() => { setSearch(''); setWindow('all'); setLocation('') }}><Text style={styles.filterLabel}>Clear filters</Text></PressableScale>}
+          {Boolean(error) && <Text accessibilityRole="alert" style={styles.errorText}>Refresh failed: {error}</Text>}
+
+        </View>
+        </View>
+      }
+      ListEmptyComponent={
+        <View style={styles.empty}>
+          <Text style={styles.emptyTitle}>
+            {search || window !== 'all' || location ? 'No matching events' : 'No upcoming events'}
+          </Text>
+
+          <Text style={styles.emptyText}>
+            {search || window !== 'all' || location ? 'Change or clear your filters.' : 'Check back later for new events.'}
+          </Text>
+        </View>
+      }
+    />
+  )
 }
+
+const styles = StyleSheet.create({
+  ticketsHeader: { paddingHorizontal: 20, paddingBottom: 4, backgroundColor: brand.page },
+  segment: { flexDirection: 'row', backgroundColor: brand.card, borderRadius: 999, padding: 4, borderWidth: 1, borderColor: brand.line },
+  segmentItem: { flex: 1, paddingVertical: 10, borderRadius: 999, alignItems: 'center' },
+  segmentSelected: { backgroundColor: brand.forest },
+  segmentText: { color: brand.ink, fontFamily: fonts.label, fontSize: 15 },
+  segmentSelectedText: { color: brand.page },
+  retry: { color: brand.primary, fontFamily: fonts.label, fontSize: 16, marginTop: 16 },
+  search: { color: brand.ink, backgroundColor: brand.card, paddingVertical: 13, paddingHorizontal: 16, marginTop: 14, borderRadius: 999, fontSize: 15, borderWidth: 1, borderColor: brand.line },
+  filterLabel: { color: brand.inkMuted, fontSize: 13, fontWeight: '700', marginTop: 16, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.6 },
+  filters: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  filter: { borderWidth: 1, borderColor: brand.line, backgroundColor: brand.card, paddingVertical: 9, paddingHorizontal: 14, borderRadius: 999 },
+  selectedFilter: { backgroundColor: brand.primary, borderColor: brand.primary },
+  filterText: { color: brand.ink, fontWeight: '600' },
+  selectedFilterText: { color: brand.page },
+  container: {
+    flex: 1,
+    backgroundColor: brand.page,
+  },
+
+  list: {
+    paddingBottom: 40,
+  },
+
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 12,
+  },
+
+
+
+  centered: {
+    flex: 1,
+    backgroundColor: brand.page,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+
+  loadingText: {
+    color: brand.inkMuted,
+    marginTop: 12,
+  },
+
+  errorTitle: {
+    color: brand.ink,
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 8,
+  },
+
+  errorText: {
+    color: brand.danger,
+    textAlign: 'center',
+  },
+
+  empty: {
+    alignItems: 'center',
+    padding: 40,
+  },
+
+  emptyTitle: {
+    color: brand.ink,
+    fontSize: 18,
+    fontWeight: '600',
+  },
+
+  emptyText: {
+    color: brand.inkMuted,
+    fontSize: 14,
+    marginTop: 8,
+  },
+})

@@ -1,5 +1,7 @@
-import { View, Text, Pressable, Image, StyleSheet } from 'react-native'
-import { brand, shadow } from '@/constants/brand'
+import { View, Text, Image, StyleSheet } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
+import { brand, fonts, shadow } from '@/constants/brand'
+import { BrandLogo } from '@/components/BrandLogo'
 import { router } from 'expo-router'
 import { Event } from '@/types'
 
@@ -18,29 +20,37 @@ export default function EventCard({ event }: Props) {
     day: 'numeric',
   })
 
+  const month = new Date(event.event_date).toLocaleDateString('en-US', { month: 'short' }).toUpperCase()
+  const day = new Date(event.event_date).getDate()
+
   const formattedTime = new Date(event.event_date).toLocaleTimeString('en-US', {
     hour: 'numeric',
     minute: '2-digit',
   })
 
   return (
-    <Pressable
-      style={({ pressed }) => [
-        styles.card,
-        pressed && styles.cardPressed,
-      ]}
+    <PressableScale
+      accessibilityRole="button"
+      accessibilityLabel={`${event.title}, ${formattedDate} at ${formattedTime}`}
+      style={styles.card}
       onPress={handlePress}
     >
-      {event.image_url ? (
-        <Image
-          source={{ uri: event.image_url }}
-          style={styles.image}
-        />
-      ) : (
-        <View style={styles.imagePlaceholder}>
-          <Text style={styles.placeholderText}>THABAAT</Text>
+      <View>
+        {event.image_url ? (
+          <Image
+            source={{ uri: event.image_url }}
+            style={styles.image}
+          />
+        ) : (
+          <View style={styles.imagePlaceholder}>
+            <BrandLogo variant="icon" height={56} />
+          </View>
+        )}
+        <View style={styles.dateBadge} accessible={false}>
+          <Text style={styles.dateBadgeMonth}>{month}</Text>
+          <Text style={styles.dateBadgeDay}>{day}</Text>
         </View>
-      )}
+      </View>
 
       <View style={styles.content}>
         <Text style={styles.title} numberOfLines={2}>
@@ -66,10 +76,10 @@ export default function EventCard({ event }: Props) {
         </Text>
 
         <Text style={styles.viewEvent}>
-          View Event →
+          View and register →
         </Text>
       </View>
-    </Pressable>
+    </PressableScale>
   )
 }
 
@@ -78,74 +88,29 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginVertical: 8,
     backgroundColor: brand.card, borderWidth: 1, borderColor: brand.line, ...shadow,
-    borderRadius: 12,
+    borderRadius: brand.radius,
     overflow: 'hidden',
   },
-
-  cardPressed: {
-    opacity: 0.7,
-  },
-
-  image: {
-    width: '100%',
-    height: 180,
-  },
-
+  image: { width: '100%', aspectRatio: 4 / 5 }, // flyers are 1080×1350; show the whole poster instead of a cropped strip
   imagePlaceholder: {
     width: '100%',
-    height: 100,
-    backgroundColor: brand.green,
+    height: 120,
+    backgroundColor: brand.primarySoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
-
-  placeholderText: {
-    color: brand.gold,
-    fontSize: 20,
-    fontWeight: 'bold',
-    letterSpacing: 3,
+  dateBadge: {
+    position: 'absolute', left: 14, bottom: -22,
+    backgroundColor: brand.card, borderWidth: 1, borderColor: brand.sage, borderRadius: brand.radiusSmall,
+    paddingVertical: 6, paddingHorizontal: 12, alignItems: 'center', ...shadow,
   },
-
-  content: {
-    padding: 16,
-  },
-
-  title: {
-    color: brand.ink,
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-
-  date: {
-    color: brand.green,
-    fontSize: 14,
-    marginBottom: 4,
-  },
-
-  location: {
-    color: brand.inkMuted,
-    fontSize: 14,
-    marginBottom: 4,
-  },
-
-  speaker: {
-    color: brand.inkMuted,
-    fontSize: 14,
-    marginBottom: 8,
-  },
-
-  description: {
-    color: brand.inkMuted,
-    fontSize: 14,
-    lineHeight: 20,
-    marginTop: 4,
-  },
-
-  viewEvent: {
-    color: brand.green,
-    fontSize: 14,
-    fontWeight: '600',
-    marginTop: 12,
-  },
+  dateBadgeMonth: { color: brand.forest, fontSize: 11, fontFamily: fonts.heading, letterSpacing: 1 },
+  dateBadgeDay: { color: brand.forest, fontSize: 20, fontFamily: fonts.headingHeavy, lineHeight: 24 },
+  content: { padding: 16, paddingTop: 30 },
+  title: { color: brand.ink, fontSize: 19, fontFamily: fonts.heading, letterSpacing: -0.2, marginBottom: 8 },
+  date: { color: brand.primary, fontSize: 14, fontFamily: fonts.label, marginBottom: 4 },
+  location: { color: brand.inkMuted, fontSize: 14, marginBottom: 4 },
+  speaker: { color: brand.inkMuted, fontSize: 14, marginBottom: 8 },
+  description: { color: brand.inkMuted, fontSize: 14, lineHeight: 20, marginTop: 4 },
+  viewEvent: { color: brand.primary, fontSize: 14, fontFamily: fonts.label, marginTop: 12 },
 })

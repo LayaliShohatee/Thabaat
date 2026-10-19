@@ -1,195 +1,79 @@
+import { useCallback, useState } from 'react'
+import { Linking, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { PressableScale } from '@/components/PressableScale'
+import { router } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
-import { brand } from '@/constants/brand'
-import { filterEvents, EventWindow } from '@/lib/event-discovery'
-import { useState } from 'react'
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  ActivityIndicator,
-  RefreshControl,
-  TextInput,
-  TouchableOpacity,
-} from 'react-native'
-
+import { brand, fonts, links, shadow } from '@/constants/brand'
+import { BrandLogo } from '@/components/BrandLogo'
+import { useAuth } from '@/hooks/useAuth'
 import { useEvents } from '@/hooks/useEvents'
+import { useFocusResource } from '@/hooks/useFocusResource'
+import { getUserRegistrations } from '@/services/registrationService'
 import EventCard from '@/components/events/EventCard'
+import type { Registration } from '@/types'
+import { EventCardSkeleton } from '@/components/Skeleton'
 
+// Home: a welcome, the member's next booked event, and what's coming up. Browsing and registering live in Events.
 export default function HomeScreen() {
   const insets = useSafeAreaInsets()
-  const [search, setSearch] = useState('')
-  const [window, setWindow] = useState<EventWindow>('all')
-  const [location, setLocation] = useState('')
-  const {
-    events,
-    loading,
-    error,
-    refetch,
-  } = useEvents()
+  const { user } = useAuth()
+  const { events, loading, error, refetch } = useEvents()
+  const loadTickets = useCallback(() => user ? getUserRegistrations(user.id) : Promise.resolve([]), [user])
+  const { data: registrations, reload } = useFocusResource<Registration[]>(loadTickets, [])
+  const [now] = useState(Date.now)
+  const firstName = String(user?.user_metadata?.full_name || '').trim().split(/\s+/)[0]
+  const next = registrations
+    .filter(r => r.status === 'confirmed' && r.event?.event_date && new Date(r.event.event_date).getTime() > now - 6 * 3600000)
+    .sort((a, b) => new Date(a.event!.event_date).getTime() - new Date(b.event!.event_date).getTime())[0]
 
-  if (loading && events.length === 0) {
-    return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={brand.green} />
-        <Text style={styles.loadingText}>
-          Loading events...
-        </Text>
-      </View>
-    )
-  }
+  return <ScrollView style={styles.page} contentContainerStyle={{ paddingBottom: 40 }}
+    refreshControl={<RefreshControl refreshing={loading} onRefresh={() => { void refetch(); void reload() }} tintColor={brand.primary} />}>
+    <View style={[styles.hero, { paddingTop: insets.top + 28 }]}>
+      <BrandLogo ink="reverse" height={32} />
+      <Text style={styles.tagline}>HEARTS FIRM TOGETHER</Text>
+      <Text style={styles.greeting}>{firstName ? `Salaam, ${firstName}` : 'Salaam'}</Text>
+      <Text style={styles.heroText}>A community for young professionals in Southeast Michigan to grow socially, spiritually and professionally.</Text>
+    </View>
 
-  if (error && events.length === 0) {
-    return (
-      <View style={styles.centered}>
-        <Text style={styles.errorTitle}>
-          Unable to load events
-        </Text>
+    {next && <PressableScale accessibilityRole="button" style={styles.nextCard} onPress={() => router.push(`/ticket/${next.id}`)}>
+      <Text style={styles.nextLabel}>YOUR NEXT EVENT</Text>
+      <Text style={styles.nextTitle}>{next.event?.title}</Text>
+      <Text style={styles.nextMeta}>{new Date(next.event!.event_date).toLocaleString('en-US', { weekday: 'long', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}</Text>
+      <Text style={styles.nextAction}>Open ticket →</Text>
+    </PressableScale>}
 
-        <Text style={styles.errorText}>
-          {error}
-        </Text>
-        <TouchableOpacity accessibilityRole="button" onPress={refetch}><Text style={styles.title}>Try Again</Text></TouchableOpacity>
-      </View>
-    )
-  }
+    <View style={styles.quickRow}>
+      {([['Events', () => router.push('/(tabs)/events')], ['FAQ', () => router.push('/faq')], ['Follow us', () => void Linking.openURL(links.social)]] as const).map(([label, onPress]) =>
+        <PressableScale key={label} accessibilityRole="button" style={styles.quick} onPress={onPress}><Text style={styles.quickText}>{label}</Text></PressableScale>)}
+    </View>
 
-  return (
-    <FlatList
-      data={filterEvents(events, { search, window, location })}
-      keyExtractor={(item) => item.id}
-      renderItem={({ item }) => (
-        <EventCard event={item} />
-      )}
-      style={styles.container}
-      contentContainerStyle={styles.list}
-      refreshControl={
-        <RefreshControl
-          refreshing={loading}
-          onRefresh={refetch}
-          tintColor={brand.green}
-        />
-      }
-      ListHeaderComponent={
-        <View>
-        <View style={[styles.hero, { paddingTop: insets.top + 24 }]}>
-          <Text style={styles.eyebrow}>THABAAT COMMUNITY</Text>
-          <Text style={styles.title}>
-            Discover Events
-          </Text>
-
-          <Text style={styles.subtitle}>
-            Find events happening around you
-          </Text>
-          <TextInput accessibilityLabel="Search events" placeholder="Search title, location or speaker" placeholderTextColor={brand.inkMuted} style={styles.search} value={search} onChangeText={setSearch} />
-        </View>
-        <View style={styles.header}>
-          <Text style={styles.filterLabel}>When</Text>
-          <View style={styles.filters}>
-            {([['all', 'All upcoming'], ['week', 'Next 7 days'], ['month', 'Next month']] as const).map(([value, label]) => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: window === value }} style={[styles.filter, window === value && styles.selectedFilter]} onPress={() => setWindow(value)}><Text style={[styles.filterText, window === value && styles.selectedFilterText]}>{label}</Text></TouchableOpacity>)}
-          </View>
-          <Text style={styles.filterLabel}>Venue</Text>
-          <View style={styles.filters}>
-            {['', ...Array.from(new Set(events.map(event => event.location).filter(Boolean))).sort()].map(value => <TouchableOpacity key={value} accessibilityRole="button" accessibilityState={{ selected: location === value }} style={[styles.filter, location === value && styles.selectedFilter]} onPress={() => setLocation(value)}><Text style={[styles.filterText, location === value && styles.selectedFilterText]}>{value || 'All venues'}</Text></TouchableOpacity>)}
-          </View>
-          {Boolean(search || window !== 'all' || location) && <TouchableOpacity accessibilityRole="button" onPress={() => { setSearch(''); setWindow('all'); setLocation('') }}><Text style={styles.filterLabel}>Clear filters</Text></TouchableOpacity>}
-          {Boolean(error) && <Text accessibilityRole="alert" style={styles.errorText}>Refresh failed: {error}</Text>}
-
-        </View>
-        </View>
-      }
-      ListEmptyComponent={
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>
-            {search || window !== 'all' || location ? 'No matching events' : 'No upcoming events'}
-          </Text>
-
-          <Text style={styles.emptyText}>
-            {search || window !== 'all' || location ? 'Change or clear your filters.' : 'Check back later for new events.'}
-          </Text>
-        </View>
-      }
-    />
-  )
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>Coming up</Text>
+      <PressableScale accessibilityRole="button" onPress={() => router.push('/(tabs)/events')}><Text style={styles.seeAll}>See all</Text></PressableScale>
+    </View>
+    {!!error && !events.length && <Text accessibilityRole="alert" style={styles.muted}>Unable to load events. Pull down to try again.</Text>}
+    {loading && !events.length && <><EventCardSkeleton /><EventCardSkeleton /></>}
+    {!loading && !error && !events.length && <Text style={styles.muted}>No upcoming events yet. Check back soon.</Text>}
+    {events.slice(0, 3).map(event => <EventCard key={event.id} event={event} />)}
+  </ScrollView>
 }
 
 const styles = StyleSheet.create({
-  hero: { backgroundColor: brand.green, paddingHorizontal: 20, paddingBottom: 24, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
-  eyebrow: { color: brand.gold, fontSize: 12, fontWeight: '800', letterSpacing: 2, marginBottom: 6 },
-  search: { color: brand.ink, backgroundColor: brand.card, paddingVertical: 13, paddingHorizontal: 16, marginTop: 18, borderRadius: 999, fontSize: 15 },
-  filterLabel: { color: brand.inkMuted, fontSize: 13, fontWeight: '700', marginTop: 16, marginBottom: 8, textTransform: 'uppercase', letterSpacing: 0.6 },
-  filters: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  filter: { borderWidth: 1, borderColor: brand.line, backgroundColor: brand.card, paddingVertical: 9, paddingHorizontal: 14, borderRadius: 999 },
-  selectedFilter: { backgroundColor: brand.green, borderColor: brand.green },
-  filterText: { color: brand.ink, fontWeight: '600' },
-  selectedFilterText: { color: '#FFFFFF' },
-  container: {
-    flex: 1,
-    backgroundColor: brand.page,
-  },
-
-  list: {
-    paddingBottom: 40,
-  },
-
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 12,
-  },
-
-  title: {
-    color: '#FFFFFF',
-    fontSize: 32,
-    fontWeight: '800',
-    letterSpacing: -0.5,
-  },
-
-  subtitle: {
-    color: '#CFE3DA',
-    fontSize: 15,
-    marginTop: 4,
-  },
-
-  centered: {
-    flex: 1,
-    backgroundColor: brand.page,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 20,
-  },
-
-  loadingText: {
-    color: brand.inkMuted,
-    marginTop: 12,
-  },
-
-  errorTitle: {
-    color: brand.ink,
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 8,
-  },
-
-  errorText: {
-    color: brand.danger,
-    textAlign: 'center',
-  },
-
-  empty: {
-    alignItems: 'center',
-    padding: 40,
-  },
-
-  emptyTitle: {
-    color: brand.ink,
-    fontSize: 18,
-    fontWeight: '600',
-  },
-
-  emptyText: {
-    color: brand.inkMuted,
-    fontSize: 14,
-    marginTop: 8,
-  },
+  page: { flex: 1, backgroundColor: brand.page },
+  hero: { backgroundColor: brand.hero, paddingHorizontal: 24, paddingBottom: 56, borderBottomLeftRadius: 28, borderBottomRightRadius: 28 },
+  tagline: { color: brand.forestSoft, fontFamily: fonts.label, fontSize: 11, letterSpacing: 3, marginTop: 12 },
+  greeting: { color: brand.page, fontFamily: fonts.headingHeavy, fontSize: 24, letterSpacing: -0.4, marginTop: 28 },
+  heroText: { color: brand.forestSoft, fontSize: 15, lineHeight: 22, marginTop: 6 },
+  nextCard: { marginHorizontal: 16, marginTop: -36, backgroundColor: brand.card, borderRadius: brand.radius, padding: 18, borderLeftWidth: 3, borderLeftColor: brand.sage, ...shadow },
+  nextLabel: { color: brand.primary, fontFamily: fonts.label, fontSize: 11, letterSpacing: 1.5 },
+  nextTitle: { color: brand.ink, fontFamily: fonts.heading, fontSize: 19, letterSpacing: -0.2, marginTop: 6 },
+  nextMeta: { color: brand.inkMuted, fontSize: 14, marginTop: 4 },
+  nextAction: { color: brand.primary, fontFamily: fonts.label, fontSize: 14, marginTop: 10 },
+  quickRow: { flexDirection: 'row', gap: 10, paddingHorizontal: 16, marginTop: 18 },
+  quick: { flex: 1, backgroundColor: brand.card, borderRadius: brand.radiusSmall, borderWidth: 1, borderColor: brand.line, paddingVertical: 14, alignItems: 'center' },
+  quickText: { color: brand.ink, fontFamily: fonts.label, fontSize: 14 },
+  sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', paddingHorizontal: 20, marginTop: 26, marginBottom: 4 },
+  sectionTitle: { color: brand.ink, fontFamily: fonts.heading, fontSize: 20, letterSpacing: -0.2 },
+  seeAll: { color: brand.primary, fontFamily: fonts.label, fontSize: 14 },
+  muted: { color: brand.inkMuted, paddingHorizontal: 20, marginTop: 8 },
 })

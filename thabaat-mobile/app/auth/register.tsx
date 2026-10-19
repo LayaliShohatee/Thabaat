@@ -1,18 +1,16 @@
 import { authRedirectUrl } from '@/lib/auth-links'
-import { brand } from '@/constants/brand'
+import { brand, fonts } from '@/constants/brand'
+import { BrandLogo } from '@/components/BrandLogo'
 import { useState } from 'react';
-import {
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { PressableScale } from '@/components/PressableScale';
 import { router, useLocalSearchParams } from 'expo-router';
 import {eventReturnPath} from '@/lib/event-sharing';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { useStatusBarStyle } from '@/hooks/useStatusBarStyle'
 
 export default function RegisterScreen() {
+  useStatusBarStyle('dark')
   const {eventId}=useLocalSearchParams<{eventId?:string}>();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -67,7 +65,7 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.logo}>Thabaat</Text>
+      <BrandLogo height={36} style={styles.logo} />
 
       <Text style={styles.title}>Create your account</Text>
 
@@ -84,7 +82,7 @@ export default function RegisterScreen() {
       <TextInput
         style={styles.input}
         placeholder="Full name"
-        placeholderTextColor="#888"
+        placeholderTextColor={brand.sage}
         value={name}
         onChangeText={setName}
       />
@@ -92,7 +90,7 @@ export default function RegisterScreen() {
       <TextInput
         style={styles.input}
         placeholder="Email"
-        placeholderTextColor="#888"
+        placeholderTextColor={brand.sage}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -102,7 +100,7 @@ export default function RegisterScreen() {
       <TextInput
         style={styles.input}
         placeholder="Password"
-        placeholderTextColor="#888"
+        placeholderTextColor={brand.sage}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -115,7 +113,7 @@ export default function RegisterScreen() {
         <Text style={styles.feedback} accessibilityLiveRegion="polite">{successMessage}</Text>
       ) : null}
 
-      <TouchableOpacity
+      <PressableScale
         accessibilityRole="button"
         style={styles.button}
         onPress={handleRegister}
@@ -124,11 +122,11 @@ export default function RegisterScreen() {
         <Text style={styles.buttonText}>
           {loading ? 'Creating account...' : 'Create Account'}
         </Text>
-      </TouchableOpacity>
+      </PressableScale>
 
-      <TouchableOpacity onPress={() => router.push(eventReturnPath(eventId)?{pathname:'/auth/login',params:{eventId}}:'/auth/login')}>
+      <PressableScale onPress={() => router.push(eventReturnPath(eventId)?{pathname:'/auth/login',params:{eventId}}:'/auth/login')}>
         <Text style={styles.link}>Already have an account? Log in</Text>
-      </TouchableOpacity>
+      </PressableScale>
     </View>
   );
 }
@@ -136,22 +134,19 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: brand.card,
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
 
   logo: {
-    fontSize: 28,
-    fontWeight: '700',
-    color: brand.green,
-    textAlign: 'center',
-    marginBottom: 25,
+    alignSelf: 'center',
+    marginBottom: 24,
   },
 
   title: {
     fontSize: 26,
-    fontWeight: '700',
+    fontFamily: fonts.headingHeavy,
     color: brand.ink,
     textAlign: 'center',
   },
@@ -183,14 +178,14 @@ const styles = StyleSheet.create({
   },
 
   error: {
-    color: '#B42318',
+    color: brand.danger,
     marginBottom: 16,
     textAlign: 'center',
   },
 
   button: {
     height: 50,
-    backgroundColor: brand.green,
+    backgroundColor: brand.primary,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -199,13 +194,13 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: '#FFFFFF',
+    color: brand.page,
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.heading,
   },
 
   link: {
-    color: brand.green,
+    color: brand.primary,
     textAlign: 'center',
     fontSize: 14,
     fontWeight: '500',

@@ -2,17 +2,9 @@ import * as Linking from 'expo-linking';
 import { consumeAuthLink } from '@/lib/auth-links';
 import { Alert } from '@/lib/alert'
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { PressableScale } from '@/components/PressableScale';
+import { brand, fonts } from '@/constants/brand';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
@@ -96,20 +88,20 @@ export default function ResetPasswordScreen() {
       </Text>
 
       {!ready && !linkError ? <View style={styles.status}>
-        <ActivityIndicator color="#159A8C" />
+        <ActivityIndicator color={brand.tealText} />
         <Text style={styles.statusText} accessibilityLiveRegion="polite">Verifying your reset link...</Text>
       </View> : null}
       {linkError ? <View style={styles.status}>
         <Text style={styles.error} accessibilityRole="alert">{linkError}</Text>
-        <TouchableOpacity accessibilityRole="button" onPress={() => setAttempt(value => value + 1)}>
+        <PressableScale accessibilityRole="button" onPress={() => setAttempt(value => value + 1)}>
           <Text style={styles.retry}>Try verifying again</Text>
-        </TouchableOpacity>
+        </PressableScale>
       </View> : null}
       <TextInput
         style={styles.input}
         accessibilityLabel="New password"
         placeholder="New password"
-        placeholderTextColor="#888"
+        placeholderTextColor={brand.sage}
         value={password}
         onChangeText={setPassword}
         autoCapitalize="none"
@@ -120,14 +112,14 @@ export default function ResetPasswordScreen() {
         style={styles.input}
         accessibilityLabel="Confirm new password"
         placeholder="Confirm new password"
-        placeholderTextColor="#888"
+        placeholderTextColor={brand.sage}
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         autoCapitalize="none"
         secureTextEntry
       />
 
-      <TouchableOpacity
+      <PressableScale
         accessibilityRole="button"
         accessibilityState={{ disabled: loading || !ready, busy: loading }}
         style={[styles.button, (loading || !ready) && styles.disabledButton]}
@@ -137,32 +129,32 @@ export default function ResetPasswordScreen() {
         <Text style={styles.buttonText}>
           {loading ? 'Updating...' : !ready && !linkError ? 'Verifying link...' : 'Update Password'}
         </Text>
-      </TouchableOpacity>
+      </PressableScale>
     </ScrollView>
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: '#FFFFFF' },
+  page: { flex: 1, backgroundColor: brand.card },
   container: {
     flexGrow: 1,
     paddingVertical: 24,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: brand.card,
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
 
   title: {
     fontSize: 26,
-    fontWeight: '700',
-    color: '#222222',
+    fontFamily: fonts.heading,
+    color: brand.ink,
     textAlign: 'center',
   },
 
   subtitle: {
     fontSize: 14,
-    color: '#666666',
+    color: brand.inkMuted,
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 28,
@@ -170,19 +162,19 @@ const styles = StyleSheet.create({
 
   input: {
     height: 50,
-    backgroundColor: '#F5F8F7',
+    backgroundColor: brand.page,
     borderWidth: 1,
-    borderColor: '#E1E8E6',
+    borderColor: brand.line,
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 15,
-    color: '#222222',
+    color: brand.ink,
     marginBottom: 14,
   },
 
   button: {
     height: 50,
-    backgroundColor: '#159A8C',
+    backgroundColor: brand.primary,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -191,12 +183,12 @@ const styles = StyleSheet.create({
 
   disabledButton: { opacity: 0.45 },
   status: { marginBottom: 18, alignItems: 'center', gap: 10 },
-  statusText: { color: '#666666', textAlign: 'center' },
-  error: { color: '#B42318', textAlign: 'center' },
-  retry: { color: '#159A8C', fontWeight: '600', padding: 10 },
+  statusText: { color: brand.inkMuted, textAlign: 'center' },
+  error: { color: brand.danger, textAlign: 'center' },
+  retry: { color: brand.tealText, fontWeight: '600', padding: 10 },
   buttonText: {
-    color: '#FFFFFF',
+    color: brand.page,
     fontSize: 16,
-    fontWeight: '600',
+    fontFamily: fonts.heading,
   },
 });
