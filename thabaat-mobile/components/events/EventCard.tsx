@@ -1,6 +1,7 @@
 import { View, Text, Image, StyleSheet } from 'react-native'
 import { PressableScale } from '@/components/PressableScale'
 import { brand, fonts, shadow } from '@/constants/brand'
+import { BrandLogo } from '@/components/BrandLogo'
 import { router } from 'expo-router'
 import { Event } from '@/types'
 
@@ -42,7 +43,7 @@ export default function EventCard({ event }: Props) {
           />
         ) : (
           <View style={styles.imagePlaceholder}>
-            <Text style={styles.placeholderText}>THABAAT</Text>
+            <BrandLogo variant="icon" height={56} />
           </View>
         )}
         <View style={styles.dateBadge} accessible={false}>
@@ -90,22 +91,21 @@ const styles = StyleSheet.create({
     borderRadius: brand.radius,
     overflow: 'hidden',
   },
-  image: { width: '100%', height: 180 },
+  image: { width: '100%', aspectRatio: 4 / 5 }, // flyers are 1080×1350; show the whole poster instead of a cropped strip
   imagePlaceholder: {
     width: '100%',
     height: 120,
-    backgroundColor: brand.navy,
+    backgroundColor: brand.primarySoft,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  placeholderText: { color: brand.teal, fontSize: 20, fontFamily: fonts.heading, letterSpacing: 6 },
   dateBadge: {
     position: 'absolute', left: 14, bottom: -22,
-    backgroundColor: brand.gold, borderRadius: brand.radiusSmall,
+    backgroundColor: brand.card, borderWidth: 1, borderColor: brand.sage, borderRadius: brand.radiusSmall,
     paddingVertical: 6, paddingHorizontal: 12, alignItems: 'center', ...shadow,
   },
-  dateBadgeMonth: { color: brand.navy, fontSize: 11, fontFamily: fonts.heading, letterSpacing: 1 },
-  dateBadgeDay: { color: brand.navy, fontSize: 20, fontFamily: fonts.headingHeavy, lineHeight: 24 },
+  dateBadgeMonth: { color: brand.forest, fontSize: 11, fontFamily: fonts.heading, letterSpacing: 1 },
+  dateBadgeDay: { color: brand.forest, fontSize: 20, fontFamily: fonts.headingHeavy, lineHeight: 24 },
   content: { padding: 16, paddingTop: 30 },
   title: { color: brand.ink, fontSize: 19, fontFamily: fonts.heading, letterSpacing: -0.2, marginBottom: 8 },
   date: { color: brand.primary, fontSize: 14, fontFamily: fonts.label, marginBottom: 4 },

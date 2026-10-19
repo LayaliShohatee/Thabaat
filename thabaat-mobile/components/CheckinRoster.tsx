@@ -57,7 +57,7 @@ export function CheckinRoster({ eventId, readOnly = false }: { eventId: string; 
      ? <Text accessibilityLabel={`${p.full_name} checked in`} style={{ color: brand.primary, fontFamily: fonts.heading, fontSize: 14 }}>✓ In</Text>
      : canCheckIn && <PressableScale accessibilityRole="button" accessibilityLabel={`Check in ${p.full_name}`} disabled={!!busy} onPress={() => checkIn(p)}
         style={{ backgroundColor: brand.primary, paddingVertical: 10, paddingHorizontal: 16, borderRadius: 999, opacity: busy && busy !== p.id ? 0.5 : 1 }}>
-        <Text style={{ color: '#FFFFFF', fontFamily: fonts.label }}>{busy === p.id ? '…' : 'Check in'}</Text>
+        <Text style={{ color: brand.page, fontFamily: fonts.label }}>{busy === p.id ? '…' : 'Check in'}</Text>
        </PressableScale>}
    </View>)}
   </View>

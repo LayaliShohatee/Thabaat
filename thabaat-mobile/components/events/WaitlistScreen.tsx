@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { View, Text, ScrollView, TextInput, StyleSheet } from 'react-native'
 import { PressableScale } from '@/components/PressableScale'
-import { fonts } from '@/constants/brand'
+import { brand, fonts } from '@/constants/brand'
 import { useLocalSearchParams, router } from 'expo-router'
 import { useAuth } from '@/hooks/useAuth'
 import { useFocusResource } from '@/hooks/useFocusResource'
@@ -46,4 +46,4 @@ export default function WaitlistScreen({manage=false}:{manage?:boolean}) {
   {button(busy?'Please wait…':'Refresh waitlist',()=>void reload(),loading)}
  </ScrollView>
 }
-const styles=StyleSheet.create({page:{flex:1,backgroundColor:'#101412'},content:{padding:24,gap:12},title:{color:'#fff',fontSize:24,fontFamily: fonts.heading},text:{color:'#ddd',lineHeight:22},card:{backgroundColor:'#202720',padding:16,gap:8,borderRadius:8},button:{backgroundColor:'#d8eada',padding:12,borderRadius:8},buttonText:{color:'#152019',fontWeight:'600'},input:{color:'#fff',borderWidth:1,borderColor:'#666',padding:12,borderRadius:8}})
+const styles=StyleSheet.create({page:{flex:1,backgroundColor: brand.ink},content:{padding:24,gap:12},title:{color: brand.page,fontSize:24,fontFamily: fonts.heading},text:{color:'#ddd',lineHeight:22},card:{backgroundColor:'#202720',padding:16,gap:8,borderRadius:8},button:{backgroundColor: brand.line,padding:12,borderRadius:8},buttonText:{color:'#152019',fontWeight:'600'},input:{color: brand.page,borderWidth:1,borderColor:'#666',padding:12,borderRadius:8}})

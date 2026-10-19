@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 28, fontFamily: fonts.headingHeavy, letterSpacing: -0.4, color: brand.ink, marginBottom: 8, textAlign: 'center' },
   subtitle: { fontSize: 16, color: brand.inkMuted, textAlign: 'center', marginBottom: 24, lineHeight: 23 },
   button: { backgroundColor: brand.primary, height: 52, borderRadius: 999, alignItems: 'center', justifyContent: 'center', width: '100%', marginBottom: 8 },
-  buttonText: { color: '#FFFFFF', fontSize: 16, fontFamily: fonts.heading },
+  buttonText: { color: brand.page, fontSize: 16, fontFamily: fonts.heading },
   secondaryButton: { paddingVertical: 14, alignItems: 'center', width: '100%' },
   secondaryButtonText: { color: brand.primary, fontSize: 15, fontFamily: fonts.label },
 })

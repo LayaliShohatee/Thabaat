@@ -1,7 +1,7 @@
 import { router } from 'expo-router'
 import { ScrollView, Text, StyleSheet } from 'react-native'
 import { PressableScale } from '@/components/PressableScale'
-import { fonts } from '@/constants/brand'
+import { brand, fonts } from '@/constants/brand'
 import { useCallback } from 'react'
 import { useFocusResource } from '@/hooks/useFocusResource'
 import { getPaidEventOrder } from '@/services/paidEventService'
@@ -21,4 +21,4 @@ export default function PaymentReturn() {
   <PressableScale accessibilityRole="button" style={styles.button} onPress={() => router.replace('/payments/history')}><Text>Payment history</Text></PressableScale>
  </ScrollView>
 }
-const styles = StyleSheet.create({ page: { flexGrow: 1, backgroundColor: '#000', padding: 24, gap: 20 }, title: { color: '#fff', fontSize: 26, fontFamily: fonts.heading }, text: { color: '#ddd', fontSize: 16, lineHeight: 24 }, button: { backgroundColor: '#fff', padding: 16, borderRadius: 10 } })
+const styles = StyleSheet.create({ page: { flexGrow: 1, backgroundColor: '#000', padding: 24, gap: 20 }, title: { color: brand.page, fontSize: 26, fontFamily: fonts.heading }, text: { color: '#ddd', fontSize: 16, lineHeight: 24 }, button: { backgroundColor: brand.card, padding: 16, borderRadius: 10 } })

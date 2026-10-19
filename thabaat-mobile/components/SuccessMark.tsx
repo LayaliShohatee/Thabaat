@@ -21,5 +21,5 @@ export function SuccessMark() {
 
 const styles = StyleSheet.create({
   circle: { width: 76, height: 76, borderRadius: 38, backgroundColor: brand.primary, alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
-  check: { fontSize: 38, color: '#FFFFFF', fontFamily: fonts.headingHeavy, lineHeight: 44 },
+  check: { fontSize: 38, color: brand.page, fontFamily: fonts.headingHeavy, lineHeight: 44 },
 })

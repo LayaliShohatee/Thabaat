@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { defaultNotificationPreferences, notificationCategories, reminderCadences, togglePreference, type NotificationPreferences } from '@/lib/notification-preferences'
 import { loadNotificationPreferences, saveNotificationPreferences } from '@/services/notificationPreferencesService'
 import { registerForPushNotifications } from '@/lib/notifications'
+import { brand } from '@/constants/brand'
 const labels: Record<string, string> = { men: "Men's events", women: "Women's events", young_professionals: 'Young professionals', volunteer: 'Volunteer', conferences: 'Conferences', week: '1 week before', day: '24 hours before', morning: 'Morning of · 9am at configured venue', starting: 'Event starting' }
 export default function NotificationSettingsScreen() {
  const { user } = useAuth()
@@ -60,4 +61,4 @@ export default function NotificationSettingsScreen() {
   {message ? <Text accessibilityRole="alert" style={styles.text}>{message}</Text> : null}
  </ScrollView>
 }
-const styles=StyleSheet.create({screen:{flex:1,backgroundColor:'#101412'},content:{padding:24,gap:12},title:{fontSize:28,color:'#fff',fontWeight:'bold'},heading:{fontSize:20,color:'#fff',marginTop:16},text:{color:'#d1d8d3',lineHeight:22},row:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:12},label:{color:'#fff',flex:1}})
+const styles=StyleSheet.create({screen:{flex:1,backgroundColor: brand.ink},content:{padding:24,gap:12},title:{fontSize:28,color: brand.page,fontWeight:'bold'},heading:{fontSize:20,color: brand.page,marginTop:16},text:{color: brand.line,lineHeight:22},row:{flexDirection:'row',alignItems:'center',justifyContent:'space-between',gap:12},label:{color: brand.page,flex:1}})

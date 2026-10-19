@@ -74,7 +74,7 @@ export function EventVolunteers({ eventId }: { eventId: string }) {
 
  return <View style={{ gap: 14 }}>
   {!!message && <Text accessibilityRole="alert" style={styles.alert}>{message}</Text>}
-  {requested.length > 0 && <View style={[styles.card, { borderWidth: 1, borderColor: brand.gold }]}>
+  {requested.length > 0 && <View style={[styles.card, { borderWidth: 1, borderColor: brand.sage }]}>
    <Text style={styles.heading}>Sign-ups to review ({requested.length})</Text>
    {requested.map(s => <View key={s.user_id} style={{ gap: 4, paddingVertical: 8, borderTopWidth: 1, borderColor: brand.line }}>
     <Text style={{ fontFamily: fonts.label, color: brand.ink, fontSize: 15 }}>{s.full_name}</Text>
@@ -93,7 +93,7 @@ export function EventVolunteers({ eventId }: { eventId: string }) {
    {report.volunteers.map(v => <View key={v.user_id} style={{ gap: 4, paddingVertical: 8, borderTopWidth: 1, borderColor: brand.line, opacity: v.active ? 1 : 0.55 }}>
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
      <Text style={{ fontFamily: fonts.label, color: brand.ink, fontSize: 15 }}>{v.full_name}{v.active ? '' : ' · removed'}</Text>
-     {v.is_lead && v.active && <Text style={{ fontSize: 11, fontFamily: fonts.label, color: '#6B4A0F', backgroundColor: brand.goldSoft, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999, overflow: 'hidden' }}>Lead</Text>}
+     {v.is_lead && v.active && <Text style={{ fontSize: 11, fontFamily: fonts.label, color: brand.zaytDeep, backgroundColor: brand.zaytSoft, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 999, overflow: 'hidden' }}>Lead</Text>}
     </View>
     <Text style={styles.text}>{v.duty} · {time(v.shift_start)}–{time(v.shift_end)}{v.reviewed_hours ? ` · ${v.reviewed_hours} hrs` : ''}</Text>
     {!!v.role_description && <Text style={styles.text}>{v.role_description}</Text>}

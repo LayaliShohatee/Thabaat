@@ -36,7 +36,7 @@ export function validWalletTicket(value:unknown,id:string):value is WalletTicket
 }
 // Call only after caller-scoped entitlement RPC; signing material never enters JSON or logs.
 export function generateWalletPass(ticket:WalletTicket,config:WalletConfig):Buffer {
- const pass=new PKPass(icons,{wwdr:config.wwdr,signerCert:config.signerCert,signerKey:config.signerKey,signerKeyPassphrase:config.signerKeyPassphrase},{formatVersion:1,passTypeIdentifier:config.passTypeIdentifier,teamIdentifier:config.teamIdentifier,organizationName:config.organizationName,description:'Event ticket for '+ticket.title,serialNumber:createHash('sha256').update(ticket.registration_id+':'+ticket.token).digest('hex'),logoText:config.organizationName,backgroundColor:'rgb(26, 48, 45)',foregroundColor:'rgb(255, 255, 255)',labelColor:'rgb(216, 224, 218)',sharingProhibited:true})
+ const pass=new PKPass(icons,{wwdr:config.wwdr,signerCert:config.signerCert,signerKey:config.signerKey,signerKeyPassphrase:config.signerKeyPassphrase},{formatVersion:1,passTypeIdentifier:config.passTypeIdentifier,teamIdentifier:config.teamIdentifier,organizationName:config.organizationName,description:'Event ticket for '+ticket.title,serialNumber:createHash('sha256').update(ticket.registration_id+':'+ticket.token).digest('hex'),logoText:config.organizationName,backgroundColor:'rgb(30, 51, 40)',foregroundColor:'rgb(242, 238, 227)',labelColor:'rgb(230, 223, 204)',sharingProhibited:true})
  pass.type='eventTicket'
  pass.primaryFields.push({key:'event',label:'EVENT',value:ticket.title})
  pass.secondaryFields.push({key:'ticket',label:'TICKET',value:ticket.ticket_name})

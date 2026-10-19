@@ -16,7 +16,7 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: brand.primary,
+        tabBarActiveTintColor: brand.tealText, // teal at the point: the active tab, never a surface
         tabBarInactiveTintColor: brand.inkMuted,
         tabBarStyle: { backgroundColor: brand.card, borderTopColor: brand.line, height: 84, paddingTop: 8 },
         tabBarLabelStyle: { fontSize: 11, fontFamily: fonts.label },

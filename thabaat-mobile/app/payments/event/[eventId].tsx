@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from 'react'
 import { AppState, ScrollView, Text, StyleSheet, View } from 'react-native'
 import { PressableScale } from '@/components/PressableScale'
-import { fonts } from '@/constants/brand'
+import { brand, fonts } from '@/constants/brand'
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router'
 import { useFocusResource } from '@/hooks/useFocusResource'
 import { useAuth } from '@/hooks/useAuth'
@@ -64,4 +64,4 @@ export default function PaidEventCheckoutScreen() {
   <PressableScale accessibilityRole="button" style={styles.button} onPress={() => router.replace('/(tabs)/events?view=tickets')}><Text>My tickets</Text></PressableScale>
  </ScrollView>
 }
-const styles=StyleSheet.create({page:{flex:1,backgroundColor:'#000'},content:{padding:24,gap:18,paddingBottom:48,maxWidth:650,width:'100%',alignSelf:'center'},title:{color:'#fff',fontSize:26,fontFamily: fonts.heading},heading:{color:'#c4f2d6',fontSize:20,fontFamily: fonts.heading},text:{color:'#ddd',fontSize:16,lineHeight:24},card:{backgroundColor:'#151515',padding:20,borderRadius:14,gap:14},reference:{color:'#fff',fontSize:17,lineHeight:26,fontWeight:'600'},error:{color:'#ffb4b4',fontSize:16},button:{backgroundColor:'#fff',borderRadius:10,padding:16,alignItems:'center'}})
+const styles=StyleSheet.create({page:{flex:1,backgroundColor:'#000'},content:{padding:24,gap:18,paddingBottom:48,maxWidth:650,width:'100%',alignSelf:'center'},title:{color: brand.page,fontSize:26,fontFamily: fonts.heading},heading:{color: brand.oliveSoft,fontSize:20,fontFamily: fonts.heading},text:{color:'#ddd',fontSize:16,lineHeight:24},card:{backgroundColor:'#151515',padding:20,borderRadius:14,gap:14},reference:{color: brand.page,fontSize:17,lineHeight:26,fontWeight:'600'},error:{color: brand.dangerSoft,fontSize:16},button:{backgroundColor: brand.card,borderRadius:10,padding:16,alignItems:'center'}})

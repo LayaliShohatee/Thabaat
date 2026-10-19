@@ -3,6 +3,7 @@ import {ScrollView,Text,TextInput,View,Switch,Button,StyleSheet} from 'react-nat
 import {supabase} from '@/lib/supabase'
 import {notificationCategories} from '@/lib/notification-preferences'
 import {reviewBroadcast,queueBroadcast,newBroadcastId,type BroadcastDraft} from '@/services/broadcastService'
+import { brand } from '@/constants/brand'
 export default function BroadcastScreen(){
  const [allowed,setAllowed]=useState(false),[loading,setLoading]=useState(true),[busy,setBusy]=useState(false),[message,setMessage]=useState(''),[count,setCount]=useState<number|null>(null),[requestId,setRequestId]=useState<string|null>(null)
  const [draft,setDraft]=useState<BroadcastDraft>({category:'conferences',eventId:null,membersOnly:false,volunteerOnly:false,title:'',body:''})
@@ -26,4 +27,4 @@ export default function BroadcastScreen(){
  {count!==null?<><Text style={styles.text}>Review: {count} eligible accounts. Category: {draft.category}. {draft.membersOnly?'Verified active members.':'All eligible members and free accounts.'} {draft.volunteerOnly?'Active assigned event volunteers.':draft.eventId?'Registered event attendees.':'Across events.'}</Text><Text style={styles.text}>{draft.title}{'\n'}{draft.body}</Text><Button title="Queue reviewed announcement" disabled={busy||count===0} onPress={()=>void queue()}/></>:null}
  </>}{message?<Text accessibilityRole="alert" style={styles.text}>{message}</Text>:null}</ScrollView>
 }
-const styles=StyleSheet.create({screen:{flex:1,backgroundColor:'#101412'},content:{padding:24,gap:14},title:{fontSize:27,color:'#fff',fontWeight:'bold'},text:{color:'#d8e0db',lineHeight:22},input:{borderWidth:1,borderColor:'#85998d',borderRadius:8,padding:12,color:'#fff'},row:{flexDirection:'row',justifyContent:'space-between',alignItems:'center'}})
+const styles=StyleSheet.create({screen:{flex:1,backgroundColor: brand.ink},content:{padding:24,gap:14},title:{fontSize:27,color: brand.page,fontWeight:'bold'},text:{color: brand.line,lineHeight:22},input:{borderWidth:1,borderColor:'#85998d',borderRadius:8,padding:12,color: brand.page},row:{flexDirection:'row',justifyContent:'space-between',alignItems:'center'}})

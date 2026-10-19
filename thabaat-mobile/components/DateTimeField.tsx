@@ -26,7 +26,7 @@ export function DateTimeField({ label, value, onChange, optional = false }: { la
  const cells: (number | null)[] = [...Array(first).fill(null), ...Array.from({ length: count }, (_, i) => i + 1)]
  const chip = (text: string, selected: boolean, onPress: () => void, key = text, a11y = text) => <PressableScale key={key} accessibilityRole="button" accessibilityLabel={a11y} accessibilityState={{ selected }} onPress={onPress} haptic="selection" hitSlop={4}
   style={{ minWidth: 40, paddingVertical: 8, paddingHorizontal: 8, borderRadius: 10, alignItems: 'center', backgroundColor: selected ? brand.primary : brand.card, borderWidth: 1, borderColor: selected ? brand.primary : brand.line }}>
-  <Text style={{ color: selected ? '#FFFFFF' : brand.ink, fontFamily: fonts.label, fontSize: 14 }}>{text}</Text>
+  <Text style={{ color: selected ? brand.page : brand.ink, fontFamily: fonts.label, fontSize: 14 }}>{text}</Text>
  </PressableScale>
  let shown = 'Choose date and time'
  try { if (value) shown = formatEventTime(wallTimeToIso(value), EVENT_TZ, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' }) } catch {}
@@ -50,7 +50,7 @@ export function DateTimeField({ label, value, onChange, optional = false }: { la
      return <View key={i} style={{ width: '14.28%', alignItems: 'center', paddingVertical: 3 }}>
       {day ? <PressableScale accessibilityRole="button" accessibilityLabel={new Date(month.y, month.m, day).toDateString()} accessibilityState={{ selected }} onPress={() => set({ date })} haptic="selection" hitSlop={4}
        style={{ width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: selected ? brand.primary : 'transparent' }}>
-       <Text style={{ color: selected ? '#FFFFFF' : brand.ink, fontSize: 15 }}>{day}</Text></PressableScale> : null}
+       <Text style={{ color: selected ? brand.page : brand.ink, fontSize: 15 }}>{day}</Text></PressableScale> : null}
      </View>
     })}
    </View>

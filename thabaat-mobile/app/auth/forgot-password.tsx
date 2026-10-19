@@ -3,7 +3,7 @@ import { Alert } from '@/lib/alert'
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { PressableScale } from '@/components/PressableScale';
-import { fonts } from '@/constants/brand';
+import { brand, fonts } from '@/constants/brand';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
@@ -54,7 +54,7 @@ export default function ForgotPasswordScreen() {
       <TextInput
         style={styles.input}
         placeholder="Email"
-        placeholderTextColor="#888"
+        placeholderTextColor={brand.sage}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -81,7 +81,7 @@ export default function ForgotPasswordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: brand.card,
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
@@ -89,13 +89,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontFamily: fonts.heading,
-    color: '#222222',
+    color: brand.ink,
     textAlign: 'center',
   },
 
   subtitle: {
     fontSize: 14,
-    color: '#666666',
+    color: brand.inkMuted,
     textAlign: 'center',
     lineHeight: 21,
     marginTop: 10,
@@ -104,19 +104,19 @@ const styles = StyleSheet.create({
 
   input: {
     height: 50,
-    backgroundColor: '#F5F8F7',
+    backgroundColor: brand.page,
     borderWidth: 1,
-    borderColor: '#E1E8E6',
+    borderColor: brand.line,
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 15,
-    color: '#222222',
+    color: brand.ink,
     marginBottom: 16,
   },
 
   button: {
     height: 50,
-    backgroundColor: '#159A8C',
+    backgroundColor: brand.primary,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -124,13 +124,13 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: '#FFFFFF',
+    color: brand.page,
     fontSize: 16,
     fontFamily: fonts.heading,
   },
 
   link: {
-    color: '#159A8C',
+    color: brand.tealText,
     textAlign: 'center',
     fontSize: 14,
     fontWeight: '500',

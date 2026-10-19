@@ -2,7 +2,7 @@ import { Alert } from '@/lib/alert'
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { PressableScale } from '@/components/PressableScale';
-import { fonts } from '@/constants/brand';
+import { brand, fonts } from '@/constants/brand';
 import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
@@ -65,7 +65,7 @@ export default function ChangePasswordScreen() {
       <TextInput
         style={styles.input}
         placeholder="New password"
-        placeholderTextColor="#888"
+        placeholderTextColor={brand.sage}
         value={password}
         onChangeText={setPassword}
         autoCapitalize="none"
@@ -75,7 +75,7 @@ export default function ChangePasswordScreen() {
       <TextInput
         style={styles.input}
         placeholder="Confirm new password"
-        placeholderTextColor="#888"
+        placeholderTextColor={brand.sage}
         value={confirmPassword}
         onChangeText={setConfirmPassword}
         autoCapitalize="none"
@@ -98,7 +98,7 @@ export default function ChangePasswordScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: brand.card,
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
@@ -106,13 +106,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 26,
     fontFamily: fonts.heading,
-    color: '#222222',
+    color: brand.ink,
     textAlign: 'center',
   },
 
   subtitle: {
     fontSize: 14,
-    color: '#666666',
+    color: brand.inkMuted,
     textAlign: 'center',
     marginTop: 8,
     marginBottom: 28,
@@ -120,19 +120,19 @@ const styles = StyleSheet.create({
 
   input: {
     height: 50,
-    backgroundColor: '#F5F8F7',
+    backgroundColor: brand.page,
     borderWidth: 1,
-    borderColor: '#E1E8E6',
+    borderColor: brand.line,
     borderRadius: 12,
     paddingHorizontal: 16,
     fontSize: 15,
-    color: '#222222',
+    color: brand.ink,
     marginBottom: 14,
   },
 
   button: {
     height: 50,
-    backgroundColor: '#159A8C',
+    backgroundColor: brand.primary,
     borderRadius: 12,
     alignItems: 'center',
     justifyContent: 'center',
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: '#FFFFFF',
+    color: brand.page,
     fontSize: 16,
     fontFamily: fonts.heading,
   },

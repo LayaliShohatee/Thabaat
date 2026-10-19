@@ -147,7 +147,7 @@ export default function RegistrationScreen() {
           </Text>
           {selectedTicket.price > 0 && (
             <>
-              <TextInput accessibilityLabel="Discount code" style={styles.codeInput} value={code} onChangeText={value => { setCode(value.toUpperCase()); setQuote(null) }} placeholder="Discount code (optional)" placeholderTextColor="#888" autoCapitalize="characters" />
+              <TextInput accessibilityLabel="Discount code" style={styles.codeInput} value={code} onChangeText={value => { setCode(value.toUpperCase()); setQuote(null) }} placeholder="Discount code (optional)" placeholderTextColor={brand.sage} autoCapitalize="characters" />
               <PressableScale accessibilityRole="button" style={styles.codeButton} onPress={() => void applyQuote()} disabled={quoting}>
                 <Text style={styles.codeButtonText}>{quoting ? 'Checking…' : 'Check my price'}</Text>
               </PressableScale>
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
   ticketName: { fontSize: 16, fontFamily: fonts.heading, color: brand.ink, flexShrink: 1 },
   radio: { width: 24, height: 24, borderRadius: 12, borderWidth: 1.5, borderColor: brand.line, alignItems: 'center', justifyContent: 'center', backgroundColor: brand.card },
   radioSelected: { borderColor: brand.primary, backgroundColor: brand.primary },
-  radioCheck: { color: '#FFFFFF', fontSize: 13, fontFamily: fonts.heading },
+  radioCheck: { color: brand.page, fontSize: 13, fontFamily: fonts.heading },
   ticketPrice: { fontSize: 15, fontFamily: fonts.label, color: brand.primary, marginTop: 4 },
   ticketDescription: { fontSize: 13, color: brand.inkMuted, marginTop: 4, lineHeight: 18 },
   noTickets: { color: brand.inkMuted, fontSize: 15 },
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   footer: { padding: 20, paddingBottom: 40, gap: 4 },
   confirmButton: { backgroundColor: brand.primary, height: 52, borderRadius: 999, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
   confirmButtonDisabled: { backgroundColor: brand.primarySoft },
-  confirmButtonText: { color: '#FFFFFF', fontSize: 16, fontFamily: fonts.heading },
+  confirmButtonText: { color: brand.page, fontSize: 16, fontFamily: fonts.heading },
   cancelButton: { paddingVertical: 14, alignItems: 'center' },
   cancelButtonText: { color: brand.inkMuted, fontSize: 15, fontFamily: fonts.label },
   errorText: { color: brand.ink, fontSize: 16, textAlign: 'center', paddingHorizontal: 24 },

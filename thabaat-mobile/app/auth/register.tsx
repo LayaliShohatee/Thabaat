@@ -1,5 +1,6 @@
 import { authRedirectUrl } from '@/lib/auth-links'
 import { brand, fonts } from '@/constants/brand'
+import { BrandLogo } from '@/components/BrandLogo'
 import { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { PressableScale } from '@/components/PressableScale';
@@ -64,7 +65,7 @@ export default function RegisterScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.logo}>THABAAT</Text>
+      <BrandLogo height={36} style={styles.logo} />
 
       <Text style={styles.title}>Create your account</Text>
 
@@ -81,7 +82,7 @@ export default function RegisterScreen() {
       <TextInput
         style={styles.input}
         placeholder="Full name"
-        placeholderTextColor="#888"
+        placeholderTextColor={brand.sage}
         value={name}
         onChangeText={setName}
       />
@@ -89,7 +90,7 @@ export default function RegisterScreen() {
       <TextInput
         style={styles.input}
         placeholder="Email"
-        placeholderTextColor="#888"
+        placeholderTextColor={brand.sage}
         value={email}
         onChangeText={setEmail}
         keyboardType="email-address"
@@ -99,7 +100,7 @@ export default function RegisterScreen() {
       <TextInput
         style={styles.input}
         placeholder="Password"
-        placeholderTextColor="#888"
+        placeholderTextColor={brand.sage}
         value={password}
         onChangeText={setPassword}
         secureTextEntry
@@ -133,18 +134,14 @@ export default function RegisterScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: brand.card,
     justifyContent: 'center',
     paddingHorizontal: 24,
   },
 
   logo: {
-    fontSize: 26,
-    fontFamily: fonts.heading,
-    letterSpacing: 7,
-    color: brand.teal,
-    textAlign: 'center',
-    marginBottom: 25,
+    alignSelf: 'center',
+    marginBottom: 24,
   },
 
   title: {
@@ -181,7 +178,7 @@ const styles = StyleSheet.create({
   },
 
   error: {
-    color: '#B42318',
+    color: brand.danger,
     marginBottom: 16,
     textAlign: 'center',
   },
@@ -197,7 +194,7 @@ const styles = StyleSheet.create({
   },
 
   buttonText: {
-    color: '#FFFFFF',
+    color: brand.page,
     fontSize: 16,
     fontFamily: fonts.heading,
   },
