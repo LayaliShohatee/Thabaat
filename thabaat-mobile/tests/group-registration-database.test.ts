@@ -137,3 +137,16 @@ it('approval never downgrades an existing organizer or admin',async()=>{
  await as(admin);await db.query("SELECT review_volunteer_application($1,'approved')",[other])
  await db.exec('RESET ROLE');expect((await db.query('SELECT role FROM staff_roles WHERE user_id=$1',[other])).rows).toEqual([{role:'organizer'}])
 })
+
+it('organizers set ticket prices; a price locks once the ticket is booked or bought',async()=>{
+ const save=(id:string|null,price:number|string)=>db.query<{id:string}>("SELECT save_ticket_type($1,$2,'Women (Ages 23+)','',20,$3) AS id",[event,id,price])
+ await as(member);await expect(save(null,5)).rejects.toThrow(/not permitted/)
+ await as(admin)
+ await expect(save(null,-1)).rejects.toThrow(/price/)
+ await expect(save(null,'5.555')).rejects.toThrow(/price/)
+ const paid=(await save(null,'5.50')).rows[0].id
+ await db.exec('RESET ROLE');expect(Number((await db.query<{price:string}>('SELECT price FROM ticket_types WHERE id=$1',[paid])).rows[0].price)).toBe(5.5)
+ await as(admin);await save(paid,7)
+ await expect(save(ticket,3)).rejects.toThrow(/can’t change after people have booked/) // the fixture ticket already has bookings
+ await save(ticket,0) // unchanged price still saves name and quantity
+})
