@@ -1,6 +1,7 @@
 -- Volunteer approval: members apply with the in-app volunteer interest form; an admin approves or declines it in
 -- Admin → Roles. Approving now gives the Volunteer role (never downgrading an organizer or admin), and only approved
 -- team accounts can sign up to volunteer at an event. After 20261026120000_group_registration.
+-- Applied to the thabaat-staging development project on 2026-10-26.
 BEGIN;
 -- Same as 20261005003948 (with the 20261005023000 guard and audit) plus granting the Volunteer role on approval.
 CREATE OR REPLACE FUNCTION public.review_volunteer_application(p_user_id uuid,p_status text) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
