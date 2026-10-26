@@ -3,6 +3,7 @@
 -- flow (test payments only until a provider is connected). A price is locked once anyone has booked or bought the
 -- ticket, because orders, payments and refund requests rely on it. save_free_ticket_type stays for older app builds.
 -- After 20261026130000_volunteer_approval.
+-- Applied to the thabaat-staging development project on 2026-10-26.
 BEGIN;
 CREATE OR REPLACE FUNCTION public.save_ticket_type(p_event_id uuid,p_id uuid,p_name text,p_description text,p_quantity integer,p_price numeric) RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
 DECLARE e public.events; t public.ticket_types; result_id uuid;
