@@ -117,3 +117,23 @@ it('every function this migration defines or replaces keeps the suspended-accoun
  const rows=(await db.query<{proname:string}>("SELECT p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.proname=ANY($1) AND p.prosrc NOT LIKE '%assert_active_account%'",[names])).rows
  expect(rows).toEqual([])
 })
+
+it('approving an in-app application gives the Volunteer role, which unlocks event volunteering',async()=>{
+ const signUp=()=>db.query<{v:string}>("SELECT sign_up_to_volunteer($1,'Whole event','Greeter','') AS v",[event])
+ await as(member);await expect(signUp()).rejects.toThrow(/approved volunteers/)
+ await as(admin);await db.query("SELECT review_volunteer_application($1,'declined')",[member])
+ await db.exec('RESET ROLE');expect((await db.query('SELECT role FROM staff_roles WHERE user_id=$1',[member])).rows).toEqual([])
+ await as(admin);await db.query("SELECT review_volunteer_application($1,'approved')",[member])
+ await db.exec('RESET ROLE')
+ expect((await db.query('SELECT role FROM staff_roles WHERE user_id=$1',[member])).rows).toEqual([{role:'volunteer'}])
+ expect((await db.query("SELECT previous_role,new_role FROM role_audit WHERE target_id=$1",[member])).rows).toEqual([{previous_role:null,new_role:'volunteer'}])
+ await as(member);expect((await signUp()).rows[0].v).toBe('requested')
+ await as(member);await expect(db.query("SELECT review_volunteer_application($1,'approved')",[member])).rejects.toThrow(/Administrator/)
+})
+
+it('approval never downgrades an existing organizer or admin',async()=>{
+ await db.exec('RESET ROLE');await db.query("INSERT INTO staff_roles VALUES($1,'organizer') ON CONFLICT(user_id) DO UPDATE SET role='organizer'",[other])
+ await db.query("INSERT INTO volunteer_applications(user_id,motivation) VALUES($1,'Happy to help out') ON CONFLICT(user_id) DO NOTHING",[other])
+ await as(admin);await db.query("SELECT review_volunteer_application($1,'approved')",[other])
+ await db.exec('RESET ROLE');expect((await db.query('SELECT role FROM staff_roles WHERE user_id=$1',[other])).rows).toEqual([{role:'organizer'}])
+})
