@@ -1,6 +1,7 @@
 import { supabase } from '@/lib/supabase'
 import { Registration } from '@/types'
 import { getMyTicket } from '@/services/ticketService'
+import type { Gender, Guest } from '@/lib/attendee'
 import { isDemoMode, isDemoEvent, demoScannerEventId, presentDemoEvent } from '@/lib/demo-mode'
 
 export async function getUserRegistrations(userId: string): Promise<Registration[]> {
@@ -36,8 +37,8 @@ export async function createRegistration(
   return data
 }
 
-// The caller's active booking for an event, so the event page can open the ticket directly.
-export async function getMyEventRegistration(userId: string, eventId: string): Promise<{ id: string; status: string } | null> {
+// The caller's active tickets for an event (one account can hold several), so the event page can open them directly.
+export async function getMyEventRegistration(userId: string, eventId: string): Promise<{ id: string; status: string; count: number } | null> {
   const { data, error } = await supabase
     .from('registrations')
     .select('id,status')
@@ -45,10 +46,23 @@ export async function getMyEventRegistration(userId: string, eventId: string): P
     .eq('event_id', eventId)
     .neq('status', 'cancelled')
     .order('created_at', { ascending: false })
-    .limit(1)
-    .maybeSingle()
   if (error) throw error
+  return data?.length ? { ...data[0], count: data.length } : null
+}
+
+export type TicketLine = { ticket_type_id: string; self: true } | ({ ticket_type_id: string; self: false } & Guest)
+export type BookingAnswers = { heard_from: string; first_event: boolean; social_time?: boolean }
+
+// Free tickets for the caller and their guests in one booking (migration 20261026120000_group_registration).
+export async function reserveFreeTickets(eventId: string, tickets: TicketLine[], answers: BookingAnswers): Promise<{ order_id: string; registration_ids: string[] }> {
+  const { data, error } = await supabase.rpc('reserve_free_tickets', { p_event_id: eventId, p_tickets: tickets, p_answers: answers })
+  if (error) throw new Error(error.code === 'PGRST202' ? 'Booking several tickets needs a database update that isn’t installed here yet.' : error.message)
   return data
+}
+
+export async function completeMyProfile(age: number, gender: Gender): Promise<void> {
+  const { error } = await supabase.rpc('complete_my_profile', { p_age: age, p_gender: gender })
+  if (error) throw new Error(error.message)
 }
 
 export async function checkExistingRegistration(
@@ -60,10 +74,11 @@ export async function checkExistingRegistration(
     .select('id,status')
     .eq('user_id', userId)
     .eq('event_id', eventId)
-    .maybeSingle()
+    .neq('status', 'cancelled')
+    .limit(1)
 
   if (error) throw error
-  return !!data && data.status !== 'cancelled'
+  return !!data?.length
 }
 
 export async function cancelFreeRegistration(registrationId: string): Promise<Registration> {

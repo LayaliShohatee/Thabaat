@@ -14,6 +14,7 @@ export type EventForm = {
  title: string; start: WallTime | null; location: string; capacity: string; age_min: string
  description: string; end: WallTime | null; image_url: string; address: string; speaker_name: string; speaker_bio: string
  audience_gender: string; eligibility: string; logistics: string; faqs: string; members_only: boolean
+ ask_social_time: boolean
 }
 
 // Optional fields, in the order shown. Every one of them appears on the public event page when filled in.
@@ -30,21 +31,21 @@ export const OPTIONAL_FIELDS: { key: 'description' | 'address' | 'speaker_name' 
 
 export function blankEventForm(type: EventType = 'event'): EventForm {
  return { id: null, type, title: '', start: null, location: '', capacity: '50', age_min: EVENT_TYPES.find(t => t.id === type)!.ageMin,
-  description: '', end: null, image_url: '', address: '', speaker_name: '', speaker_bio: '', audience_gender: '', eligibility: '', logistics: '', faqs: '', members_only: false }
+  description: '', end: null, image_url: '', address: '', speaker_name: '', speaker_bio: '', audience_gender: '', eligibility: '', logistics: '', faqs: '', members_only: false, ask_social_time: type === 'qiyam' }
 }
 
 export function withEventType(form: EventForm, type: EventType): EventForm {
  return { ...form, type, age_min: EVENT_TYPES.find(t => t.id === type)!.ageMin }
 }
 
-type ExistingEvent = Partial<EventDetails> & { id: string; title: string; description?: string | null; event_date: string; location: string; capacity?: number | null }
+type ExistingEvent = Partial<EventDetails> & { ask_social_time?: boolean; id: string; title: string; description?: string | null; event_date: string; location: string; capacity?: number | null }
 export function formFromEvent(event: ExistingEvent): EventForm {
  const tz = event.timezone || EVENT_TZ
  const isQiyam = /qiyam/i.test(event.title) || !event.age_min
  return { ...blankEventForm(isQiyam ? 'qiyam' : 'event'), id: event.id, title: event.title, start: isoToWallTime(event.event_date, tz), location: event.location || '',
   capacity: String(event.capacity ?? 50), age_min: event.age_min || '', description: event.description || '', end: event.end_at ? isoToWallTime(event.end_at, tz) : null,
   image_url: event.image_url || '', address: event.address || '', speaker_name: event.speaker_name || '', speaker_bio: event.speaker_bio || '',
-  audience_gender: event.audience_gender || '', eligibility: event.eligibility || '', logistics: event.logistics || '', faqs: event.faqs || '', members_only: !!event.members_only }
+  audience_gender: event.audience_gender || '', eligibility: event.eligibility || '', logistics: event.logistics || '', faqs: event.faqs || '', members_only: !!event.members_only, ask_social_time: !!event.ask_social_time }
 }
 
 // Lists what's still missing from the required box, in plain words.

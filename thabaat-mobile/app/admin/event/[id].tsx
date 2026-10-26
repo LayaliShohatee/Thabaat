@@ -4,7 +4,7 @@ import { PressableScale } from '@/components/PressableScale'
 import { Stack, router, useLocalSearchParams } from 'expo-router'
 import { brand, fonts } from '@/constants/brand'
 import { useFocusResource } from '@/hooks/useFocusResource'
-import { getManagementEvents, saveEvent } from '@/services/managementService'
+import { getManagementEvents, saveEvent, setEventSocialQuestion } from '@/services/managementService'
 import { uploadEventFlyer } from '@/services/eventImageService'
 import { DateTimeField } from '@/components/DateTimeField'
 import { EVENT_TYPES, OPTIONAL_FIELDS, blankEventForm, formFromEvent, missingRequired, toSaveInput, withEventType, type EventForm } from '@/lib/event-form'
@@ -51,6 +51,7 @@ export default function EventEditor() {
   const input = toSaveInput(form!)
   const savedId = await saveEvent(input)
   const target = (typeof savedId === 'string' && savedId) || form!.id
+  if (target) await setEventSocialQuestion(target, form!.ask_social_time)
   if (target) router.replace(`/admin/manage/${target}`); else router.back()
  })
  const uploadFlyer = () => void run(async () => { const url = await uploadEventFlyer(); if (url) { update({ image_url: url }); setMessage('Flyer added. Save the event to keep it.') } })
@@ -87,6 +88,7 @@ export default function EventEditor() {
      <TextInput accessibilityLabel={f.label} style={[styles.input, f.multiline && { minHeight: 80, textAlignVertical: 'top' }]} value={form[f.key]} onChangeText={value => update({ [f.key]: value })} placeholder={f.hint} multiline={f.multiline} />
     </Field>)}
     <Field label="Members only" shown><View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}><Text style={[styles.text, { flex: 1 }]}>Only verified members can register.</Text><Switch accessibilityLabel="Members only event" value={form.members_only} onValueChange={members_only => update({ members_only })} /></View></Field>
+    <Field label="Social time question" shown><View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}><Text style={[styles.text, { flex: 1 }]}>Ask “Are you attending social time (ages 23+ only)?” when people register.</Text><Switch accessibilityLabel="Ask about social time" value={form.ask_social_time} onValueChange={ask_social_time => update({ ask_social_time })} /></View></Field>
    </View>
 
    {!!message && <Text accessibilityRole="alert" style={styles.alert}>{message}</Text>}

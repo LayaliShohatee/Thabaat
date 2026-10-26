@@ -2,12 +2,14 @@ import { authRedirectUrl } from '@/lib/auth-links'
 import { brand, fonts } from '@/constants/brand'
 import { BrandLogo } from '@/components/BrandLogo'
 import { useState } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { PressableScale } from '@/components/PressableScale';
 import { router, useLocalSearchParams } from 'expo-router';
 import {eventReturnPath} from '@/lib/event-sharing';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import { useStatusBarStyle } from '@/hooks/useStatusBarStyle'
+import { ManagementChip as Chip } from '@/components/ManagementUI'
+import { GENDER_OPTIONS, birthYearFromAge, parseAge, type Gender } from '@/lib/attendee'
 
 export default function RegisterScreen() {
   useStatusBarStyle('dark')
@@ -15,6 +17,8 @@ export default function RegisterScreen() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [age, setAge] = useState('');
+  const [gender, setGender] = useState<Gender | ''>('');
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -24,8 +28,13 @@ export default function RegisterScreen() {
     setErrorMessage('');
     setSuccessMessage('');
 
-    if (!name.trim() || !email.trim() || !password) {
+    if (!name.trim() || !email.trim() || !password || !age.trim() || !gender) {
       setErrorMessage('Please fill in all fields.');
+      return;
+    }
+    const parsedAge = parseAge(age, 13);
+    if (parsedAge === null) {
+      setErrorMessage('Enter an age from 13 to 120.');
       return;
     }
 
@@ -40,7 +49,7 @@ export default function RegisterScreen() {
         email: email.trim(),
         password,
         options: {
-          data: { full_name: name.trim() },
+          data: { full_name: name.trim(), gender, birth_year: String(birthYearFromAge(parsedAge)) },
           emailRedirectTo: authRedirectUrl('callback'),
         },
       });
@@ -64,7 +73,7 @@ export default function RegisterScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={{ backgroundColor: brand.card }} contentContainerStyle={styles.container} keyboardShouldPersistTaps="handled">
       <BrandLogo height={36} style={styles.logo} />
 
       <Text style={styles.title}>Create your account</Text>
@@ -106,6 +115,22 @@ export default function RegisterScreen() {
         secureTextEntry
       />
 
+      <TextInput
+        style={styles.input}
+        placeholder="Age"
+        placeholderTextColor={brand.sage}
+        value={age}
+        onChangeText={setAge}
+        keyboardType="number-pad"
+        maxLength={3}
+        accessibilityLabel="Age"
+      />
+
+      <Text style={styles.fieldLabel}>Gender</Text>
+      <View style={styles.chips} accessibilityRole="radiogroup">
+        {GENDER_OPTIONS.map(option => <Chip key={option.value} label={option.label} selected={gender === option.value} onPress={() => setGender(option.value)} />)}
+      </View>
+
       {errorMessage ? (
         <Text style={styles.error} accessibilityRole="alert">{errorMessage}</Text>
       ) : null}
@@ -127,13 +152,14 @@ export default function RegisterScreen() {
       <PressableScale onPress={() => router.push(eventReturnPath(eventId)?{pathname:'/auth/login',params:{eventId}}:'/auth/login')}>
         <Text style={styles.link}>Already have an account? Log in</Text>
       </PressableScale>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
+    paddingVertical: 32,
     backgroundColor: brand.card,
     justifyContent: 'center',
     paddingHorizontal: 24,
@@ -168,6 +194,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 15,
     color: brand.ink,
+    marginBottom: 14,
+  },
+
+  fieldLabel: {
+    fontSize: 14,
+    fontFamily: fonts.label,
+    color: brand.ink,
+    marginBottom: 8,
+  },
+
+  chips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
     marginBottom: 14,
   },
 

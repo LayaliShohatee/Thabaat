@@ -87,7 +87,7 @@ export default function MyTickets() {
               </Text>
             )}
             <Text style={styles.ticketType}>
-              {item.ticket_type?.name ?? 'Ticket'}
+              {item.ticket_type?.name ?? 'Ticket'}{item.is_self === false && item.attendee_first_name ? ` · for ${item.attendee_first_name} ${item.attendee_last_name ?? ''}`.trimEnd() : ''}
             </Text>
             <View style={[
               styles.statusBadge,
