@@ -110,3 +110,10 @@ it('volunteer interest form enforces the client questions and the 23+ rule',asyn
  const list=(await db.query<{v:{answers:{why_join:string,age:number},resume_path:string,status:string}[]}>('SELECT list_volunteer_applications() AS v')).rows[0].v
  expect(list[0]).toMatchObject({status:'submitted',answers:{why_join:'To help the community',age:27},resume_path:`${member}/${'a'.repeat(32)}.pdf`})
 })
+
+it('every function this migration defines or replaces keeps the suspended-account guard',async()=>{
+ await db.exec('RESET ROLE')
+ const names=['complete_my_profile','set_event_social_question','reserve_free_tickets','check_in_party','get_my_ticket','event_checkin_roster','check_in_registration','get_event_attendees','submit_volunteer_interest','list_volunteer_applications']
+ const rows=(await db.query<{proname:string}>("SELECT p.proname FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.proname=ANY($1) AND p.prosrc NOT LIKE '%assert_active_account%'",[names])).rows
+ expect(rows).toEqual([])
+})

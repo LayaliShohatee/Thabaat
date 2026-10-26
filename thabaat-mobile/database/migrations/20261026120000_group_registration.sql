@@ -1,6 +1,8 @@
 -- Client feedback phase 4: required age/gender on accounts, several tickets per account with per-attendee details,
 -- one scan shows the whole booking at check-in, and the full volunteer interest form (matches the client's Google form).
 -- After 20261014130100_checkin_roster_window. Older app builds keep working: single bookings stay one per account per event.
+-- Every replaced privileged function keeps the suspended-account guard that 20261005023000 added to them.
+-- Applied to the thabaat-staging development project on 2026-10-26.
 BEGIN;
 
 -- Profiles: sign-up sends gender and birth_year in auth metadata; existing accounts complete them once.
@@ -45,6 +47,7 @@ $$;
 ALTER TABLE public.events ADD COLUMN IF NOT EXISTS ask_social_time boolean NOT NULL DEFAULT false;
 CREATE OR REPLACE FUNCTION public.set_event_social_question(p_event_id uuid,p_ask boolean) RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
 BEGIN
+ PERFORM public.assert_active_account();
  IF NOT coalesce(public.can_manage_staff_event(p_event_id),false) THEN RAISE EXCEPTION 'Event management not permitted'; END IF;
  UPDATE public.events SET ask_social_time=coalesce(p_ask,false) WHERE id=p_event_id;
 END $$;
@@ -158,7 +161,7 @@ END $$;
 -- Same as 20261005004731 plus attendee_name, so a guest's ticket says whose it is.
 CREATE OR REPLACE FUNCTION public.get_my_ticket(p_registration_id uuid) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
 DECLARE r public.registrations; e public.events; credential text;
-BEGIN
+BEGIN IF auth.uid() IS NOT NULL THEN PERFORM public.assert_active_account(); END IF;
  IF auth.uid() IS NULL THEN RAISE EXCEPTION 'Sign in required'; END IF;
  SELECT * INTO r FROM public.registrations WHERE id=p_registration_id AND user_id=auth.uid() FOR UPDATE;
  IF NOT FOUND OR r.status<>'confirmed' THEN RAISE EXCEPTION 'Confirmed ticket not found'; END IF;
@@ -216,7 +219,7 @@ END $$;
 CREATE OR REPLACE FUNCTION public.get_event_attendees(p_event_id uuid, p_offset integer DEFAULT 0)
 RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path='' AS $$
 DECLARE e public.events; r text; attendees jsonb; totals jsonb;
-BEGIN
+BEGIN IF auth.uid() IS NOT NULL THEN PERFORM public.assert_active_account(); END IF;
  r := public.current_staff_role();
  SELECT * INTO e FROM public.events WHERE id=p_event_id;
  IF NOT FOUND OR r IS NULL OR r NOT IN ('organizer','admin') OR (r<>'admin' AND e.created_by IS DISTINCT FROM auth.uid()) THEN
@@ -276,7 +279,7 @@ BEGIN
 END $$;
 
 CREATE OR REPLACE FUNCTION public.list_volunteer_applications() RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY DEFINER SET search_path='' AS $$
-BEGIN
+BEGIN IF auth.uid() IS NOT NULL THEN PERFORM public.assert_active_account(); END IF;
  IF public.current_staff_role() IS DISTINCT FROM 'admin' THEN RAISE EXCEPTION 'Administrator required'; END IF;
  RETURN coalesce((SELECT jsonb_agg(jsonb_build_object('user_id',a.user_id,'full_name',p.full_name,'motivation',a.motivation,'status',a.status,'answers',a.answers,'resume_path',a.resume_path,'updated_at',a.updated_at) ORDER BY a.updated_at)
   FROM public.volunteer_applications a JOIN public.profiles p ON p.id=a.user_id),'[]'::jsonb);
