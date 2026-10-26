@@ -1,5 +1,6 @@
 import { emptyEventDetails, validateEventDetails, type EventDetails } from '@/lib/event-details'
 import { EVENT_TZ, isoToWallTime, wallTimeToIso, type WallTime } from '@/lib/event-time'
+import { parseTicketPrice } from '@/lib/billing'
 
 // Thabaat events are 23+; Qiyam nights are open to all ages. Admins can still change the age afterwards.
 export const EVENT_TYPES = [
@@ -15,6 +16,8 @@ export type EventForm = {
  description: string; end: WallTime | null; image_url: string; address: string; speaker_name: string; speaker_bio: string
  audience_gender: string; eligibility: string; logistics: string; faqs: string; members_only: boolean
  ask_social_time: boolean
+ // The General admission ticket's price: free, or paid at `price` dollars.
+ paid: boolean; price: string
 }
 
 // Optional fields, in the order shown. Every one of them appears on the public event page when filled in.
@@ -31,7 +34,7 @@ export const OPTIONAL_FIELDS: { key: 'description' | 'address' | 'speaker_name' 
 
 export function blankEventForm(type: EventType = 'event'): EventForm {
  return { id: null, type, title: '', start: null, location: '', capacity: '50', age_min: EVENT_TYPES.find(t => t.id === type)!.ageMin,
-  description: '', end: null, image_url: '', address: '', speaker_name: '', speaker_bio: '', audience_gender: '', eligibility: '', logistics: '', faqs: '', members_only: false, ask_social_time: type === 'qiyam' }
+  description: '', end: null, image_url: '', address: '', speaker_name: '', speaker_bio: '', audience_gender: '', eligibility: '', logistics: '', faqs: '', members_only: false, ask_social_time: type === 'qiyam', paid: false, price: '' }
 }
 
 export function withEventType(form: EventForm, type: EventType): EventForm {
@@ -56,6 +59,7 @@ export function missingRequired(form: EventForm): string[] {
  if (!form.location.trim()) missing.push('a location')
  const capacity = Number(form.capacity)
  if (!Number.isInteger(capacity) || capacity < 1 || capacity > 10000) missing.push('a capacity from 1 to 10000')
+ if (form.paid && ticketPrice(form) === null) missing.push('a ticket price above $0')
  return missing
 }
 
@@ -68,4 +72,11 @@ export function toSaveInput(form: EventForm, now = Date.now()) {
  const details = validateEventDetails({ ...emptyEventDetails, image_url: form.image_url, age_min: form.age_min, age_max: '', address: form.address, speaker_name: form.speaker_name,
   speaker_bio: form.speaker_bio, audience_gender: form.audience_gender, eligibility: form.eligibility, logistics: form.logistics, faqs: form.faqs, timezone: EVENT_TZ, end_at, members_only: form.members_only }, date)
  return { id: form.id, title: form.title.trim(), description: form.description.trim(), date, location: form.location.trim(), capacity: Number(form.capacity), details }
+}
+
+// The General admission price to save: 0 when free, null when "Paid" has no valid price above $0 yet.
+export function ticketPrice(form: Pick<EventForm, 'paid' | 'price'>): number | null {
+ if (!form.paid) return 0
+ const price = parseTicketPrice(form.price)
+ return price && price > 0 ? price : null
 }

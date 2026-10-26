@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { blankEventForm, formFromEvent, missingRequired, toSaveInput, withEventType } from '../lib/event-form'
+import { blankEventForm, formFromEvent, missingRequired, ticketPrice, toSaveInput, withEventType } from '../lib/event-form'
 
 const now = Date.parse('2026-10-14T12:00:00Z')
 
@@ -34,4 +34,14 @@ it('loads an existing event back into the form in Detroit time', () => {
  expect(form.start).toEqual({ date: '2026-10-30', time: '21:00' })
  expect(form.type).toBe('qiyam')
  expect(form.capacity).toBe('120')
+})
+
+it('new events are free; choosing Paid needs a price above $0', () => {
+ expect(blankEventForm()).toMatchObject({ paid: false, price: '' })
+ expect(ticketPrice(blankEventForm())).toBe(0)
+ const ready = { ...blankEventForm(), title: 'Pop-Up @ Kitab', location: 'Kitab Cafe', start: { date: '2026-10-15', time: '19:30' } }
+ expect(missingRequired({ ...ready, paid: true })).toEqual(['a ticket price above $0'])
+ expect(missingRequired({ ...ready, paid: true, price: '0' })).toEqual(['a ticket price above $0'])
+ expect(missingRequired({ ...ready, paid: true, price: '12.50' })).toEqual([])
+ expect(ticketPrice({ paid: true, price: '$12.50' })).toBe(12.5)
 })

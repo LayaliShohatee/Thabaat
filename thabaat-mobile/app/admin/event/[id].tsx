@@ -7,8 +7,10 @@ import { useFocusResource } from '@/hooks/useFocusResource'
 import { getManagementEvents, saveEvent, setEventSocialQuestion } from '@/services/managementService'
 import { uploadEventFlyer } from '@/services/eventImageService'
 import { DateTimeField } from '@/components/DateTimeField'
-import { EVENT_TYPES, OPTIONAL_FIELDS, blankEventForm, formFromEvent, missingRequired, toSaveInput, withEventType, type EventForm } from '@/lib/event-form'
-import { ManagementButton as Button, managementStyles as styles } from '@/components/ManagementUI'
+import { EVENT_TYPES, OPTIONAL_FIELDS, blankEventForm, formFromEvent, missingRequired, ticketPrice, toSaveInput, withEventType, type EventForm } from '@/lib/event-form'
+import { ManagementButton as Button, ManagementChip as Chip, managementStyles as styles } from '@/components/ManagementUI'
+import { getTicketInventory, saveTicket, type InventoryTicket } from '@/services/ticketInventoryService'
+import { Alert } from '@/lib/alert'
 
 // Says whether attendees will see a field on the event page.
 function Visibility({ shown }: { shown: boolean }) {
@@ -30,11 +32,16 @@ export default function EventEditor() {
  const { id } = useLocalSearchParams<{ id: string }>()
  const isNew = !id || id === 'new'
  const [form, setForm] = useState<EventForm | null>(isNew ? blankEventForm() : null)
+ // An existing event's tickets: the price is set here only while it has a single ticket type.
+ const [tickets, setTickets] = useState<InventoryTicket[]>([])
  const load = useCallback(async () => {
   if (isNew) return null
-  const event = (await getManagementEvents()).find(e => e.id === id)
+  const [events, inventory] = await Promise.all([getManagementEvents(), getTicketInventory(id)])
+  const event = events.find(e => e.id === id)
   if (!event) throw new Error('This event could not be found or was archived.')
-  setForm(current => current ?? formFromEvent(event))
+  const price = inventory.length === 1 ? Number(inventory[0].price) : 0
+  setTickets(inventory)
+  setForm(current => current ?? { ...formFromEvent(event), paid: price > 0, price: price > 0 ? String(price) : '' })
   return event
  }, [id, isNew])
  const { loading, error } = useFocusResource(load, null)
@@ -52,8 +59,25 @@ export default function EventEditor() {
   const savedId = await saveEvent(input)
   const target = (typeof savedId === 'string' && savedId) || form!.id
   if (target) await setEventSocialQuestion(target, form!.ask_social_time)
-  if (target) router.replace(`/admin/manage/${target}`); else router.back()
+  if (!target) { router.back(); return }
+  if (singleTicket && !priceLocked) {
+   try { await applyTicketPrice(target, ticketPrice(form!)!) }
+   catch (e) {
+    Alert.alert('Ticket price not saved', `The event was saved, but its ticket price wasn’t: ${e instanceof Error ? e.message : 'try again'} Set the price in Tickets.`)
+    router.replace(`/admin/manage/${target}?section=tickets`); return
+   }
+  }
+  router.replace(`/admin/manage/${target}`)
  })
+// Sets the General admission ticket's price (the one ticket a new event starts with).
+ async function applyTicketPrice(eventId: string, price: number) {
+  const inventory = await getTicketInventory(eventId)
+  if (inventory.length !== 1 || Number(inventory[0].price) === price) return
+  const t = inventory[0]
+  await saveTicket(eventId, { id: t.id, name: t.name, description: t.description ?? '', quantity: t.quantity, price })
+ }
+ const singleTicket = isNew || tickets.length === 1
+ const priceLocked = !isNew && tickets.length === 1 && tickets[0].reserved > 0
  const uploadFlyer = () => void run(async () => { const url = await uploadEventFlyer(); if (url) { update({ image_url: url }); setMessage('Flyer added. Save the event to keep it.') } })
 
  const title = isNew ? 'New event' : 'Edit event'
@@ -76,7 +100,17 @@ export default function EventEditor() {
     <Field label="Location" shown><TextInput accessibilityLabel="Event location" style={styles.input} value={form.location} onChangeText={location => update({ location })} placeholder="e.g. Kitab Cafe, Detroit" /></Field>
     <Field label="Minimum age" shown><TextInput accessibilityLabel="Minimum age" style={styles.input} value={form.age_min} onChangeText={age_min => update({ age_min: age_min.replace(/\D/g, '') })} placeholder="Blank = all ages" keyboardType="number-pad" /></Field>
     <Field label="Capacity (spots)" shown={false}><TextInput accessibilityLabel="Event capacity" style={styles.input} value={form.capacity} onChangeText={capacity => update({ capacity: capacity.replace(/\D/g, '') })} keyboardType="number-pad" /></Field>
-    <Text style={styles.text}>A free General admission ticket is added automatically. Add more ticket types after saving.</Text>
+    {singleTicket && !priceLocked && <Field label="Tickets" shown>
+     <View style={{ flexDirection: 'row', gap: 8 }} accessibilityRole="radiogroup">
+      <Chip label="Free" selected={!form.paid} onPress={() => update({ paid: false })} />
+      <Chip label="Paid" selected={form.paid} onPress={() => update({ paid: true })} />
+     </View>
+     {form.paid && <TextInput accessibilityLabel="Ticket price in dollars" style={styles.input} value={form.price} onChangeText={price => update({ price })} placeholder="Price in dollars, e.g. 5 or 12.50" keyboardType="decimal-pad" />}
+    </Field>}
+    <Text style={styles.text}>{!singleTicket ? (tickets.length ? 'This event has several ticket types. Change them and their prices in Manage → Tickets.' : 'This event has no ticket types yet. Add them in Manage → Tickets.')
+     : priceLocked ? `Ticket price: ${form.paid ? `$${Number(form.price).toFixed(2)}` : 'Free'}. It’s locked because people have booked; add a new ticket type in Manage → Tickets to sell at another price.`
+     : form.paid ? 'One ticket type, General admission, is sold at this price. Buyers pay one ticket at a time. Test payments only for now: no money is charged. Add more ticket types (e.g. Men/Women) after saving.'
+     : 'One free ticket type, General admission, is created. Add more ticket types (e.g. Men/Women, early bird) after saving.'}</Text>
    </View>
 
    <Text style={[styles.heading, { marginTop: 8 }]}>Optional details</Text>
