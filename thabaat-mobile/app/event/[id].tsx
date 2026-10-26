@@ -18,7 +18,7 @@ import EventShareActions from '@/components/events/EventShareActions'
 import { PressableScale } from '@/components/PressableScale'
 import { ManagementButton as Button } from '@/components/ManagementUI'
 import { isDemoMode } from '@/lib/demo-mode'
-import { VolunteerSignupForm } from '@/components/VolunteerSignupForm'
+import { VolunteerApplication } from '@/components/VolunteerApplication'
 import { getPermissions, type Permissions } from '@/services/managementService'
 import { appRole } from '@/lib/app-role'
 import { Reveal } from '@/components/Reveal'
@@ -80,8 +80,8 @@ export default function EventDetailScreen() {
         {!!event.description && <><Text style={styles.sectionTitle}>About this event</Text><Text style={styles.description}>{event.description}</Text></>}
         <EventStructuredDetails event={event as Event & EventDetails} />
         {registration && id === paidTestEventId && <Button label="Open paid event access" onPress={() => router.push(`/event/access/${id}`)} />}
-        {/* Event volunteering is for approved volunteers and staff; members apply from More → Volunteer with Thabaat. */}
-        {user && !isDemoMode && !passed && appRole(permissions) !== 'attendee' && <View style={{ marginTop: 20 }}><VolunteerSignupForm eventId={event.id} /></View>}
+        {/* Shown to volunteer and staff accounts only; it opens the client's Google volunteer form. */}
+        {user && !isDemoMode && !passed && appRole(permissions) !== 'attendee' && <View style={{ marginTop: 20 }}><VolunteerApplication heading="Volunteer at this event" showShifts={false} /></View>}
       </View>
     </ScrollView>
 
