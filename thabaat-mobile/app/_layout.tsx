@@ -65,6 +65,10 @@ function Navigation() {
         <Stack.Screen name="faq" options={{ title: 'FAQ' }} />
         <Stack.Screen name="more" options={{ title: 'More' }} />
         <Stack.Screen name="admin/roles" options={{ title: 'Roles and access' }} />
+        <Stack.Screen name="notifications" options={{ title: 'Notifications' }} />
+        <Stack.Screen name="notification-broadcast" options={{ title: 'Send a notification' }} />
+        <Stack.Screen name="waitlist/[eventId]" options={{ title: 'Waitlist' }} />
+        <Stack.Screen name="waitlist/manage/[eventId]" options={{ title: 'Manage waitlist' }} />
       </Stack>
       <StatusBar style="light" />
     </ThemeProvider>

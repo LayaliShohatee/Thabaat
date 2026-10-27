@@ -43,7 +43,7 @@ export function BillingScreen({ section }: { section: 'membership' | 'donations'
  const currentPlan = data.plans.find(p => p.id === membership?.plan_id)
  return <ScrollView style={styles.page} contentContainerStyle={styles.content}>
   <Text style={styles.title}>{section === 'membership' ? 'Your membership' : section === 'donations' ? 'Support Thabaat' : 'Payment history'}</Text>
-  <Text style={styles.copy}>{section === 'membership' ? 'Your plan, benefits, and membership dates in one place.' : section === 'donations' ? (sandbox ? 'Test mode: gifts are recorded instantly and no money is charged.' : 'Support programs and community resources through CharityStack.') : 'Verified payments linked to your Thabaat account. Receipts are sent by CharityStack.'}</Text>
+  <Text style={styles.copy}>{section === 'membership' ? 'Your plan, benefits, and membership dates in one place.' : section === 'donations' ? (sandbox ? 'Test mode: gifts are recorded instantly and no money is charged.' : 'Support programs and community resources through CharityStack.') : 'Verified payments linked to your Thabaat account.'}</Text>
   {section==='membership' && __DEV__ && <BillingButton label="Practice membership flows · no charges" onPress={() => router.push('/membership-preview')} />}
   {loading && <ActivityIndicator accessibilityLabel="Loading billing records" color={brand.tealText} />}
   {!!error && <View style={styles.card}><Text accessibilityRole="alert" style={styles.copy}>{error}</Text></View>}
