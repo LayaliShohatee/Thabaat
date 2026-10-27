@@ -25,6 +25,7 @@ export default function TicketScreen(){
     <Text style={{fontFamily:fonts.headingHeavy,fontSize:22,letterSpacing:-0.4,color:brand.ink}}>{ticket.title}</Text>
     <Text style={{fontFamily:fonts.label,fontSize:15,color:brand.primary}}>{formatEventTime(ticket.event_date)}</Text>
     <Text style={styles.text}>{ticket.location} · {ticket.ticket_name}</Text>
+    {!!ticket.attendee_name&&<Text style={[styles.text,{fontFamily:fonts.label,color:brand.ink}]}>For {ticket.attendee_name}</Text>}
    </View>
    <Text accessibilityRole="text" accessibilityLiveRegion="polite" style={{alignSelf:'flex-start',overflow:'hidden',paddingVertical:5,paddingHorizontal:12,borderRadius:999,fontFamily:fonts.label,fontSize:13,
     color:checkedIn?brand.primaryDark:brand.inkMuted,backgroundColor:checkedIn?brand.primarySoft:brand.page}}>{checkedIn?`Checked in · ${formatEventTime(ticket.checked_in_at!,undefined,{hour:'numeric',minute:'2-digit'})}`:'Not checked in'}</Text>

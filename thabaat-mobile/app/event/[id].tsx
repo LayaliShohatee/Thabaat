@@ -19,10 +19,12 @@ import { PressableScale } from '@/components/PressableScale'
 import { ManagementButton as Button } from '@/components/ManagementUI'
 import { isDemoMode } from '@/lib/demo-mode'
 import { VolunteerSignupForm } from '@/components/VolunteerSignupForm'
+import { getPermissions, type Permissions } from '@/services/managementService'
+import { appRole } from '@/lib/app-role'
 import { Reveal } from '@/components/Reveal'
 import { SkeletonBlock } from '@/components/Skeleton'
 
-type Registration = { id: string; status: string } | null
+type Registration = { id: string; status: string; count: number } | null
 
 // Event page: what it is, when and where, and one pinned Register button. Extras open on demand.
 export default function EventDetailScreen() {
@@ -31,11 +33,11 @@ export default function EventDetailScreen() {
   const insets = useSafeAreaInsets()
   const [extra, setExtra] = useState<'calendar' | 'share' | null>(null)
   const [now] = useState(Date.now)
-  const load = useCallback(async (): Promise<[Event | null, Registration]> => {
+  const load = useCallback(async (): Promise<[Event | null, Registration, Permissions | null]> => {
     if (!id) throw new Error('Missing event ID.')
-    return Promise.all([getEventById(id), user ? getMyEventRegistration(user.id, id) : Promise.resolve(null)])
+    return Promise.all([getEventById(id), user ? getMyEventRegistration(user.id, id) : Promise.resolve(null), user ? getPermissions().catch(() => null) : Promise.resolve(null)])
   }, [id, user])
-  const { data: [event, registration], loading, error, reload } = useFocusResource(load, [null, null] as [Event | null, Registration])
+  const { data: [event, registration, permissions], loading, error, reload } = useFocusResource(load, [null, null, null] as [Event | null, Registration, Permissions | null])
 
   if (loading) return <View style={styles.container} accessibilityLabel="Loading event"><SkeletonBlock style={{ height: 150, borderRadius: 0 }} /><View style={[styles.content, { gap: 12 }]}><SkeletonBlock style={{ height: 26, width: '75%' }} /><SkeletonBlock style={{ height: 16, width: '55%' }} /><SkeletonBlock style={{ height: 16, width: '40%' }} /></View></View>
   if (error) return <View style={[styles.centered, { padding: 24, gap: 16 }]}><Text style={styles.errorText} accessibilityRole="alert">{error}</Text><Button label="Try again" onPress={() => void reload()} /></View>
@@ -52,7 +54,7 @@ export default function EventDetailScreen() {
     style={[styles.quiet, selected && styles.quietSelected]}><Text style={styles.quietText}>{label}</Text></PressableScale>
 
   return <View style={styles.container}>
-    <ScrollView contentContainerStyle={{ paddingBottom: 110 + insets.bottom }}>
+    <ScrollView contentContainerStyle={{ paddingBottom: 140 + insets.bottom }}>
       <View>
         {event.image_url
           ? <Image source={{ uri: event.image_url }} style={styles.image} resizeMode="cover" />
@@ -78,15 +80,19 @@ export default function EventDetailScreen() {
         {!!event.description && <><Text style={styles.sectionTitle}>About this event</Text><Text style={styles.description}>{event.description}</Text></>}
         <EventStructuredDetails event={event as Event & EventDetails} />
         {registration && id === paidTestEventId && <Button label="Open paid event access" onPress={() => router.push(`/event/access/${id}`)} />}
-        {user && !isDemoMode && !passed && <View style={{ marginTop: 20 }}><VolunteerSignupForm eventId={event.id} /></View>}
+        {/* Approved volunteers only; everyone else applies with the Google form in More → Volunteer with Thabaat. */}
+        {user && !isDemoMode && !passed && appRole(permissions) === 'volunteer' && <View style={{ marginTop: 20 }}><VolunteerSignupForm eventId={event.id} /></View>}
       </View>
     </ScrollView>
 
     <View style={[styles.bar, { paddingBottom: 12 + insets.bottom }]}>
       {registration
-        ? <PressableScale accessibilityRole="button" style={[styles.cta, styles.ctaRegistered]} disabled={registration.status !== 'confirmed'} onPress={() => router.push(`/ticket/${registration.id}`)}>
-            <Text style={[styles.ctaText, { color: brand.primaryDark }]}>{registration.status === 'confirmed' ? 'You’re registered · Open ticket' : 'You’re registered'}</Text>
-          </PressableScale>
+        ? <View style={{ gap: 8 }}>
+            <PressableScale accessibilityRole="button" style={[styles.cta, styles.ctaRegistered]} disabled={registration.status !== 'confirmed'} onPress={() => router.push(registration.count > 1 ? '/(tabs)/events?view=tickets' : `/ticket/${registration.id}`)}>
+              <Text style={[styles.ctaText, { color: brand.primaryDark }]}>{registration.status !== 'confirmed' ? 'You’re registered' : registration.count > 1 ? `You’re registered · ${registration.count} tickets` : 'You’re registered · Open ticket'}</Text>
+            </PressableScale>
+            {!passed && <PressableScale accessibilityRole="button" onPress={handleRegister} hitSlop={6} style={{ alignItems: 'center', paddingVertical: 4 }}><Text style={styles.addMore}>Add tickets for others</Text></PressableScale>}
+          </View>
         : <PressableScale accessibilityRole="button" style={styles.cta} disabled={passed} onPress={handleRegister}>
             <Text style={styles.ctaText}>{passed ? 'This event has passed' : 'Register'}</Text>
           </PressableScale>}
@@ -118,4 +124,5 @@ const styles = StyleSheet.create({
   ctaRegistered: { backgroundColor: brand.primarySoft },
   ctaText: { color: brand.page, fontSize: 16, fontFamily: fonts.heading },
   errorText: { color: brand.ink, fontSize: 16, textAlign: 'center' },
+  addMore: { color: brand.primary, fontFamily: fonts.label, fontSize: 14 },
 })

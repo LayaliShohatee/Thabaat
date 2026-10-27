@@ -34,6 +34,11 @@ export async function saveEvent(input: { id: string | null; title: string; descr
  if(error) throw failure(error)
  return data as string
 }
+// Whether registration asks "Are you attending social time (ages 23+ only)?" (migration 20261026120000).
+export async function setEventSocialQuestion(eventId:string,ask:boolean) {
+ const {error}=await supabase.rpc('set_event_social_question',{p_event_id:eventId,p_ask:ask})
+ if(error) throw failure(error)
+}
 export async function archiveEvent(id:string) {
  const {error}=await supabase.rpc('archive_managed_event',{p_id:id})
  if(error) throw failure(error)

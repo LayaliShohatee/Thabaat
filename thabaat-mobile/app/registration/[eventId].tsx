@@ -13,65 +13,139 @@ import {
 import { useLocalSearchParams, router } from 'expo-router'
 import { useCallback, useState } from 'react'
 import { getEventById } from '@/services/eventService'
-import { createRegistration } from '@/services/registrationService'
+import { completeMyProfile, reserveFreeTickets } from '@/services/registrationService'
+import { getProfile } from '@/services/profileService'
 import { sendRegistrationConfirmation } from '@/services/notificationService'
+import { isDemoMode } from '@/lib/demo-mode'
 import { useAuth } from '@/hooks/useAuth'
 import { paidTestTicketId } from '@/lib/paid-event-test'
 import { isPaymentCheckEnabled } from '@/lib/payment-check'
 import { TicketType } from '@/types'
-import { isDemoMode } from '@/lib/demo-mode'
 import { categoryLabel, ticketOnSale } from '@/lib/ticket-categories'
 import { money } from '@/lib/billing'
 import { quoteTicketPrice, type PriceQuote } from '@/services/refundDiscountService'
 import { getPaymentsMode, sandboxPurchaseTicket, type PaymentsMode } from '@/services/sandboxPaymentService'
+import { ManagementChip as Chip } from '@/components/ManagementUI'
+import { AttendeeForm, attendeeStyles } from '@/components/registration/AttendeeForm'
+import { GENDER_OPTIONS, HEARD_FROM_OPTIONS, MAX_TICKETS_PER_BOOKING, emptyGuest, guestProblem, parseAge, type Gender, type Guest } from '@/lib/attendee'
+import { bookingLines, bookingTotal, guestSlots, ticketCount, ticketSlots, type Quantities } from '@/lib/booking'
 
+type Step = 'tickets' | 'who' | 'guest' | 'answers'
+
+// Booking: pick ticket quantities, say whether one is yours, add each guest, then answer the event questions once.
 export default function RegistrationScreen() {
   const { eventId } = useLocalSearchParams<{ eventId: string }>()
   const { user } = useAuth()
-  const [selectedTicketId, setSelectedTicketId] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
-  const load = useCallback(() => {
-    if (!eventId) return Promise.reject(new Error('Missing event ID.'))
-    return getEventById(eventId)
-  }, [eventId])
-  const { data: event, loading, error, reload } = useFocusResource(load, null)
+  const load = useCallback(async () => {
+    if (!eventId) throw new Error('Missing event ID.')
+    const [event, profile] = await Promise.all([getEventById(eventId), user ? getProfile(user.id).catch(() => null) : Promise.resolve(null)])
+    return { event, profile }
+  }, [eventId, user])
+  const { data, loading, error, reload } = useFocusResource(load, { event: null, profile: null } as Awaited<ReturnType<typeof load>>)
+  const { event, profile } = data
   const ticketTypes: TicketType[] = (event?.ticket_types ?? []).filter(ticket => ticketOnSale(ticket))
-  const selectedTicket = ticketTypes.find(ticket => ticket.id === selectedTicketId) ?? ticketTypes[0] ?? null
+
+  const [step, setStep] = useState<Step>('tickets')
+  const [quantities, setQuantities] = useState<Quantities>({})
+  const [forMe, setForMe] = useState<boolean | null>(null)
+  const [myTypeId, setMyTypeId] = useState<string | null>(null)
+  const [myAge, setMyAge] = useState('')
+  const [myGender, setMyGender] = useState<Gender | ''>('')
+  const [guests, setGuests] = useState<Guest[]>([])
+  const [guestIndex, setGuestIndex] = useState(0)
+  const [heardFrom, setHeardFrom] = useState('')
+  const [firstEvent, setFirstEvent] = useState<boolean | null>(null)
+  const [socialTime, setSocialTime] = useState<boolean | null>(null)
+  const [problem, setProblem] = useState('')
+
   const [code, setCode] = useState('')
   const [quote, setQuote] = useState<PriceQuote | null>(null)
   const [quoting, setQuoting] = useState(false)
   const { data: paymentsMode } = useFocusResource(getPaymentsMode, 'off' as PaymentsMode)
   const sandbox = paymentsMode === 'sandbox'
+
+  const count = ticketCount(quantities)
+  const slots = ticketSlots(ticketTypes, quantities)
+  const chosenTypes = ticketTypes.filter(type => (quantities[type.id] ?? 0) > 0)
+  const paidTicket = count === 1 && slots[0] && slots[0].price > 0 ? slots[0] : null
+  const hasPaid = slots.some(slot => slot.price > 0)
+  const selfTypeId = forMe ? (myTypeId ?? (chosenTypes.length === 1 ? chosenTypes[0].id : null)) : null
+  const guestTypes = guestSlots(slots, selfTypeId)
+  const profileComplete = !!profile?.gender && !!profile?.birth_year
+
+  const setQuantity = (id: string, next: number) => {
+    if (next < 0 || (next > (quantities[id] ?? 0) && count >= MAX_TICKETS_PER_BOOKING)) return
+    setQuantities({ ...quantities, [id]: next }); setQuote(null); setProblem('')
+  }
+  const go = (next: Step) => { setProblem(''); setStep(next) }
+
   const applyQuote = async () => {
-    if (!selectedTicket || quoting) return
+    if (!paidTicket || quoting) return
     setQuoting(true)
-    try { setQuote(await quoteTicketPrice(selectedTicket.id, code)) }
+    try { setQuote(await quoteTicketPrice(paidTicket.id, code)) }
     catch (error: any) { Alert.alert('Price check failed', error.message) }
     finally { setQuoting(false) }
   }
 
-  const handleConfirmRegistration = async () => {
-    if (submitting || !user || !event || !selectedTicket) return
-
-    if (selectedTicket.id === paidTestTicketId && isPaymentCheckEnabled) { router.push(`/payments/event/${event.id}`); return }
-    if (selectedTicket.price > 0 && sandbox) {
+  // A single paid ticket keeps the existing checkout; group bookings are free tickets only for now.
+  const continueFromTickets = async () => {
+    if (!event || count === 0 || submitting) return
+    if (paidTicket) {
+      if (paidTicket.id === paidTestTicketId && isPaymentCheckEnabled) { router.push(`/payments/event/${event.id}`); return }
+      if (!sandbox) { Alert.alert('Payment unavailable', 'Paid ticket checkout is not connected yet.'); return }
       setSubmitting(true)
       try {
-        const result = await sandboxPurchaseTicket(selectedTicket.id, code)
+        const result = await sandboxPurchaseTicket(paidTicket.id, code)
         router.replace(`/registration/confirmation?eventTitle=${encodeURIComponent(event.title)}&notificationSent=false&freeRegistration=false&registrationId=${encodeURIComponent(result.registration_id)}&eventId=${encodeURIComponent(event.id)}&testCharge=${result.charged_cents}`)
       } catch (error: any) { Alert.alert('Payment failed', error.message) }
       finally { setSubmitting(false) }
       return
     }
-    if (selectedTicket.price > 0) { Alert.alert('Payment unavailable', 'Paid ticket checkout is not connected yet.'); return }
-    setSubmitting(true)
+    if (hasPaid) { setProblem('Paid tickets can be bought one at a time for now.'); return }
+    go('who')
+  }
 
+  const continueFromWho = () => {
+    if (forMe === null) { setProblem('Tell us whether one of these tickets is for you.'); return }
+    if (forMe && !selfTypeId) { setProblem('Choose which ticket is yours.'); return }
+    if (forMe && !profileComplete && (parseAge(myAge, 13) === null || !myGender)) { setProblem('Add your age and gender to continue.'); return }
+    setGuests(current => guestTypes.map((_, i) => current[i] ?? emptyGuest()))
+    setGuestIndex(0)
+    go(guestTypes.length ? 'guest' : 'answers')
+  }
+
+  const continueFromGuest = () => {
+    const issue = guestProblem(guests[guestIndex])
+    if (issue) { setProblem(issue); return }
+    if (guestIndex + 1 < guestTypes.length) { setProblem(''); setGuestIndex(guestIndex + 1) } else go('answers')
+  }
+
+  const back = () => {
+    setProblem('')
+    if (step === 'who') setStep('tickets')
+    else if (step === 'guest' && guestIndex > 0) setGuestIndex(guestIndex - 1)
+    else if (step === 'guest') setStep('who')
+    else if (step === 'answers' && guestTypes.length) { setGuestIndex(guestTypes.length - 1); setStep('guest') }
+    else if (step === 'answers') setStep('who')
+    else router.back()
+  }
+
+  const confirm = async () => {
+    if (submitting || !event) return
+    if (!heardFrom) { setProblem('Tell us how you heard about this event.'); return }
+    if (firstEvent === null) { setProblem('Tell us whether this is your first Thabaat event.'); return }
+    if (event.ask_social_time && socialTime === null) { setProblem('Tell us whether you’ll attend social time.'); return }
+    setSubmitting(true); setProblem('')
     try {
-      const registration = await createRegistration(user.id, event.id, selectedTicket.id)
+      if (forMe && !profileComplete) await completeMyProfile(parseAge(myAge, 13)!, myGender as Gender)
+      const result = await reserveFreeTickets(event.id, bookingLines(selfTypeId, guestTypes, guests), {
+        heard_from: heardFrom, first_event: firstEvent, ...(event.ask_social_time ? { social_time: socialTime! } : {}),
+      })
       const notificationSent = isDemoMode ? false : await sendRegistrationConfirmation(event.id)
-      router.replace(`/registration/confirmation?eventTitle=${encodeURIComponent(event.title)}&notificationSent=${notificationSent}&freeRegistration=true&registrationId=${encodeURIComponent(registration.id)}&eventId=${encodeURIComponent(event.id)}`)
+      router.replace(`/registration/confirmation?eventTitle=${encodeURIComponent(event.title)}&notificationSent=${notificationSent}&freeRegistration=true&registrationId=${encodeURIComponent(result.registration_ids[0])}&eventId=${encodeURIComponent(event.id)}&tickets=${result.registration_ids.length}`)
     } catch (error: any) {
-      Alert.alert('Registration failed', error.message)
+      setProblem(error.message ?? 'Registration failed. Try again.')
     } finally {
       setSubmitting(false)
     }
@@ -95,93 +169,117 @@ export default function RegistrationScreen() {
     )
   }
 
-  // Same rule as before, named so the button can look disabled when it is.
-  const confirmDisabled = submitting || !selectedTicket || (selectedTicket.price > 0 && !sandbox && !(isPaymentCheckEnabled && selectedTicket.id === paidTestTicketId))
+  const yesNo = (value: boolean | null, set: (v: boolean) => void) => <View style={attendeeStyles.chips} accessibilityRole="radiogroup">
+    <Chip label="Yes" selected={value === true} onPress={() => { set(true); setProblem('') }} />
+    <Chip label="No" selected={value === false} onPress={() => { set(false); setProblem('') }} />
+  </View>
+
+  const primary = step === 'tickets'
+    ? { label: submitting ? 'Confirming…' : paidTicket ? (paidTicket.id === paidTestTicketId && isPaymentCheckEnabled ? 'Continue to $1 paid test' : sandbox ? `Pay ${quote ? money(quote.final_cents) : `$${paidTicket.price}`} (test payment)` : 'Paid checkout not available') : 'Continue', onPress: () => void continueFromTickets(), disabled: submitting || count === 0 || (!!paidTicket && !sandbox && !(isPaymentCheckEnabled && paidTicket.id === paidTestTicketId)) }
+    : step === 'who' ? { label: 'Continue', onPress: continueFromWho, disabled: false }
+    : step === 'guest' ? { label: 'Next', onPress: continueFromGuest, disabled: false }
+    : { label: submitting ? 'Confirming…' : `Confirm ${count} ${count === 1 ? 'ticket' : 'tickets'}`, onPress: () => void confirm(), disabled: submitting }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
       <View style={styles.header}>
         <Text style={styles.title}>REGISTERING FOR</Text>
         <Text style={styles.eventName}>{event.title}</Text>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Choose a ticket</Text>
-        {ticketTypes.length === 0 ? (
-          <Text style={styles.noTickets}>No tickets available</Text>
-        ) : (
-          ticketTypes.map((ticket) => (
-            <PressableScale
-              key={ticket.id}
-              accessibilityRole="radio"
-              accessibilityState={{ selected: selectedTicket?.id === ticket.id }}
-              style={[
-                styles.ticketOption,
-                selectedTicket?.id === ticket.id && styles.ticketOptionSelected
-              ]}
-              onPress={() => setSelectedTicketId(ticket.id)}
-            >
-              <View style={styles.ticketHeader}>
+      {step === 'tickets' && <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Select tickets</Text>
+        {ticketTypes.length === 0 ? <Text style={styles.noTickets}>No tickets available</Text> : ticketTypes.map(ticket => {
+          const quantity = quantities[ticket.id] ?? 0
+          return <View key={ticket.id} style={[styles.ticketOption, quantity > 0 && styles.ticketOptionSelected]}>
+            <View style={styles.ticketHeader}>
+              <View style={{ flexShrink: 1, gap: 2 }}>
                 <Text style={styles.ticketName}>{ticket.name}</Text>
-                <View style={[styles.radio, selectedTicket?.id === ticket.id && styles.radioSelected]}>{selectedTicket?.id === ticket.id && <Text style={styles.radioCheck}>✓</Text>}</View>
+                <Text style={styles.ticketPrice}>{ticket.price === 0 ? 'Free' : `$${ticket.price}`}</Text>
               </View>
-              {!!ticket.category && ticket.category !== 'general' && <Text style={styles.ticketDescription}>{categoryLabel(ticket.category)}{ticket.sale_ends_at ? ` · on sale until ${new Date(ticket.sale_ends_at).toLocaleString()}` : ''}</Text>}
-              <Text style={styles.ticketPrice}>
-                {ticket.price === 0 ? 'Free' : `$${ticket.price}`}
-              </Text>
-              {ticket.description && (
-                <Text style={styles.ticketDescription}>{ticket.description}</Text>
-              )}
+              <View style={styles.stepper}>
+                <PressableScale accessibilityRole="button" accessibilityLabel={`Remove one ${ticket.name}`} disabled={quantity === 0} onPress={() => setQuantity(ticket.id, quantity - 1)} hitSlop={8} style={[styles.stepButton, quantity === 0 && styles.stepButtonOff]}><Text style={styles.stepText}>−</Text></PressableScale>
+                <Text style={styles.stepCount} accessibilityLabel={`${quantity} ${ticket.name}`}>{quantity}</Text>
+                <PressableScale accessibilityRole="button" accessibilityLabel={`Add one ${ticket.name}`} disabled={count >= MAX_TICKETS_PER_BOOKING} onPress={() => setQuantity(ticket.id, quantity + 1)} hitSlop={8} style={[styles.stepButton, count >= MAX_TICKETS_PER_BOOKING && styles.stepButtonOff]}><Text style={styles.stepText}>+</Text></PressableScale>
+              </View>
+            </View>
+            {!!ticket.category && ticket.category !== 'general' && <Text style={styles.ticketDescription}>{categoryLabel(ticket.category)}{ticket.sale_ends_at ? ` · on sale until ${new Date(ticket.sale_ends_at).toLocaleString()}` : ''}</Text>}
+            {!!ticket.description && <Text style={styles.ticketDescription}>{ticket.description}</Text>}
+          </View>
+        })}
+        {count > 0 && <View style={styles.summary}>
+          <Text style={styles.summaryText}>{count} {count === 1 ? 'ticket' : 'tickets'} · Total {bookingTotal(ticketTypes, quantities) === 0 ? 'Free' : `$${bookingTotal(ticketTypes, quantities)}`}</Text>
+          {paidTicket && <>
+            <TextInput accessibilityLabel="Discount code" style={styles.codeInput} value={code} onChangeText={value => { setCode(value.toUpperCase()); setQuote(null) }} placeholder="Discount code (optional)" placeholderTextColor={brand.sage} autoCapitalize="characters" />
+            <PressableScale accessibilityRole="button" style={styles.codeButton} onPress={() => void applyQuote()} disabled={quoting}>
+              <Text style={styles.codeButtonText}>{quoting ? 'Checking…' : 'Check my price'}</Text>
             </PressableScale>
-          ))
-        )}
-      </View>
+            {quote && <>
+              {quote.member_discount_cents > 0 && <Text style={styles.summaryText}>Member discount ({quote.member_discount_percent}%): −{money(quote.member_discount_cents)}</Text>}
+              {quote.code_applied && <Text style={styles.summaryText}>Code {code}: −{money(quote.code_discount_cents)}</Text>}
+              {!!quote.code_error && <Text style={styles.summaryText} accessibilityRole="alert">{quote.code_error}</Text>}
+              <Text style={styles.summaryText}>Your price: {money(quote.final_cents)}</Text>
+            </>}
+          </>}
+        </View>}
+      </View>}
 
-      {selectedTicket && (
-        <View style={styles.summary}>
-          <Text style={styles.sectionTitle}>Summary</Text>
-          <Text style={styles.summaryText}>Event: {event.title}</Text>
-          <Text style={styles.summaryText}>Ticket: {selectedTicket.name}</Text>
-          <Text style={styles.summaryText}>
-            Price: {selectedTicket.price === 0 ? 'Free' : `$${selectedTicket.price}`}
-          </Text>
-          {selectedTicket.price > 0 && (
-            <>
-              <TextInput accessibilityLabel="Discount code" style={styles.codeInput} value={code} onChangeText={value => { setCode(value.toUpperCase()); setQuote(null) }} placeholder="Discount code (optional)" placeholderTextColor={brand.sage} autoCapitalize="characters" />
-              <PressableScale accessibilityRole="button" style={styles.codeButton} onPress={() => void applyQuote()} disabled={quoting}>
-                <Text style={styles.codeButtonText}>{quoting ? 'Checking…' : 'Check my price'}</Text>
-              </PressableScale>
-              {quote && (
-                <>
-                  {quote.member_discount_cents > 0 && <Text style={styles.summaryText}>Member discount ({quote.member_discount_percent}%): −{money(quote.member_discount_cents)}</Text>}
-                  {quote.code_applied && <Text style={styles.summaryText}>Code {code}: −{money(quote.code_discount_cents)}</Text>}
-                  {!!quote.code_error && <Text style={styles.summaryText} accessibilityRole="alert">{quote.code_error}</Text>}
-                  <Text style={styles.summaryText}>Your price: {money(quote.final_cents)}</Text>
-                </>
-              )}
-            </>
-          )}
+      {step === 'who' && <View style={styles.section}>
+        <Text style={styles.sectionTitle}>{count === 1 ? 'Is this ticket for you?' : 'Is one of these tickets for you?'}</Text>
+        <Text style={styles.ticketDescription}>We’ll use your account details for your ticket.</Text>
+        {yesNo(forMe, setForMe)}
+        {forMe && chosenTypes.length > 1 && <>
+          <Text style={attendeeStyles.label}>Which ticket is yours?</Text>
+          <View style={attendeeStyles.chips} accessibilityRole="radiogroup">{chosenTypes.map(type => <Chip key={type.id} label={type.name} selected={selfTypeId === type.id} onPress={() => setMyTypeId(type.id)} />)}</View>
+        </>}
+        {forMe && !profileComplete && <View style={{ gap: 12 }}>
+          <Text style={styles.ticketDescription}>Add your age and gender once; they’re saved to your account.</Text>
+          <View style={attendeeStyles.field}>
+            <Text style={attendeeStyles.label}>Your age *</Text>
+            <TextInput accessibilityLabel="Your age" style={attendeeStyles.input} value={myAge} onChangeText={setMyAge} keyboardType="number-pad" maxLength={3} />
+          </View>
+          <View style={attendeeStyles.field}>
+            <Text style={attendeeStyles.label}>Your gender *</Text>
+            <View style={attendeeStyles.chips} accessibilityRole="radiogroup">{GENDER_OPTIONS.map(option => <Chip key={option.value} label={option.label} selected={myGender === option.value} onPress={() => setMyGender(option.value)} />)}</View>
+          </View>
+        </View>}
+      </View>}
+
+      {step === 'guest' && guests[guestIndex] && <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Attendee info: {guestIndex + 1} of {guestTypes.length}</Text>
+        <Text style={styles.ticketDescription}>{guestTypes[guestIndex].name}</Text>
+        <AttendeeForm guest={guests[guestIndex]} onChange={guest => { setProblem(''); setGuests(guests.map((g, i) => i === guestIndex ? guest : g)) }} />
+      </View>}
+
+      {step === 'answers' && <View style={[styles.section, { gap: 16 }]}>
+        <Text style={styles.sectionTitle}>About your visit</Text>
+        <View style={attendeeStyles.field}>
+          <Text style={attendeeStyles.label}>How did you hear about this event? *</Text>
+          <View style={attendeeStyles.chips} accessibilityRole="radiogroup">{HEARD_FROM_OPTIONS.map(option => <Chip key={option} label={option} selected={heardFrom === option} onPress={() => { setHeardFrom(option); setProblem('') }} />)}</View>
         </View>
-      )}
+        <View style={attendeeStyles.field}>
+          <Text style={attendeeStyles.label}>Is this your first time at Thabaat? *</Text>
+          {yesNo(firstEvent, setFirstEvent)}
+        </View>
+        {event.ask_social_time && <View style={attendeeStyles.field}>
+          <Text style={attendeeStyles.label}>Are you attending social time (ages 23+ only)? *</Text>
+          {yesNo(socialTime, setSocialTime)}
+        </View>}
+      </View>}
 
       <View style={styles.footer}>
+        {!!problem && <Text style={styles.problem} accessibilityRole="alert">{problem}</Text>}
         <PressableScale
           accessibilityRole="button"
-          style={[styles.confirmButton, confirmDisabled && styles.confirmButtonDisabled]}
-          onPress={handleConfirmRegistration}
-          disabled={confirmDisabled}
+          style={[styles.confirmButton, primary.disabled && styles.confirmButtonDisabled]}
+          onPress={primary.onPress}
+          disabled={primary.disabled}
         >
-          <Text style={[styles.confirmButtonText, confirmDisabled && { color: brand.primaryDark }]}>
-            {submitting ? 'Confirming...' : selectedTicket && selectedTicket.price > 0 && sandbox ? `Pay ${quote ? money(quote.final_cents) : `$${selectedTicket.price}`} (test payment)` : selectedTicket?.id === paidTestTicketId && isPaymentCheckEnabled ? 'Continue to $1 paid test' : selectedTicket && selectedTicket.price > 0 ? 'Paid checkout not available' : 'Confirm Registration'}
-          </Text>
+          <Text style={[styles.confirmButtonText, primary.disabled && { color: brand.primaryDark }]}>{primary.label}</Text>
         </PressableScale>
 
-        <PressableScale
-          accessibilityRole="button"
-          style={styles.cancelButton}
-          onPress={() => router.back()}
-        >
-          <Text style={styles.cancelButtonText}>Cancel</Text>
+        <PressableScale accessibilityRole="button" style={styles.cancelButton} onPress={back}>
+          <Text style={styles.cancelButtonText}>{step === 'tickets' ? 'Cancel' : 'Back'}</Text>
         </PressableScale>
       </View>
     </ScrollView>
@@ -199,19 +297,22 @@ const styles = StyleSheet.create({
   ticketOption: { borderWidth: 1.5, borderColor: brand.line, borderRadius: brand.radiusSmall, padding: 16, backgroundColor: brand.card },
   ticketOptionSelected: { borderColor: brand.primary, backgroundColor: brand.primarySoft },
   ticketHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: 12 },
-  ticketName: { fontSize: 16, fontFamily: fonts.heading, color: brand.ink, flexShrink: 1 },
-  radio: { width: 24, height: 24, borderRadius: 12, borderWidth: 1.5, borderColor: brand.line, alignItems: 'center', justifyContent: 'center', backgroundColor: brand.card },
-  radioSelected: { borderColor: brand.primary, backgroundColor: brand.primary },
-  radioCheck: { color: brand.page, fontSize: 13, fontFamily: fonts.heading },
-  ticketPrice: { fontSize: 15, fontFamily: fonts.label, color: brand.primary, marginTop: 4 },
+  ticketName: { fontSize: 16, fontFamily: fonts.heading, color: brand.ink },
+  ticketPrice: { fontSize: 15, fontFamily: fonts.label, color: brand.primary },
   ticketDescription: { fontSize: 13, color: brand.inkMuted, marginTop: 4, lineHeight: 18 },
+  stepper: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  stepButton: { width: 32, height: 32, borderRadius: 16, backgroundColor: brand.primary, alignItems: 'center', justifyContent: 'center' },
+  stepButtonOff: { backgroundColor: brand.line },
+  stepText: { color: brand.page, fontSize: 18, fontFamily: fonts.heading, lineHeight: 20 },
+  stepCount: { minWidth: 20, textAlign: 'center', fontSize: 16, fontFamily: fonts.heading, color: brand.ink },
   noTickets: { color: brand.inkMuted, fontSize: 15 },
-  summary: { marginHorizontal: 20, padding: 16, backgroundColor: brand.card, borderRadius: brand.radius, borderWidth: 1, borderColor: brand.line, gap: 2 },
+  summary: { padding: 16, backgroundColor: brand.card, borderRadius: brand.radius, borderWidth: 1, borderColor: brand.line, gap: 2 },
   summaryText: { color: brand.inkMuted, fontSize: 15, marginBottom: 4 },
   codeInput: { borderWidth: 1, borderColor: brand.line, borderRadius: brand.radiusSmall, color: brand.ink, paddingHorizontal: 14, paddingVertical: 12, marginTop: 8, marginBottom: 8, fontSize: 16 },
   codeButton: { alignSelf: 'flex-start', borderWidth: 1, borderColor: brand.primary, borderRadius: 999, paddingHorizontal: 16, paddingVertical: 10, marginBottom: 8 },
   codeButtonText: { color: brand.primary, fontFamily: fonts.label },
   footer: { padding: 20, paddingBottom: 40, gap: 4 },
+  problem: { color: brand.danger, fontSize: 14, marginBottom: 8, textAlign: 'center' },
   confirmButton: { backgroundColor: brand.primary, height: 52, borderRadius: 999, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 20 },
   confirmButtonDisabled: { backgroundColor: brand.primarySoft },
   confirmButtonText: { color: brand.page, fontSize: 16, fontFamily: fonts.heading },

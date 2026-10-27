@@ -11,7 +11,7 @@ import { useStatusBarStyle } from '@/hooks/useStatusBarStyle'
 
 export default function ConfirmationScreen() {
   useStatusBarStyle('dark')
-  const { eventTitle, notificationSent, freeRegistration, registrationId, eventId, testCharge } = useLocalSearchParams<{ eventTitle: string; notificationSent?: string; freeRegistration?: string; registrationId?: string; eventId?: string; testCharge?: string }>()
+  const { eventTitle, notificationSent, freeRegistration, registrationId, eventId, testCharge, tickets } = useLocalSearchParams<{ eventTitle: string; tickets?: string; notificationSent?: string; freeRegistration?: string; registrationId?: string; eventId?: string; testCharge?: string }>()
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -19,7 +19,9 @@ export default function ConfirmationScreen() {
       <Rise order={1} style={{ alignItems: 'center' }}>
       <Text style={styles.title}>You&apos;re Registered!</Text>
       <Text style={styles.subtitle}>
-        {eventTitle
+        {Number(tickets) > 1
+          ? `Your ${tickets} tickets${eventTitle ? ` for ${eventTitle}` : ''} are booked. Each one is in My tickets; one scan at the door shows them all.`
+          : eventTitle
           ? `You have successfully registered for ${eventTitle}`
           : 'Your registration was successful'}
       </Text>

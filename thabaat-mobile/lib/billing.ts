@@ -24,3 +24,11 @@ export function validatePrefilledCheckoutUrl(value: string, formId: string): str
  validateCheckoutUrl(base.toString())
  return url.toString()
 }
+
+// A ticket price typed in dollars ("5", "5.50", "$12"); null unless it's $0–$10,000 with at most 2 decimal places.
+export function parseTicketPrice(text: string): number | null {
+  const value = text.trim().replace(/^\$/, '')
+  if (!/^\d{1,5}(\.\d{1,2})?$/.test(value)) return null
+  const price = Number(value)
+  return price <= 10000 ? price : null
+}

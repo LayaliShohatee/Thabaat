@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 import { supabase } from '@/lib/supabase';
 
 type Gender = 'female' | 'male' | 'prefer_not_to_say' | null;
-const GENDERS: [Gender, string][] = [['female', 'Female'], ['male', 'Male'], ['prefer_not_to_say', 'Prefer not to say'], [null, 'Not set']];
+const GENDERS: [Gender, string][] = [['male', 'Male'], ['female', 'Female'], ['prefer_not_to_say', 'Prefer not to say']];
 
 export default function EditProfileScreen() {
   const [name, setName] = useState('');
@@ -49,8 +49,10 @@ export default function EditProfileScreen() {
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       if (userError) throw userError;
       if (!user) throw new Error('Please log in again.');
-      const year = birthYear.trim() ? Number(birthYear) : null;
-      if (year !== null && (!Number.isInteger(year) || year < 1900 || year > new Date().getFullYear())) throw new Error('Enter a four-digit birth year, or leave it blank.');
+      // Required since sign-up asks for them; bookings for yourself use these details.
+      const year = Number(birthYear.trim());
+      if (!gender) throw new Error('Choose a gender.');
+      if (!/^\d{4}$/.test(birthYear.trim()) || year < 1900 || year > new Date().getFullYear()) throw new Error('Enter your four-digit birth year.');
       const { error: profileError } = await supabase.from('profiles').upsert({
         id: user.id, full_name: name.trim(), email: user.email, gender, birth_year: year,
       }, { onConflict: 'id' });
@@ -97,7 +99,7 @@ export default function EditProfileScreen() {
         Your email is connected to your Thabaat account.
       </Text>
 
-      <Text style={styles.label}>Gender (optional)</Text>
+      <Text style={styles.label}>Gender</Text>
       <View style={{ flexDirection: 'row', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
         {GENDERS.map(([value, label]) => (
           <PressableScale key={label} accessibilityRole="button" accessibilityState={{ selected: gender === value }} onPress={() => setGender(value)} style={[styles.choice, gender === value && styles.choiceSelected]}>
@@ -106,7 +108,7 @@ export default function EditProfileScreen() {
         ))}
       </View>
 
-      <Text style={styles.label}>Birth year (optional)</Text>
+      <Text style={styles.label}>Birth year</Text>
       <TextInput style={styles.input} value={birthYear} onChangeText={setBirthYear} placeholder="e.g. 1998" placeholderTextColor={brand.sage} keyboardType="number-pad" maxLength={4} />
       <Text style={styles.emailNote}>Used only so event organizers can see attendee age groups and gender totals.</Text>
 
